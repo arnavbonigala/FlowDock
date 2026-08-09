@@ -32,4 +32,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
 
 FlowDock is distributed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
 
-This project is derived from BoringNotch. Copyright and license notices for upstream and third-party work remain in the repository; see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
+This project is derived from BoringNotch. Copyright and license notices for upstream and third-party work remain in the repository; see [NOTICE.md](NOTICE.md) and [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).

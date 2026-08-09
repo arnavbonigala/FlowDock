@@ -14,7 +14,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [x] Fork BoringNotch as the starting point
 - [x] Define the FlowDock name and initial product direction
 - [x] Complete the FlowDock identity across the app, repository, distribution, and community surfaces
-- [ ] Preserve required open-source licensing, attribution, and contributor history
+- [x] Preserve required open-source licensing, attribution, and contributor history
 - [ ] Document the inherited capabilities, known limitations, and supported Mac configurations
 - [ ] Establish a reliable baseline for building, testing, and releasing the app
 - [ ] Define measurable standards for responsiveness, stability, resource use, accessibility, and visual quality

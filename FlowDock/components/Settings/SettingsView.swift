@@ -867,6 +867,15 @@ struct About: View {
 
                 UpdaterSettingsView(updater: updaterController.updater)
 
+                Section {
+                    Text("FlowDock is a modified version of BoringNotch and is distributed under the GNU GPL v3.")
+                        .foregroundStyle(.secondary)
+                    Link("GNU GPL v3", destination: URL(string: "https://github.com/arnavbonigala/FlowDock/blob/main/LICENSE")!)
+                    Link("BoringNotch", destination: URL(string: "https://github.com/TheBoredTeam/boring.notch")!)
+                } header: {
+                    Text("Open source")
+                }
+
                 HStack(spacing: 30) {
                     Spacer(minLength: 0)
                     Button {
@@ -889,7 +898,7 @@ struct About: View {
             }
             VStack(spacing: 0) {
                 Divider()
-                Text("FlowDock is open source")
+                Text("Copyright © FlowDock and BoringNotch contributors")
                     .foregroundStyle(.secondary)
                     .padding(.top, 5)
                     .padding(.bottom, 7)
