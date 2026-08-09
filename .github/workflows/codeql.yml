@@ -85,20 +85,20 @@ jobs:
       run: |
         xcodebuild \
           -resolvePackageDependencies \
-          -project boringNotch.xcodeproj \
-          -scheme boringNotch
+          -project FlowDock.xcodeproj \
+          -scheme FlowDock
 
-    - name: Build Boring Notch
+    - name: Build FlowDock
       if: matrix.language == 'swift'
       run: |
         set -o pipefail
 
         xcodebuild \
-          -project boringNotch.xcodeproj \
-          -scheme boringNotch \
+          -project FlowDock.xcodeproj \
+          -scheme FlowDock \
           -configuration Release \
           -destination "platform=macOS" \
-          -derivedDataPath "$RUNNER_TEMP/boringNotch-derived-data" \
+          -derivedDataPath "$RUNNER_TEMP/FlowDock-derived-data" \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGNING_REQUIRED=NO \
           build
