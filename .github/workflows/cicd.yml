@@ -25,7 +25,7 @@ jobs:
         platform:
           - macOS
         xcode:
-          - ^16
+          - ^26
         scheme:
           - FlowDock
     runs-on: macos-latest
