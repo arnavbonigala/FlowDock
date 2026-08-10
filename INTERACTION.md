@@ -180,6 +180,40 @@ Ties inside a band go to the activity that started most recently. New activities
 - The face animation is band 6 decoration occupying persistent state whenever media is idle.
 - No activity publishes completion. Media is inferred from `isPlayerIdle`, which is why a quit player can leave the chin populated.
 
+## Displays
+
+Every display runs its own ladder from its own anchor (invariant 9). Notch and non-notch displays run the *same* ladder — the states, sizes, inputs, and priorities are identical, and only the anchor's geometry differs, as described in [DESIGN.md](DESIGN.md). Nothing is conditioned on whether a display has a cutout except where the anchor comes from.
+
+### Which display
+
+- **One display is active**: the one the user chose, or the built-in display if they have not chosen. When following the pointer is enabled, the active display is the one containing the pointer.
+- **The active display only changes while idle.** FlowDock never moves mid-activity or while the panel is open. A surface that teleports between monitors is worse than one that stays in the wrong place.
+- **Expanded state exists on one display at a time**, always — including when FlowDock is shown on all displays. Opening on one collapses any other.
+- When FlowDock is shown on all displays: **contextual activities appear only on the active display** — a volume HUD on four monitors is noise — while persistent activities mirror everywhere, since they are ambient by nature.
+- A display showing no activity is idle, which means it shows nothing at all.
+
+### Configuration changes
+
+Connecting or disconnecting a display, changing resolution or scale, rotating, rearranging, mirroring, docking, opening or closing the lid, sleeping, waking, and locking are all the same event: **the geometry is no longer trusted.**
+
+- Every affected display returns to idle immediately, without animation, and re-derives its anchor from current metrics.
+- **Re-derive, do not rebuild.** A configuration change recomputes geometry; it does not tear down and recreate windows. Rebuilding flashes, drops state, and is the source of most of the failures in roadmap section 4.
+- **Activities survive the change.** Media that was playing is still playing, and its chin reappears on the correct display once geometry settles. Only contextual activities are lost, and they were expiring anyway.
+- If the chosen display disappears, fall back to the built-in display, then to the main one, and return to the chosen display when it comes back.
+- Mirrored displays are one display.
+
+### Hit regions
+
+Every display's interactive region matches what that display is currently drawing — including drag detection. A display in idle state has no hit region larger than its anchor, and a display showing nothing has none at all.
+
+### Current implementation
+
+- A screen configuration change closes and recreates every window rather than repositioning them.
+- Following the pointer is implemented by setting `alphaValue` to 0 on the inactive display, so a window remains present on a display that appears to have nothing.
+- Drag detection registers a region the size of the *expanded* panel (640 × 190) at the top of every screen, regardless of the state that screen is in.
+- `deviceHasNotch()` returns true when any display has a notch, answering a per-display question for the whole machine.
+- Windows are created per display only in all-displays mode; single-display mode keeps one window and moves it, so the two modes take different code paths to the same result.
+
 ## Anchoring
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
@@ -278,4 +312,3 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 
 ## Deferred
 
-- Behavior specific to non-notch and multi-display arrangements — the display coherence roadmap item.

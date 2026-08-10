@@ -16,7 +16,8 @@ Values that already exist in code are cited rather than restated. Where current 
 - **Concentric corners.** Inner radius = outer radius − inset. Content sits 12 pt inside a 24 pt opened bottom radius, so content corners are 12 pt. Any nested container recomputes from its own inset; parallel corner values are not allowed.
 - **Expanded layout.** A leading primary column (the activity in focus) and a trailing context column, separated by one 16 pt gutter (`spacing` in `FlowDock/models/Constants.swift`). Two columns maximum. If a third region is needed, the activity is too large for the expanded state.
 - **Closed layout.** A single row: leading glyph or artwork, trailing indicator, cutout between them. Never more than one item per side.
-- **Multiple displays.** Each display renders its own anchor from its own metrics. Nothing is shared across displays except state.
+- **Non-notch displays.** The anchor is synthetic: 185 pt wide at the top center, as tall as that display's menu bar. There is no cutout to imitate, so the surface hangs from the screen edge — top corners square where they meet the edge, bottom corners rounded. Idle is zero height, so nothing sits over the menu bar until an activity or the user asks for it.
+- **Multiple displays.** Each display renders its own anchor from its own metrics. A machine is never "a notch Mac" — each display is notched or not, and is measured on its own. Nothing is shared across displays except state.
 
 ## 2. Typography
 
