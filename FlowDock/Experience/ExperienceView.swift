@@ -36,6 +36,14 @@ struct ExperienceView: View {
 
     @State private var hoverTask: Task<Void, Never>?
     @State private var isDropTargeted = false
+    @State private var isOverAgenda = false
+
+    @ObservedObject private var calendar = CalendarManager.shared
+    @Default(.showCalendar) private var showCalendar
+
+    static let contextColumn: CGFloat = 215
+
+    private var showsAgenda: Bool { showCalendar }
 
     private var anchor: CGSize { getClosedNotchSize(screenUUID: vm.screenUUID) }
 
@@ -64,7 +72,7 @@ struct ExperienceView: View {
     }
 
     private var panelInset: CGFloat {
-        (displayHasNotch ? cornerRadiusInsets.opened.top : 0) + 12
+        (displayHasNotch ? cornerRadiusInsets.opened.top : 0) + 24
     }
 
     private var screen: NSScreen? {
@@ -118,6 +126,7 @@ struct ExperienceView: View {
                     if translation > Defaults[.gestureSensitivity] { expand() }
                 }
                 .panGesture(direction: .up) { translation, _ in
+                    guard !isOverAgenda else { return }
                     if translation > Defaults[.gestureSensitivity] { collapse() }
                 }
                 .onDrop(of: [.fileURL, .url, .plainText], isTargeted: $isDropTargeted) { _ in
@@ -188,11 +197,23 @@ struct ExperienceView: View {
             }
             .frame(height: max(24, vm.effectiveClosedNotchHeight))
 
-            ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
-                activity.expanded?()
-            }
+            HStack(alignment: .top, spacing: spacing) {
+                VStack(alignment: .leading, spacing: 12) {
+                    MusicPanel()
 
-            Spacer(minLength: 0)
+                    ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
+                        activity.expanded?()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+                if showsAgenda {
+                    AgendaPanel()
+                        .frame(width: Self.contextColumn)
+                        .onHover { isOverAgenda = $0 }
+                }
+            }
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .padding(.horizontal, panelInset)
         .padding(.bottom, 12)
@@ -232,6 +253,7 @@ struct ExperienceView: View {
 
     private func collapse() {
         guard store.isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
+        isOverAgenda = false
         store.isExpanded = false
         vm.close()
     }

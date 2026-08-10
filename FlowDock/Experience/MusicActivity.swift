@@ -24,7 +24,6 @@ extension Activity {
             leading: { MusicChinArtwork() },
             trailing: { MusicChinIndicator() }
         )
-        .withExpanded { MusicPanel() }
     }
 }
 
@@ -123,17 +122,34 @@ private struct MusicChinIndicator: View {
 
 struct MusicPanel: View {
     @ObservedObject private var music = MusicManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var idle: Bool { !music.isPlaying && music.isPlayerIdle }
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            MusicArtwork()
-            MusicDetails()
+            MusicArtwork(idle: idle)
+
+            Group {
+                if idle {
+                    Text("Nothing playing")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    MusicDetails()
+                }
+            }
+            .transition(.fromNotch(reduceMotion: reduceMotion))
         }
         .buttonStyle(.plain)
+        .animation(.experience(reduceMotion: reduceMotion), value: idle)
     }
 }
 
 private struct MusicArtwork: View {
+    let idle: Bool
+
     @ObservedObject private var music = MusicManager.shared
     @Default(.lightingEffect) private var lightingEffect
     @Default(.cornerRadiusScaling) private var cornerRadiusScaling
@@ -148,14 +164,26 @@ private struct MusicArtwork: View {
         Button {
             music.openMusicApp()
         } label: {
-            Image(nsImage: music.albumArt)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: MusicPlayerImageSizes.size.opened.width,
-                       height: MusicPlayerImageSizes.size.opened.height)
-                .clipShape(RoundedRectangle(cornerRadius: radius))
+            if idle {
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(.quaternary)
+                    .frame(width: MusicPlayerImageSizes.size.opened.width,
+                           height: MusicPlayerImageSizes.size.opened.height)
+                    .overlay {
+                        Image(systemName: "music.note")
+                            .font(.system(size: 26))
+                            .foregroundStyle(.tertiary)
+                    }
+            } else {
+                Image(nsImage: music.albumArt)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: MusicPlayerImageSizes.size.opened.width,
+                           height: MusicPlayerImageSizes.size.opened.height)
+                    .clipShape(RoundedRectangle(cornerRadius: radius))
+            }
         }
-        .accessibilityLabel("Open \(music.songTitle) in its app")
+        .accessibilityLabel(idle ? "Open music app" : "Open \(music.songTitle) in its app")
         .background {
             if lightingEffect {
                 Image(nsImage: music.albumArt)

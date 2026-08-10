@@ -53,7 +53,8 @@ The closed and contextual surfaces must be indistinguishable from the display be
 |---|---|
 | Inside a control cluster (glyph to its label) | 4 |
 | Between related items in a group | 8 |
-| Panel content inset from the panel edge | 12 |
+| Panel content inset from the panel side edges | 24 |
+| Panel content inset from the panel bottom edge | 12 |
 | Between columns and unrelated groups | 16 |
 | Between major sections of the expanded state | 24 |
 

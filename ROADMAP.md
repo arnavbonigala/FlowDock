@@ -44,7 +44,7 @@ Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the 
 - [x] Migrate music playback, source selection, lyrics, and playback controls into the FlowDock experience
 - [x] Migrate volume, brightness, keyboard backlight, microphone, and other system feedback
 - [x] Migrate battery and charging activities
-- [ ] Migrate calendar and reminders
+- [x] Migrate calendar and reminders
 - [ ] Migrate the existing file shelf, sharing, preview, and file actions into the FlowDock drop experience
 - [ ] Reassess the camera mirror and other inherited secondary features against the product direction
 - [ ] Replace the inherited onboarding, settings, menu bar, and update experiences
