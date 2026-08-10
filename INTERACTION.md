@@ -309,6 +309,3 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 - Haptics fire the moment the pointer enters the closed notch, before hover intent, so transit is rewarded like an action.
 - The `toggleSneakPeek` shortcut lets a user summon contextual state, which by definition is system-caused. It becomes a persistent or expanded surface instead.
 - Contextual state is gated behind `hudReplacement` for non-media types; that is a permissions concern, not a state concern, and does not change the ladder.
-
-## Deferred
-
