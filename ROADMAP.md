@@ -23,7 +23,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 
 - [x] Define the visual language for layout, typography, materials, spacing, and iconography
 - [x] Define a consistent progression from idle to contextual, persistent, and expanded experiences
-- [ ] Make every transition feel anchored to the notch or top-of-screen origin
+- [x] Make every transition feel anchored to the notch or top-of-screen origin
 - [ ] Establish consistent interaction behavior across hover, click, keyboard, gesture, drag, and dismissal
 - [ ] Establish clear rules for activity priority, coexistence, interruption, and expiration
 - [ ] Support reduced motion and other core accessibility needs from the start
