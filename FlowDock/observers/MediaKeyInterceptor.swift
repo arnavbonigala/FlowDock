@@ -237,19 +237,20 @@ final class MediaKeyInterceptor {
         Task { @MainActor in
             switch keyType {
             case .soundUp, .soundDown, .mute:
-                let v = VolumeManager.shared.rawVolume
-                FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(v))
+                let volume = VolumeManager.shared
+                SystemFeedbackStore.shared.report(
+                    .volume(muted: volume.isMuted), value: CGFloat(volume.rawVolume))
             case .brightnessUp, .brightnessDown:
                 if command {
-                    let v = KeyboardBacklightManager.shared.rawBrightness
-                    FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .backlight, value: CGFloat(v))
+                    SystemFeedbackStore.shared.report(
+                        .backlight, value: CGFloat(KeyboardBacklightManager.shared.rawBrightness))
                 } else {
-                    let v = BrightnessManager.shared.rawBrightness
-                    FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .brightness, value: CGFloat(v))
+                    SystemFeedbackStore.shared.report(
+                        .brightness, value: CGFloat(BrightnessManager.shared.rawBrightness))
                 }
             case .keyboardBrightnessUp, .keyboardBrightnessDown:
-                let v = KeyboardBacklightManager.shared.rawBrightness
-                FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .backlight, value: CGFloat(v))
+                SystemFeedbackStore.shared.report(
+                    .backlight, value: CGFloat(KeyboardBacklightManager.shared.rawBrightness))
             }
         }
     }

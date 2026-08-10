@@ -102,6 +102,16 @@ class FlowDockViewModel: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// Bottom edge of whatever the notch is currently drawing, measured down from the top
+    /// of the screen. Detached surfaces hang off this so the notch never covers them.
+    var surfaceBottom: CGFloat {
+        if notchState == .open { return openNotchSize.height }
+
+        let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
+        let menuBarHeight = screen.map { $0.frame.maxY - $0.visibleFrame.maxY } ?? 0
+        return max(effectiveClosedNotchHeight + chinHeight, menuBarHeight)
+    }
+
     // Computed property for effective notch height
     var effectiveClosedNotchHeight: CGFloat {
         let currentScreen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) }

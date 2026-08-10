@@ -214,14 +214,19 @@ struct ExperienceView: View {
         }
     }
 
+    /// The store owns the shell's state; the view model still holds the one notion of
+    /// "the notch is open" that surfaces outside the shell — the system feedback pill —
+    /// position themselves against.
     private func expand() {
         guard !store.isExpanded else { return }
         store.isExpanded = true
+        vm.open()
     }
 
     private func collapse() {
         guard store.isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
         store.isExpanded = false
+        vm.close()
     }
 }
 

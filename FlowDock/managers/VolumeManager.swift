@@ -40,7 +40,7 @@ final class VolumeManager: NSObject, ObservableObject {
         let current = readVolumeInternal() ?? rawVolume
         let target = max(0, min(1, current + delta))
         setAbsolute(target)
-        FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(target))
+        SystemFeedbackStore.shared.report(.volume(muted: false), value: CGFloat(target))
     }
 
     @MainActor func decrease(stepDivisor: Float = 1.0) {
@@ -49,7 +49,7 @@ final class VolumeManager: NSObject, ObservableObject {
         let current = readVolumeInternal() ?? rawVolume
         let target = max(0, min(1, current - delta))
         setAbsolute(target)
-        FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(target))
+        SystemFeedbackStore.shared.report(.volume(muted: false), value: CGFloat(target))
     }
 
     @MainActor func toggleMuteAction() {
@@ -68,7 +68,7 @@ final class VolumeManager: NSObject, ObservableObject {
         }
 
         toggleMuteInternal()
-        FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .volume, value: CGFloat(willBeMuted ? 0 : resultingVolume))
+        SystemFeedbackStore.shared.report(.volume(muted: willBeMuted), value: CGFloat(willBeMuted ? 0 : resultingVolume))
     }
     
     func refresh() { fetchCurrentVolume() }
@@ -119,6 +119,24 @@ final class VolumeManager: NSObject, ObservableObject {
         )
         if status != noErr { return kAudioObjectUnknown }
         return defaultDeviceID
+    }
+
+    func outputDeviceName() -> String? {
+        let deviceID = systemOutputDeviceID()
+        guard deviceID != kAudioObjectUnknown else { return nil }
+
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioObjectPropertyName,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var name: Unmanaged<CFString>?
+        var size = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
+        guard AudioObjectGetPropertyData(deviceID, &address, 0, nil, &size, &name) == noErr,
+              let value = name?.takeRetainedValue() as String?,
+              !value.isEmpty
+        else { return nil }
+        return value
     }
 
     private func fetchCurrentVolume() {

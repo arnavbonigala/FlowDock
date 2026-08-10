@@ -37,7 +37,7 @@ final class BrightnessManager: ObservableObject {
 			} else {
 				refresh()
 			}
-			FlowDockViewCoordinator.shared.toggleSneakPeek(status: true, type: .brightness, value: CGFloat(target))
+			SystemFeedbackStore.shared.report(.brightness, value: CGFloat(target))
 		}
 	}
 
@@ -98,11 +98,7 @@ final class KeyboardBacklightManager: ObservableObject {
 			} else {
 				refresh()
 			}
-			FlowDockViewCoordinator.shared.toggleSneakPeek(
-				status: true,
-				type: .backlight,
-				value: CGFloat(target)
-			)
+			SystemFeedbackStore.shared.report(.backlight, value: CGFloat(target))
 		}
 	}
 

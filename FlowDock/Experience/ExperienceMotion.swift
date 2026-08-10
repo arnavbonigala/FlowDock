@@ -10,11 +10,34 @@ import SwiftUI
 extension AnyTransition {
     /// The notch is above every surface FlowDock draws, so scaling toward the top edge
     /// makes content read as growing out of the cutout rather than fading in place.
-    static let fromNotch: AnyTransition = .scale(scale: 0.9, anchor: .top)
+    static let fromNotch: AnyTransition = .asymmetric(
+        insertion: .scale(scale: 0.9, anchor: .top).combined(with: .opacity),
+        removal: .scale(scale: 0.96, anchor: .top)
+            .combined(with: .opacity)
+            .animation(.easeOut(duration: 0.18))
+    )
 
     /// Reduce Motion keeps the duration and drops the movement.
     static func fromNotch(reduceMotion: Bool) -> AnyTransition {
         reduceMotion ? .opacity : .fromNotch
+    }
+}
+
+private struct Materialize: ViewModifier {
+    let hidden: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .blur(radius: hidden ? 8 : 0)
+            .scaleEffect(hidden ? 0.94 : 1, anchor: .top)
+            .opacity(hidden ? 0 : 1)
+    }
+}
+
+extension AnyTransition {
+    static func materialize(reduceMotion: Bool) -> AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        return .modifier(active: Materialize(hidden: true), identity: Materialize(hidden: false))
     }
 }
 

@@ -111,4 +111,14 @@ class FlowDockSkyLightWindow: NSPanel {
     
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    /// Detached surfaces attach as children, so they are torn down here rather than by
+    /// every call site that closes a notch window.
+    override func close() {
+        childWindows?.forEach { child in
+            NotchSpaceManager.shared.notchSpace.windows.remove(child)
+            child.close()
+        }
+        super.close()
+    }
 }

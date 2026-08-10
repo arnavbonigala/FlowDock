@@ -252,6 +252,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.orderFrontRegardless()
         NotchSpaceManager.shared.notchSpace.windows.insert(window)
 
+        let feedback = SystemFeedbackWindow(viewModel: viewModel)
+        feedback.attach(to: window)
+        feedback.orderFrontRegardless()
+
         // Observe when the window's screen changes so we can update drag detectors
         windowScreenDidChangeObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didChangeScreenNotification,
