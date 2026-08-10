@@ -62,6 +62,8 @@ final class SystemFeedbackStore: ObservableObject {
     }
 
     func report(_ kind: SystemFeedbackKind, value: CGFloat) {
+        guard MediaKeyInterceptor.shared.isRunning else { return }
+
         reading = SystemFeedbackReading(
             kind: kind,
             value: min(max(value, 0), 1),
