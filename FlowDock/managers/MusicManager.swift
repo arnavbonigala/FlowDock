@@ -190,7 +190,6 @@ class MusicManager: ObservableObject {
             }
 
             if state.isPlaying && !state.title.isEmpty && !state.artist.isEmpty {
-                self.updateSneakPeek()
             }
         }
 
@@ -229,7 +228,6 @@ class MusicManager: ObservableObject {
 
             // Only update sneak peek if there's actual content and something changed
             if !state.title.isEmpty && !state.artist.isEmpty && state.isPlaying {
-                self.updateSneakPeek()
             }
 
             // Fetch lyrics on content change
@@ -578,16 +576,6 @@ class MusicManager: ObservableObject {
                 withAnimation(.smooth) {
                     self?.avgColor = color ?? .white
                 }
-            }
-        }
-    }
-
-    private func updateSneakPeek() {
-        if isPlaying && Defaults[.enableSneakPeek] {
-            if Defaults[.sneakPeekStyles] == .standard {
-                coordinator.toggleSneakPeek(status: true, type: .music)
-            } else {
-                coordinator.toggleExpandingView(status: true, type: .music)
             }
         }
     }

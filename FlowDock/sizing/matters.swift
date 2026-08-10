@@ -37,7 +37,7 @@ enum MusicPlayerImageSizes {
 
 @MainActor func getClosedNotchSize(screenUUID: String? = nil) -> CGSize {
     // Default notch size, to avoid using optionals
-    var notchHeight: CGFloat = Defaults[.nonNotchHeight]
+    var notchHeight: CGFloat = 32
     var notchWidth: CGFloat = 185
 
     var selectedScreen = NSScreen.main
@@ -55,21 +55,10 @@ enum MusicPlayerImageSizes {
             notchWidth = screen.frame.width - topLeftNotchpadding - topRightNotchpadding + 4
         }
 
-        // Check if the Mac has a notch
         if screen.safeAreaInsets.top > 0 {
-            // This is a display WITH a notch - use notch height settings
-            notchHeight = Defaults[.notchHeight]
-            if Defaults[.notchHeightMode] == .matchRealNotchSize {
-                notchHeight = screen.safeAreaInsets.top
-            } else if Defaults[.notchHeightMode] == .matchMenuBar {
-                notchHeight = screen.frame.maxY - screen.visibleFrame.maxY
-            }
+            notchHeight = screen.safeAreaInsets.top
         } else {
-            // This is a display WITHOUT a notch - use non-notch height settings
-            notchHeight = Defaults[.nonNotchHeight]
-            if Defaults[.nonNotchHeightMode] == .matchMenuBar {
-                notchHeight = screen.frame.maxY - screen.visibleFrame.maxY
-            }
+            notchHeight = screen.frame.maxY - screen.visibleFrame.maxY
         }
     }
 

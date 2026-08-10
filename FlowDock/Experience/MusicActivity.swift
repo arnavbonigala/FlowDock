@@ -93,7 +93,6 @@ private struct MusicChinIndicator: View {
     @EnvironmentObject private var vm: FlowDockViewModel
     @ObservedObject private var music = MusicManager.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Default(.useMusicVisualizer) private var useMusicVisualizer
     @Default(.coloredSpectrogram) private var coloredSpectrogram
 
     var body: some View {
@@ -103,15 +102,13 @@ private struct MusicChinIndicator: View {
                 Image(systemName: music.isPlaying ? "waveform" : "pause.fill")
                     .imageScale(.medium)
                     .foregroundStyle(.secondary)
-            } else if useMusicVisualizer {
+            } else {
                 Rectangle()
                     .fill(coloredSpectrogram ? Color(nsColor: music.avgColor).gradient : Color.gray.gradient)
                     .mask {
                         AudioSpectrumView(isPlaying: $music.isPlaying)
                             .frame(width: 16, height: 12)
                     }
-            } else {
-                LottieAnimationContainer()
             }
         }
         .frame(width: side, height: side)

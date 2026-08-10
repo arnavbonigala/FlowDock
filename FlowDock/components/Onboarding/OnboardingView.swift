@@ -5,18 +5,14 @@
 //  Created by Alexander on 2025-06-23.
 //
 
+import Defaults
+import EventKit
 import SwiftUI
 
 enum OnboardingStep {
     case welcome
-    case calendarPermission
-    case remindersPermission
-    case accessibilityPermission
-    case musicPermission
-    case finished
+    case setup
 }
-
-private let calendarService = CalendarService()
 
 struct OnboardingView: View {
     @State var step: OnboardingStep = .welcome
@@ -24,111 +20,186 @@ struct OnboardingView: View {
     let onOpenSettings: () -> Void
 
     var body: some View {
-        ZStack {
+        Group {
             switch step {
             case .welcome:
-                WelcomeView {
-                    withAnimation(.easeInOut(duration: 0.6)) {
-                        step = .calendarPermission
-                    }
-                }
-                .transition(.opacity)
-
-            case .calendarPermission:
-                PermissionRequestView(
-                    icon: Image(systemName: "calendar"),
-                    title: "Enable Calendar Access",
-                    description: "FlowDock can show all your upcoming events in one place. Access to your calendar is needed to display your schedule.",
-                    privacyNote: "Your calendar data is only used to show your events and is never shared.",
-                    onAllow: {
-                        Task {
-                                await requestCalendarPermission()
-                                withAnimation(.easeInOut(duration: 0.6)) {
-                                    step = .remindersPermission
-                                }
-                        }
-                    },
-                    onSkip: {
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .remindersPermission
-                            }
-                    }
-                )
-                .transition(.opacity)
-
-                case .remindersPermission:
-                    PermissionRequestView(
-                        icon: Image(systemName: "checklist"),
-                        title: "Enable Reminders Access",
-                        description: "FlowDock can show your scheduled reminders alongside your calendar events. Access to Reminders is needed to display your reminders.",
-                        privacyNote: "Your reminders data is only used to show your reminders and is never shared.",
-                        onAllow: {
-                            Task {
-                                await requestRemindersPermission()
-                                withAnimation(.easeInOut(duration: 0.6)) {
-                                    step = .accessibilityPermission
-                                }
-                            }
-                        },
-                        onSkip: {
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .accessibilityPermission
-                            }
-                        }
-                    )
-                    .transition(.opacity)
-                
-            case .accessibilityPermission:
-                PermissionRequestView(
-                    icon: Image(systemName: "hand.raised.fill"),
-                    title: "Enable Accessibility Access",
-                    description: "Accessibility access is required to replace system notifications with the FlowDock HUD. This allows the app to intercept media and brightness events to display custom HUD overlays.",
-                    privacyNote: "Accessibility access is used only to improve media and brightness notifications. No data is collected or shared.",
-                    onAllow: {
-                        Task {
-                            await requestAccessibilityPermission()
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                step = .musicPermission
-                            }
-                        }
-                    },
-                    onSkip: {
-                        withAnimation(.easeInOut(duration: 0.6)) {
-                            step = .musicPermission
-                        }
-                    }
-                )
-                .transition(.opacity)
-                
-            case .musicPermission:
-                MusicControllerSelectionView(
-                    onContinue: {
-                        withAnimation(.easeInOut(duration: 0.6)) {
-                            FlowDockViewCoordinator.shared.firstLaunch = false
-                            step = .finished
-                        }
-                    }
-                )
-                .transition(.opacity)
-
-            case .finished:
-                OnboardingFinishView(onFinish: onFinish, onOpenSettings: onOpenSettings)
+                WelcomeView { step = .setup }
+            case .setup:
+                SetupView(onFinish: onFinish, onOpenSettings: onOpenSettings)
             }
         }
-        .frame(width: 400, height: 600)
+        .animation(.easeInOut(duration: 0.25), value: step)
+        .frame(width: 460, height: 520)
+        .background(.regularMaterial)
+    }
+}
+
+// MARK: - Welcome
+
+private struct WelcomeView: View {
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Image("logo2")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 96, height: 96)
+            Text("FlowDock")
+                .font(.largeTitle)
+                .fontWeight(.semibold)
+            Text("An activity layer for the notch: calm when idle, useful in context.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 48)
+            Spacer()
+            Button("Get started", action: onContinue)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+            Link("Open source on GitHub", destination: URL(string: "https://github.com/arnavbonigala/FlowDock")!)
+                .font(.footnote)
+                .padding(.bottom, 24)
+        }
+    }
+}
+
+// MARK: - Setup
+
+private struct SetupView: View {
+    let onFinish: () -> Void
+    let onOpenSettings: () -> Void
+
+    @ObservedObject private var calendarManager = CalendarManager.shared
+    @Default(.mediaController) private var mediaController
+    @State private var accessibilityAuthorized = false
+
+    private var calendarGranted: Bool {
+        calendarManager.calendarAuthorizationStatus == .fullAccess
+            || calendarManager.reminderAuthorizationStatus == .fullAccess
     }
 
-    // MARK: - Permission Request Logic
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Set up FlowDock")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                Text("Everything here is optional and can be changed later in settings.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.top, 24)
 
-    func requestCalendarPermission() async {
-        _ = try? await calendarService.requestAccess(to: .event)
+            Form {
+                Section {
+                    PermissionRow(
+                        symbol: "calendar",
+                        title: "Calendar and Reminders",
+                        detail: "Shows today's events and reminders in the expanded panel.",
+                        granted: calendarGranted
+                    ) {
+                        Task { await calendarManager.requestAccess() }
+                    }
+
+                    PermissionRow(
+                        symbol: "slider.horizontal.3",
+                        title: "Accessibility",
+                        detail: "Lets FlowDock replace the volume, brightness, and backlight HUDs.",
+                        granted: accessibilityAuthorized
+                    ) {
+                        XPCHelperClient.shared.requestAccessibilityAuthorization()
+                    }
+                } header: {
+                    Text("Permissions")
+                }
+
+                Section {
+                    Picker("Music source", selection: $mediaController) {
+                        ForEach(availableMediaControllers) { controller in
+                            Text(controller.rawValue).tag(controller)
+                        }
+                    }
+                    .onChange(of: mediaController) { _, _ in
+                        NotificationCenter.default.post(name: .mediaControllerChanged, object: nil)
+                    }
+                } footer: {
+                    Text(MusicManager.shared.isNowPlayingDeprecated
+                        ? "Now Playing is unavailable on this version of macOS, so FlowDock talks to one music app directly."
+                        : "Now Playing works with every media app.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+
+            HStack {
+                Button("Open settings", action: onOpenSettings)
+                Spacer()
+                Button("Done", action: onFinish)
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+            }
+            .controlSize(.large)
+            .padding(.bottom, 24)
+        }
+        .padding(.horizontal, 24)
+        .task {
+            accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
+            XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
+        }
+        .onDisappear {
+            XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .accessibilityAuthorizationChanged)) { notification in
+            if let granted = notification.userInfo?["granted"] as? Bool {
+                accessibilityAuthorized = granted
+            }
+        }
     }
 
-    func requestRemindersPermission() async {
-        _ = try? await calendarService.requestAccess(to: .reminder)
+    private var availableMediaControllers: [MediaControllerType] {
+        MusicManager.shared.isNowPlayingDeprecated
+            ? MediaControllerType.allCases.filter { $0 != .nowPlaying }
+            : MediaControllerType.allCases
     }
-    
-    func requestAccessibilityPermission() async {
-        await XPCHelperClient.shared.ensureAccessibilityAuthorization(promptIfNeeded: true)
+}
+
+private struct PermissionRow: View {
+    let symbol: String
+    let title: String
+    let detail: String
+    let granted: Bool
+    let request: () -> Void
+
+    var body: some View {
+        LabeledContent {
+            if granted {
+                Label("Granted", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.secondary)
+                    .labelStyle(.titleAndIcon)
+            } else {
+                Button("Grant", action: request)
+            }
+        } label: {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } icon: {
+                Image(systemName: symbol)
+            }
+        }
     }
+}
+
+#Preview {
+    OnboardingView(onFinish: {}, onOpenSettings: {})
 }

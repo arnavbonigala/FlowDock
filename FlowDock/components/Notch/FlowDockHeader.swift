@@ -29,7 +29,7 @@ struct FlowDockHeader: View {
             HStack(spacing: 4) {
                 if vm.notchState == .open {
                     Group {
-                        if Defaults[.settingsIconInNotch] {
+                        Group {
                             Button(action: {
                                 DispatchQueue.main.async {
                                     SettingsWindowController.shared.showWindow()

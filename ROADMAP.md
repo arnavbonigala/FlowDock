@@ -47,7 +47,7 @@ Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the 
 - [x] Migrate calendar and reminders
 - [x] Migrate the existing file shelf, sharing, preview, and file actions into the FlowDock drop experience
 - [x] Reassess the camera mirror and other inherited secondary features against the product direction
-- [ ] Replace the inherited onboarding, settings, menu bar, and update experiences
+- [x] Replace the inherited onboarding, settings, menu bar, and update experiences
 - [ ] Remove or retire inherited product elements that do not fit FlowDock
 
 ## 4. Eliminate inherited critical failures

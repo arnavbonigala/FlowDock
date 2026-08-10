@@ -29,35 +29,37 @@ struct FlowDockApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("FlowDock", systemImage: "sparkle", isInserted: $showMenuBarIcon) {
-            Button("Settings") {
+        MenuBarExtra(
+            "FlowDock",
+            systemImage: "rectangle.topthird.inset.filled",
+            isInserted: $showMenuBarIcon
+        ) {
+            Button("Settings…") {
                 DispatchQueue.main.async {
                     SettingsWindowController.shared.showWindow()
                 }
             }
-            .keyboardShortcut(KeyEquivalent(","), modifiers: .command)
+            .keyboardShortcut(",", modifiers: .command)
             CheckForUpdatesView(updater: updaterController.updater)
             Divider()
             Button("Restart FlowDock") {
                 ApplicationRelauncher.restart()
             }
-            Button("Quit", role: .destructive) {
+            Button("Quit FlowDock") {
                 NSApplication.shared.terminate(self)
             }
-            .keyboardShortcut(KeyEquivalent("Q"), modifiers: .command)
+            .keyboardShortcut("q", modifiers: .command)
         }
     }
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    var statusItem: NSStatusItem?
     var windows: [String: NSWindow] = [:] // UUID -> NSWindow
     var viewModels: [String: FlowDockViewModel] = [:] // UUID -> FlowDockViewModel
     var window: NSWindow?
     let vm: FlowDockViewModel = .init()
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     var quickShareService = QuickShareService.shared
-    var whatsNewWindow: NSWindow?
     var timer: Timer?
     var closeNotchTask: Task<Void, Never>?
     private var previousScreens: [NSScreen]?
@@ -269,20 +271,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
         }
 
-        KeyboardShortcuts.onKeyDown(for: .toggleSneakPeek) { [weak self] in
-            guard let self = self else { return }
-            if Defaults[.sneakPeekStyles] == .inline {
-                let newStatus = !self.coordinator.expandingView.show
-                self.coordinator.toggleExpandingView(status: newStatus, type: .music)
-            } else {
-                self.coordinator.toggleSneakPeek(
-                    status: !self.coordinator.sneakPeek.show,
-                    type: .music,
-                    duration: 3.0
-                )
-            }
-        }
-
         KeyboardShortcuts.onKeyDown(for: .toggleNotchOpen) { [weak self] in
             Task { [weak self] in
                 guard let self = self else { return }
@@ -347,7 +335,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             && Defaults[.mediaController] == .nowPlaying
         {
             DispatchQueue.main.async {
-                self.showOnboardingWindow(step: .musicPermission)
+                self.showOnboardingWindow(step: .setup)
             }
         }
 
@@ -457,40 +445,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc func togglePopover(_ sender: Any?) {
-        if window?.isVisible == true {
-            window?.orderOut(nil)
-        } else {
-            window?.orderFrontRegardless()
-        }
-    }
-
-    @objc func showMenu() {
-        statusItem?.menu?.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
-    }
-
-    @objc func quitAction() {
-        NSApplication.shared.terminate(self)
-    }
-
     private func showOnboardingWindow(step: OnboardingStep = .welcome) {
         if onboardingWindowController == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 400, height: 600),
-                styleMask: [.titled, .fullSizeContentView],
+                contentRect: NSRect(x: 0, y: 0, width: 460, height: 520),
+                styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.center()
-            window.title = "Onboarding"
+            window.title = "Welcome to FlowDock"
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.contentView = NSHostingView(
                 rootView: OnboardingView(
                     step: step,
                     onFinish: {
-                        window.orderOut(nil)
-//                        NSApp.setActivationPolicy(.accessory)
                         window.close()
                         NSApp.deactivate()
                     },
@@ -505,7 +475,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             onboardingWindowController = NSWindowController(window: window)
         }
 
-//        NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         onboardingWindowController?.window?.makeKeyAndOrderFront(nil)
         onboardingWindowController?.window?.orderFrontRegardless()
