@@ -39,9 +39,36 @@ struct ExperienceView: View {
 
     private var anchor: CGSize { getClosedNotchSize(screenUUID: vm.screenUUID) }
 
+    /// `safeAreaInsets.top` stops at the notch, one point short of the menu bar, so a
+    /// sliver of wallpaper shows under the surface. Reach the menu bar instead.
+    private var closedHeight: CGFloat {
+        guard let screen else { return vm.effectiveClosedNotchHeight }
+        return max(vm.effectiveClosedNotchHeight, screen.frame.maxY - screen.visibleFrame.maxY)
+    }
+
+    private func width(for state: ActivityState) -> CGFloat {
+        switch state {
+        case .expanded: openNotchSize.width
+        case .idle: anchor.width
+        case .contextual, .persistent:
+            anchor.width + 2 * max(0, vm.effectiveClosedNotchHeight - 12) + 2 * chinInset
+        }
+    }
+
+    private var chinInset: CGFloat {
+        (displayHasNotch ? cornerRadiusInsets.closed.top : 0) + 8
+    }
+
+    private var panelInset: CGFloat {
+        (displayHasNotch ? cornerRadiusInsets.opened.top : 0) + 12
+    }
+
+    private var screen: NSScreen? {
+        vm.screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
+    }
+
     private var displayHasNotch: Bool {
-        let screen = vm.screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
-        return (screen?.safeAreaInsets.top ?? 0) > 0
+        (screen?.safeAreaInsets.top ?? 0) > 0
     }
 
     var body: some View {
@@ -53,8 +80,8 @@ struct ExperienceView: View {
                 content(for: state)
             }
                 .frame(
-                    width: state == .expanded ? openNotchSize.width : anchor.width,
-                    height: state == .expanded ? openNotchSize.height : vm.effectiveClosedNotchHeight,
+                    width: width(for: state),
+                    height: state == .expanded ? openNotchSize.height : closedHeight,
                     alignment: .top
                 )
                 .clipShape(
@@ -105,6 +132,7 @@ struct ExperienceView: View {
         .frame(maxWidth: windowSize.width, maxHeight: windowSize.height, alignment: .top)
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .preferredColorScheme(.dark)
+        .musicActivity(in: store, suppressed: vm.hideOnClosed)
     }
 
     // MARK: - Surfaces
@@ -134,20 +162,24 @@ struct ExperienceView: View {
             Color.clear.frame(width: anchor.width)
             store.owner?.trailing()
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, chinInset)
     }
 
     private var expandedPanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
-                HStack(spacing: 4) {
-                    contextual.leading()
-                    contextual.trailing()
+        VStack(alignment: .leading, spacing: 12) {
+            Group {
+                if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
+                    HStack(spacing: 4) {
+                        contextual.leading()
+                        contextual.trailing()
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(contextual.label)
+                } else {
+                    Color.clear.accessibilityHidden(true)
                 }
-                .frame(height: max(24, vm.effectiveClosedNotchHeight))
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(contextual.label)
             }
+            .frame(height: max(24, vm.effectiveClosedNotchHeight))
 
             ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
                 activity.expanded?()
@@ -155,7 +187,8 @@ struct ExperienceView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(12)
+        .padding(.horizontal, panelInset)
+        .padding(.bottom, 12)
     }
 
     // MARK: - Input
