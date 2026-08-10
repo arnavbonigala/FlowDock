@@ -31,37 +31,46 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 
 ## 3. Bring existing capabilities into the new experience
 
-- [ ] Migrate music playback into the FlowDock experience
+- [ ] Migrate music playback, source selection, lyrics, and playback controls into the FlowDock experience
 - [ ] Migrate volume, brightness, keyboard backlight, microphone, and other system feedback
-- [ ] Migrate battery, charging, and download activities
+- [ ] Migrate battery and charging activities
 - [ ] Migrate calendar and reminders
-- [ ] Evolve the existing file shelf into the initial FlowDock drop experience
+- [ ] Migrate the existing file shelf, sharing, preview, and file actions into the FlowDock drop experience
 - [ ] Reassess the camera mirror and other inherited secondary features against the product direction
 - [ ] Replace the inherited onboarding, settings, menu bar, and update experiences
 - [ ] Remove or retire inherited product elements that do not fit FlowDock
 
-## 4. Reach a polished core release
+## 4. Eliminate inherited critical failures
 
-- [ ] Make state changes and animations smooth, interruptible, and free of visible jumps or flashes
-- [ ] Eliminate focus theft and other disruptive window behavior
-- [ ] Minimize idle resource use and suspend inactive capabilities
-- [ ] Harden permissions, display changes, sleep and wake, lock screen, full-screen apps, and media-source switching
+- [ ] Recover reliably after sleep, wake, lock, screen saver, and long idle periods
+- [ ] Keep the interface anchored and non-disruptive across full-screen apps, spaces, display changes, docking, and clamshell use
+- [ ] Prevent clipping, menu bar obstruction, focus theft, and incorrect hit areas on notch and non-notch displays
+- [ ] Ensure system feedback never blocks, changes, or misroutes native volume, brightness, backlight, microphone, or media controls
+- [ ] Handle external displays, alternate audio devices, AirPods, external keyboards, and third-party display tools without breaking their controls
+- [ ] Keep media information, progress, artwork, source switching, and source-specific actions accurate
+- [ ] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
+- [ ] Keep calendar dates, reminders, scrolling, long content, and camera recovery correct
+- [ ] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
+- [ ] Minimize idle CPU use, memory, wakeups, and battery impact
+- [ ] Make installation, updates, permission recovery, and uninstallation dependable
 - [ ] Validate the experience across supported hardware, display arrangements, and accessibility settings
 - [ ] Run a focused preview program and resolve release-blocking feedback
 
 ## 5. Deepen the flagship activities
 
-- [ ] Expand music with richer playback context and controls
+- [ ] Expand music with reliable generic playback, richer context, queues, lyrics, and capability-aware controls
 - [ ] Add a first-class notification experience with useful grouping and actions where macOS permits
-- [ ] Expand system activities to cover the most valuable device, connectivity, focus, and progress events
-- [ ] Add timers, meeting countdowns, and richer calendar context
+- [ ] Add Bluetooth and headphone connection, battery, and device-status activities
+- [ ] Add dependable download and progress activities
+- [ ] Add timers, meeting actions and countdowns, and richer calendar context
 - [ ] Let users control which activities appear and how they are prioritized
 
 ## 6. Turn the drop experience into a workflow tool
 
 - [ ] Make drag-and-drop a fast, dependable top-of-screen interaction
-- [ ] Add a focused set of high-value sharing and file actions
-- [ ] Support workflows appropriate to common file types
+- [ ] Support selection, clearing, keyboard actions, and other essential shelf management
+- [ ] Make AirDrop, system sharing, and moving content between apps dependable
+- [ ] Provide a focused set of file actions, including preview, compression, image conversion, and background removal
 - [ ] Make available actions discoverable without crowding the primary experience
 - [ ] Validate which workflows deserve to remain built in and which belong in extensions
 
@@ -70,7 +79,8 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [ ] Define the boundaries and safety model for third-party activities and actions
 - [ ] Provide a stable way for extensions to supply compact and expanded experiences
 - [ ] Let extensions participate in activity priority and lifecycle rules
-- [ ] Publish developer documentation and example extensions
+- [ ] Publish developer documentation and a small set of example extensions
+- [ ] Use extensions for specialized music services, productivity tools, developer activities, weather, and other non-core integrations
 - [ ] Create a trustworthy discovery and distribution path for community extensions
 
 ## 8. Prepare for sustainable public growth
@@ -84,7 +94,6 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 
 ## Later, if validated
 
-- [ ] Weather
 - [ ] App switching
 - [ ] Transcription and other media utilities
 - [ ] Cloud-backed sharing or sync
