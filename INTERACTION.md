@@ -55,6 +55,74 @@ These are what make the progression consistent. A change that breaks one of them
 
 **Expansion is not focus.** Reaching expanded must not activate the app, take key window, or interrupt what the user is typing into.
 
+## Input
+
+Which inputs a state accepts follows from the state, not from what happens to be on screen:
+
+| State | Accepts |
+|---|---|
+| Idle | Nothing but the inputs that reach expanded |
+| Contextual | Nothing at all |
+| Persistent | Only the inputs that reach expanded |
+| Expanded | Everything |
+
+Three rules cut across all six input kinds:
+
+- **No pointer-only affordance.** Everything reachable with the mouse in expanded state is reachable with the keyboard.
+- **One input, one meaning.** A gesture, click, or key does the same thing in every state and every activity. An activity does not get to redefine one.
+- **Input never steals context.** FlowDock does not become the key window, does not activate the app, and does not take keystrokes the user meant for something else.
+
+### Hover
+
+- Hover expands only through the dwell described under [Transitions](#transitions). Pointer transit across the anchor must produce nothing but a highlight.
+- Hover **never commits an action** and never changes system state — no playback change, no volume change, no send.
+- Inside expanded state, hover only highlights: a fill tier step per [DESIGN.md](DESIGN.md), never a size or position change.
+- The hover region is the visible surface, plus `extendHoverArea` when enabled. FlowDock never listens for hover outside the shape it draws.
+- Reaching the menu bar must never require avoiding FlowDock.
+
+### Click
+
+- **Primary click on an anchored state expands.** It never operates the underlying activity — clicking the music chin opens the panel, it does not pause playback. A one-click surface with two possible meanings is how a user learns to distrust it.
+- Primary click in expanded state hits the control under the pointer. Clicking empty panel space does nothing; it does not dismiss.
+- **Secondary click opens the same context menu in every state**, including idle. That menu is the guaranteed route to Settings.
+- A click on FlowDock never passes through to the window beneath it.
+- Double-click and click-and-hold are unassigned and stay that way until something needs them.
+
+### Keyboard
+
+- **Global shortcuts are user-remappable** and defined in `FlowDock/Shortcuts/ShortcutConstants.swift`. Toggling expanded state (⇧⌘I) is the keyboard equivalent of hover and click, and must always exist.
+- Inside expanded state: `Tab` / `⇧Tab` move through primary actions in visual order, `Space` and `Return` activate, arrow keys move within a collection, `Escape` dismisses.
+- Focus is borrowed, not taken. Opening by shortcut gives the panel focus; dismissing returns focus to where it was. A state the *system* promoted never takes focus.
+- **`Option` is the only modifier that changes meaning**, and it always means "the alternate action" (as in `optionKeyAction`). No other modifier alters a FlowDock input.
+
+### Gesture
+
+- Direction follows geometry: **two-finger pan down expands, pan up dismisses.** Down grows, up collapses, in every state.
+- Gestures track the pointer continuously and are cancellable — releasing before `gestureSensitivity` returns to the starting state with no action taken.
+- Horizontal pan on the anchor is reserved for moving between activities and stays unassigned until the activity priority item defines it.
+- Scrolling inside expanded content is not a gesture and never collapses the panel.
+- No gesture is the only route to anything.
+
+### Drag
+
+- **Dragging valid content over the anchor expands immediately** — no dwell. Unlike a hovering pointer, a drag carrying content is unambiguous.
+- The drop target is the entire panel, never a small zone inside it.
+- Dragging content out is a copy by default (`copyOnDrag`); nothing FlowDock does removes the user's original.
+- A drag that ends anywhere — accepted, rejected, or abandoned — returns FlowDock to the highest true state within the settle interval. No drag can leave the panel stuck open or an item half-added.
+
+### Dismissal
+
+- Four routes, all available whenever the panel is open: **pointer leaves, `Escape`, pan up, or the toggle shortcut.**
+- Dismissal is never destructive. Nothing is discarded, no shelf item is removed, no playback is changed.
+- It is blocked only by a live child interaction FlowDock does not own — an open share sheet or system popover — and released the instant that closes.
+- Expanded state has no timeout. A panel the user opened closes when the user is done with it.
+
+### Feedback
+
+- Any accepted input shows a visible result within 100 ms ([QUALITY.md](QUALITY.md)).
+- An input that is unavailable does nothing — no alert, no beep, no shake.
+- Haptics fire on state changes only, never per control, and only when `enableHaptics` is on.
+
 ## Anchoring
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
@@ -103,10 +171,15 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 - The battery notification renders at 640 pt while `closed`, which breaks invariant 1.
 - `close()` already re-derives what to show underneath, which is invariant 4 by accident. It becomes explicit.
 - Escape does not dismiss the panel today. It must.
+- Nothing in the panel is focusable and there is no tab order; the keyboard reaches FlowDock only through global shortcuts.
+- The context menu is attached to the notch layout, so it is unavailable wherever that layout is not hit-testable.
+- Shelf items handle secondary click in an `NSView` subclass, separate from the SwiftUI context menu — two menus, one input.
+- Haptics fire the moment the pointer enters the closed notch, before hover intent, so transit is rewarded like an action.
+- The `toggleSneakPeek` shortcut lets a user summon contextual state, which by definition is system-caused. It becomes a persistent or expanded surface instead.
 - Contextual state is gated behind `hudReplacement` for non-media types; that is a permissions concern, not a state concern, and does not change the ladder.
 
 ## Deferred
 
 - Which activity owns the chin when several are eligible, how they queue, and whether any may coexist — the activity priority roadmap item.
-- Transition anchoring and motion detail — the motion roadmap item.
-- Keyboard and gesture coverage beyond the transitions above — the interaction consistency roadmap item.
+- Reduce Motion, VoiceOver order, and full-keyboard-access detail — the accessibility roadmap item.
+- Behavior specific to non-notch and multi-display arrangements — the display coherence roadmap item.
