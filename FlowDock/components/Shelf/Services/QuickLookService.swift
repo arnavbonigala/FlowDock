@@ -45,6 +45,12 @@ final class QuickLookService: ObservableObject {
         }
         previewPanel = panel
         NotificationCenter.default.addObserver(self, selector: #selector(previewPanelWillClose(_:)), name: NSWindow.willCloseNotification, object: panel)
+        let source = QuickLookDataSource(urls: accessingURLs)
+        dataSource = source
+        panel?.dataSource = source
+        panel?.delegate = source
+        panel?.reloadData()
+        panel?.makeKeyAndOrderFront(nil)
     }
 
     func hide() {
@@ -100,20 +106,6 @@ extension QuickLookService {
     }
 }
 
-struct QuickLookPresenter: ViewModifier {
-    @ObservedObject var service: QuickLookService
-
-    func body(content: Content) -> some View {
-        content
-            .quickLookPreview($service.selectedURL, in: service.urls)
-    }
-}
-
-extension View {
-    func quickLookPresenter(using service: QuickLookService) -> some View {
-        self.modifier(QuickLookPresenter(service: service))
-    }
-}
 
 
 final class QuickLookDataSource: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {

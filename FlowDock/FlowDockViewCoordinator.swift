@@ -38,7 +38,6 @@ struct ExpandedItem {
 class FlowDockViewCoordinator: ObservableObject {
     static let shared = FlowDockViewCoordinator()
 
-    @Published var currentView: NotchViews = .home
     @Published var helloAnimationRunning: Bool = false
     private var sneakPeekDispatch: DispatchWorkItem?
     private var expandingViewDispatch: DispatchWorkItem?
@@ -48,25 +47,6 @@ class FlowDockViewCoordinator: ObservableObject {
     @AppStorage("showWhatsNew") var showWhatsNew: Bool = true
     @AppStorage("musicLiveActivityEnabled") var musicLiveActivityEnabled: Bool = true
 
-    @AppStorage("alwaysShowTabs") var alwaysShowTabs: Bool = true {
-        didSet {
-            if !alwaysShowTabs {
-                openLastTabByDefault = false
-                if ShelfStateViewModel.shared.isEmpty || !Defaults[.openShelfByDefault] {
-                    currentView = .home
-                }
-            }
-        }
-    }
-
-    @AppStorage("openLastTabByDefault") var openLastTabByDefault: Bool = false {
-        didSet {
-            if openLastTabByDefault {
-                alwaysShowTabs = true
-            }
-        }
-    }
-    
     @Default(.hudReplacement) var hudReplacement: Bool
     
     // Legacy storage for migration
@@ -233,9 +213,5 @@ class FlowDockViewCoordinator: ObservableObject {
                 expandingViewTask?.cancel()
             }
         }
-    }
-    
-    func showEmpty() {
-        currentView = .home
     }
 }

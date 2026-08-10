@@ -286,7 +286,7 @@ Current values, in one place so they stay consistent:
 | Contextual dwell | 1.5 s | `sneakPeekDuration` |
 | Hover intent | 0.3 s, configurable | `minimumHoverDuration` |
 | Close grace after pointer exit | 100 ms | `ContentView.handleHover` |
-| Drop settle before collapse | 500 ms | `ContentView` drop debounce |
+| Drop settle before collapse | 500 ms | `ExperienceView.settle()` |
 | Expand animation | spring, response 0.42, damping 0.8 | `ContentView` |
 | Collapse animation | spring, response 0.45, damping 1.0 | `ContentView` |
 
@@ -305,7 +305,6 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 - Escape dismisses in the new shell, but not in the inherited layout, which has no dismissal key at all.
 - Nothing in the panel is focusable and there is no tab order; the keyboard reaches FlowDock only through global shortcuts.
 - The context menu is attached to the notch layout, so it is unavailable wherever that layout is not hit-testable.
-- Shelf items handle secondary click in an `NSView` subclass, separate from the SwiftUI context menu — two menus, one input.
 - Haptics fire the moment the pointer enters the closed notch, before hover intent, so transit is rewarded like an action.
 - The `toggleSneakPeek` shortcut lets a user summon contextual state, which by definition is system-caused. It becomes a persistent or expanded surface instead.
 - Contextual state is gated behind `hudReplacement` for non-media types; that is a permissions concern, not a state concern, and does not change the ladder.

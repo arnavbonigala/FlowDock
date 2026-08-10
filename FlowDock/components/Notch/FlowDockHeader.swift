@@ -11,20 +11,11 @@ import SwiftUI
 struct FlowDockHeader: View {
     @EnvironmentObject var vm: FlowDockViewModel
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
-    @StateObject var tvm = ShelfStateViewModel.shared
     var body: some View {
         HStack(spacing: 0) {
-            HStack {
-                if (!tvm.isEmpty || coordinator.alwaysShowTabs) && Defaults[.shelfEnabled] {
-                    TabSelectionView()
-                } else if vm.notchState == .open {
-                    EmptyView()
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .opacity(vm.notchState == .closed ? 0 : 1)
-            .blur(radius: vm.notchState == .closed ? 20 : 0)
-            .zIndex(2)
+            Spacer(minLength: 0)
+                .frame(maxWidth: .infinity)
+                .zIndex(2)
 
             if vm.notchState == .open {
                 Rectangle()

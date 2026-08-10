@@ -35,11 +35,13 @@ struct ExperienceView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var hoverTask: Task<Void, Never>?
+    @State private var settleTask: Task<Void, Never>?
     @State private var isDropTargeted = false
     @State private var isOverAgenda = false
 
     @ObservedObject private var calendar = CalendarManager.shared
     @Default(.showCalendar) private var showCalendar
+    @Default(.shelfEnabled) private var shelfEnabled
 
     static let contextColumn: CGFloat = 215
 
@@ -129,11 +131,23 @@ struct ExperienceView: View {
                     guard !isOverAgenda else { return }
                     if translation > Defaults[.gestureSensitivity] { collapse() }
                 }
-                .onDrop(of: [.fileURL, .url, .plainText], isTargeted: $isDropTargeted) { _ in
-                    false
+                .onDrop(
+                    of: [.fileURL, .url, .utf8PlainText, .plainText, .data],
+                    isTargeted: $isDropTargeted
+                ) { providers in
+                    guard shelfEnabled else { return false }
+                    ShelfStateViewModel.shared.load(providers)
+                    settle()
+                    return true
                 }
                 .onChange(of: isDropTargeted) { _, targeted in
-                    if targeted { expand() }
+                    guard shelfEnabled else { return }
+                    if targeted {
+                        settleTask?.cancel()
+                        expand()
+                    } else {
+                        settle()
+                    }
                 }
                 .contextMenu {
                     Button("Settings") { SettingsWindowController.shared.showWindow() }
@@ -147,6 +161,7 @@ struct ExperienceView: View {
         .preferredColorScheme(.dark)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
         .powerActivity(in: store)
+        .shelfActivity(in: store, receiving: isDropTargeted)
     }
 
     // MARK: - Surfaces
@@ -198,11 +213,15 @@ struct ExperienceView: View {
             .frame(height: max(24, vm.effectiveClosedNotchHeight))
 
             HStack(alignment: .top, spacing: spacing) {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
                     MusicPanel()
 
                     ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
                         activity.expanded?()
+                    }
+
+                    if shelfEnabled {
+                        ShelfPanel(targeted: isDropTargeted)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -233,6 +252,8 @@ struct ExperienceView: View {
             return
         }
 
+        settleTask?.cancel()
+
         guard !store.isExpanded, store.state != .contextual, Defaults[.openNotchOnHover] else { return }
 
         hoverTask = Task { @MainActor in
@@ -253,9 +274,30 @@ struct ExperienceView: View {
 
     private func collapse() {
         guard store.isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
+        settleTask?.cancel()
         isOverAgenda = false
         store.isExpanded = false
         vm.close()
+    }
+
+    private func settle() {
+        settleTask?.cancel()
+        settleTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled, !panelHoldsPointer else { return }
+            collapse()
+        }
+    }
+
+    private var panelHoldsPointer: Bool {
+        guard let frame = screen?.frame else { return false }
+        let panel = CGRect(
+            x: frame.midX - openNotchSize.width / 2,
+            y: frame.maxY - openNotchSize.height,
+            width: openNotchSize.width,
+            height: openNotchSize.height
+        )
+        return panel.contains(NSEvent.mouseLocation)
     }
 }
 
