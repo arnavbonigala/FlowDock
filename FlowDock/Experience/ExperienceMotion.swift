@@ -10,7 +10,7 @@ import SwiftUI
 extension AnyTransition {
     /// The notch is above every surface FlowDock draws, so scaling toward the top edge
     /// makes content read as growing out of the cutout rather than fading in place.
-    static let fromNotch: AnyTransition = .scale(scale: 0.9, anchor: .top).combined(with: .opacity)
+    static let fromNotch: AnyTransition = .scale(scale: 0.9, anchor: .top)
 
     /// Reduce Motion keeps the duration and drops the movement.
     static func fromNotch(reduceMotion: Bool) -> AnyTransition {

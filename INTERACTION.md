@@ -92,7 +92,7 @@ Three rules cut across all six input kinds:
 
 - **Global shortcuts are user-remappable** and defined in `FlowDock/Shortcuts/ShortcutConstants.swift`. Toggling expanded state (⇧⌘I) is the keyboard equivalent of hover and click, and must always exist.
 - Inside expanded state: `Tab` / `⇧Tab` move through primary actions in visual order, `Space` and `Return` activate, arrow keys move within a collection, `Escape` dismisses.
-- Focus is borrowed, not taken. Opening by shortcut gives the panel focus; dismissing returns focus to where it was. A state the *system* promoted never takes focus.
+- Focus is never taken. The panel is a non-activating window and cannot become key, so it does not steal the frontmost app's focus to be dismissible: `Escape` is registered as a shortcut that exists only while the panel is open, and is released the moment it closes.
 - **`Option` is the only modifier that changes meaning**, and it always means "the alternate action" (as in `optionKeyAction`). No other modifier alters a FlowDock input.
 
 ### Gesture
@@ -218,7 +218,7 @@ Every display's interactive region matches what that display is currently drawin
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
 
-- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge combined with opacity, `AnyTransition.scale(scale: 0.9, anchor: .top).combined(with: .opacity)` — declared in `FlowDock/Experience/ExperienceMotion.swift`. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
+- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge, `AnyTransition.scale(scale: 0.9, anchor: .top)` — declared in `FlowDock/Experience/ExperienceMotion.swift`. Nothing fades: opacity is not part of it. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
 - **Call sites choose timing, never the anchor.** Attaching `.animation(…)` where a surface needs its own pacing is fine. Redefining the scale or the anchor is not.
 - **Scale and offset anchor to `.top`** wherever they animate, including gesture tracking.
 - **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` — album artwork and the spectrum already do — instead of one copy fading out while another fades in.
@@ -302,7 +302,7 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 - The music live activity is persistent state, expressed as a special case inside the closed layout rather than as a state.
 - The battery notification renders at 640 pt while `closed`, which breaks invariant 1.
 - `close()` already re-derives what to show underneath, which is invariant 4 by accident. It becomes explicit.
-- Escape does not dismiss the panel today. It must.
+- Escape dismisses in the new shell, but not in the inherited layout, which has no dismissal key at all.
 - Nothing in the panel is focusable and there is no tab order; the keyboard reaches FlowDock only through global shortcuts.
 - The context menu is attached to the notch layout, so it is unavailable wherever that layout is not hit-testable.
 - Shelf items handle secondary click in an `NSView` subclass, separate from the SwiftUI context menu — two menus, one input.

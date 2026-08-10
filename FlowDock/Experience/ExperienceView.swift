@@ -8,6 +8,7 @@
 //
 
 import Defaults
+import KeyboardShortcuts
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -47,19 +48,17 @@ struct ExperienceView: View {
         let state = store.state
 
         VStack(spacing: 0) {
-            // The surface itself grows and shrinks — a shape change, never a fade. Only the
-            // content inside it transitions.
-            content(for: state)
+            ZStack(alignment: .top) {
+                Color.black
+                content(for: state)
+            }
                 .frame(
-                    width: state == .expanded ? openNotchSize.width : nil,
+                    width: state == .expanded ? openNotchSize.width : anchor.width,
                     height: state == .expanded ? openNotchSize.height : vm.effectiveClosedNotchHeight,
                     alignment: .top
                 )
-                .background(.black)
                 .clipShape(
                     NotchShape(
-                        // No cutout to imitate on a non-notch display: the surface hangs
-                        // from the screen edge instead.
                         topCornerRadius: displayHasNotch
                             ? (state == .expanded ? cornerRadiusInsets.opened.top : cornerRadiusInsets.closed.top)
                             : 0,
@@ -69,6 +68,19 @@ struct ExperienceView: View {
                     )
                 )
                 .contentShape(Rectangle())
+                .task {
+                    KeyboardShortcuts.disable(.dismissExpanded)
+                    KeyboardShortcuts.onKeyDown(for: .dismissExpanded) { collapse() }
+                }
+                .onChange(of: store.isExpanded) { _, expanded in
+                    // The panel cannot take key focus, so Escape is a hotkey that exists
+                    // only while there is something to dismiss.
+                    if expanded {
+                        KeyboardShortcuts.enable(.dismissExpanded)
+                    } else {
+                        KeyboardShortcuts.disable(.dismissExpanded)
+                    }
+                }
                 .onHover(perform: hover)
                 .onTapGesture { expand() }
                 .panGesture(direction: .down) { translation, _ in
@@ -78,18 +90,10 @@ struct ExperienceView: View {
                     if translation > Defaults[.gestureSensitivity] { collapse() }
                 }
                 .onDrop(of: [.fileURL, .url, .plainText], isTargeted: $isDropTargeted) { _ in
-                    // ponytail: the shell only opens for a drag. The shelf takes delivery
-                    // in section 3, which is also when this starts returning true.
                     false
                 }
                 .onChange(of: isDropTargeted) { _, targeted in
-                    // A drag carrying content is unambiguous, so it skips the hover dwell.
                     if targeted { expand() }
-                }
-                .focusable(state == .expanded)
-                .onKeyPress(.escape) {
-                    collapse()
-                    return .handled
                 }
                 .contextMenu {
                     Button("Settings") { SettingsWindowController.shared.showWindow() }
@@ -110,12 +114,10 @@ struct ExperienceView: View {
         switch state {
         case .idle:
             Color.clear
-                .frame(width: anchor.width)
                 .accessibilityHidden(true)
 
         case .contextual, .persistent:
             chin
-                // One element, one label. The chin is not a container to navigate into.
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(store.owner?.label ?? "")
                 .transition(.fromNotch(reduceMotion: reduceMotion))
@@ -126,7 +128,6 @@ struct ExperienceView: View {
         }
     }
 
-    /// Leading identity, the cutout, trailing indicator. One element per side.
     private var chin: some View {
         HStack(spacing: 0) {
             store.owner?.leading()
@@ -138,7 +139,6 @@ struct ExperienceView: View {
 
     private var expandedPanel: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Contextual feedback belongs in the header, where it displaces nothing.
             if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
                 HStack(spacing: 4) {
                     contextual.leading()
@@ -149,7 +149,6 @@ struct ExperienceView: View {
                 .accessibilityLabel(contextual.label)
             }
 
-            // Every live persistent activity is listed, highest band first.
             ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
                 activity.expanded?()
             }
@@ -173,7 +172,6 @@ struct ExperienceView: View {
             return
         }
 
-        // A HUD must never become a panel because the pointer happened to be there.
         guard !store.isExpanded, store.state != .contextual, Defaults[.openNotchOnHover] else { return }
 
         hoverTask = Task { @MainActor in
@@ -185,12 +183,12 @@ struct ExperienceView: View {
 
     private func expand() {
         guard !store.isExpanded else { return }
-        withAnimation(.experience(reduceMotion: reduceMotion)) { store.isExpanded = true }
+        store.isExpanded = true
     }
 
     private func collapse() {
         guard store.isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
-        withAnimation(.experience(reduceMotion: reduceMotion, collapsing: true)) { store.isExpanded = false }
+        store.isExpanded = false
     }
 }
 
