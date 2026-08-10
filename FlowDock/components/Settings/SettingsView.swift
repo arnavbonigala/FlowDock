@@ -5,7 +5,6 @@
 //  Created by Richard Kunkli on 07/08/2024.
 //
 
-import AVFoundation
 import Defaults
 import EventKit
 import KeyboardShortcuts
@@ -135,7 +134,6 @@ struct GeneralSettings: View {
     @EnvironmentObject var vm: FlowDockViewModel
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
 
-    @Default(.mirrorShape) var mirrorShape
     @Default(.showEmojis) var showEmojis
     @Default(.gestureSensitivity) var gestureSensitivity
     @Default(.minimumHoverDuration) var minimumHoverDuration
@@ -1094,7 +1092,6 @@ struct Shelf: View {
 
 struct Appearance: View {
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
-    @Default(.mirrorShape) var mirrorShape
     @Default(.sliderColor) var sliderColor
     @Default(.useMusicVisualizer) var useMusicVisualizer
     @Default(.customVisualizers) var customVisualizers
@@ -1309,37 +1306,9 @@ struct Appearance: View {
                     }
                 }
             }
-
-            Section {
-                Defaults.Toggle(key: .showMirror) {
-                    Text("Enable mirror")
-                }
-                    .disabled(!checkVideoInput())
-                Picker("Mirror shape", selection: $mirrorShape) {
-                    Text("Circle")
-                        .tag(MirrorShapeEnum.circle)
-                    Text("Square")
-                        .tag(MirrorShapeEnum.rectangle)
-                }
-                Defaults.Toggle(key: .showNotHumanFace) {
-                    Text("Show cool face animation while inactive")
-                }
-            } header: {
-                HStack {
-                    Text("Additional features")
-                }
-            }
         }
         .accentColor(.effectiveAccent)
         .navigationTitle("Appearance")
-    }
-
-    func checkVideoInput() -> Bool {
-        if AVCaptureDevice.default(for: .video) != nil {
-            return true
-        }
-
-        return false
     }
 }
 

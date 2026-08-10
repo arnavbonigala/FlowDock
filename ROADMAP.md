@@ -46,7 +46,7 @@ Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the 
 - [x] Migrate battery and charging activities
 - [x] Migrate calendar and reminders
 - [x] Migrate the existing file shelf, sharing, preview, and file actions into the FlowDock drop experience
-- [ ] Reassess the camera mirror and other inherited secondary features against the product direction
+- [x] Reassess the camera mirror and other inherited secondary features against the product direction
 - [ ] Replace the inherited onboarding, settings, menu bar, and update experiences
 - [ ] Remove or retire inherited product elements that do not fit FlowDock
 
@@ -59,7 +59,7 @@ Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the 
 - [ ] Handle external displays, alternate audio devices, AirPods, external keyboards, and third-party display tools without breaking their controls
 - [ ] Keep media information, progress, artwork, source switching, and source-specific actions accurate
 - [ ] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
-- [ ] Keep calendar dates, reminders, scrolling, long content, and camera recovery correct
+- [ ] Keep calendar dates, reminders, scrolling, and long content correct
 - [ ] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
 - [ ] Minimize idle CPU use, memory, wakeups, and battery impact
 - [ ] Make installation, updates, permission recovery, and uninstallation dependable

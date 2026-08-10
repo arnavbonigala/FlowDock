@@ -6,7 +6,6 @@
 //  Modified by Richard Kunkli on 24/08/2024.
 //
 
-import AVFoundation
 import Combine
 import Defaults
 import KeyboardShortcuts
@@ -16,20 +15,14 @@ import SwiftUIIntrospect
 @MainActor
 struct ContentView: View {
     @EnvironmentObject var vm: FlowDockViewModel
-    @ObservedObject var webcamManager = WebcamManager.shared
 
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
-    @ObservedObject var musicManager = MusicManager.shared
-    @ObservedObject var brightnessManager = BrightnessManager.shared
-    @ObservedObject var volumeManager = VolumeManager.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
 
     @State private var gestureProgress: CGFloat = .zero
 
     @State private var haptics: Bool = false
-
-    @Default(.showNotHumanFace) var showNotHumanFace
 
     // Shared interactive spring for movement/resizing to avoid conflicting animations
     private let animationSpring = Animation.interactiveSpring(response: 0.38, dampingFraction: 0.8, blendDuration: 0)
@@ -50,19 +43,6 @@ struct ContentView: View {
                 ? cornerRadiusInsets.opened.bottom
                 : cornerRadiusInsets.closed.bottom
         )
-    }
-
-    private var computedChinWidth: CGFloat {
-        var chinWidth: CGFloat = vm.closedNotchSize.width
-
-        if !coordinator.expandingView.show && vm.notchState == .closed
-            && (!musicManager.isPlaying && musicManager.isPlayerIdle) && Defaults[.showNotHumanFace]
-            && !vm.hideOnClosed
-        {
-            chinWidth += (2 * max(0, vm.effectiveClosedNotchHeight - 12) + 20)
-        }
-
-        return chinWidth
     }
 
     var body: some View {
@@ -169,7 +149,7 @@ struct ContentView: View {
                 if vm.chinHeight > 0 {
                     Rectangle()
                         .fill(Color.black.opacity(0.01))
-                        .frame(width: computedChinWidth, height: vm.chinHeight)
+                        .frame(width: vm.closedNotchSize.width, height: vm.chinHeight)
                 }
             }
         }
@@ -189,64 +169,24 @@ struct ContentView: View {
     @ViewBuilder
     func NotchLayout() -> some View {
         VStack(alignment: .leading) {
-            VStack(alignment: .leading) {
-                if coordinator.helloAnimationRunning {
-                    Spacer()
-                    HelloAnimation(onFinish: {
-                        vm.closeHello()
-                    }).frame(
-                        width: getClosedNotchSize().width,
-                        height: 80
-                    )
-                    .padding(.top, 40)
-                    Spacer()
-                } else {
-                    if !coordinator.expandingView.show && vm.notchState == .closed && (!musicManager.isPlaying && musicManager.isPlayerIdle) && Defaults[.showNotHumanFace] && !vm.hideOnClosed  {
-                          FlowDockFaceAnimation()
-                       } else if vm.notchState == .open {
-                           FlowDockHeader()
-                               .frame(height: max(24, vm.effectiveClosedNotchHeight))
-                               .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
-                       } else {
-                           Rectangle().fill(.clear).frame(width: vm.closedNotchSize.width - 20, height: vm.effectiveClosedNotchHeight)
-                       }
-
-                  }
-              }
-              .zIndex(2)
-            if vm.notchState == .open {
-                NotchHomeView()
-                .transition(
-                    .scale(scale: 0.8, anchor: .top)
-                    .combined(with: .opacity)
-                    .animation(.smooth(duration: 0.35))
+            if coordinator.helloAnimationRunning {
+                Spacer()
+                HelloAnimation(onFinish: {
+                    vm.closeHello()
+                }).frame(
+                    width: getClosedNotchSize().width,
+                    height: 80
                 )
-                .zIndex(1)
-                .allowsHitTesting(vm.notchState == .open)
-                .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
+                .padding(.top, 40)
+                Spacer()
+            } else if vm.notchState == .open {
+                FlowDockHeader()
+                    .frame(height: max(24, vm.effectiveClosedNotchHeight))
+                    .opacity(gestureProgress != 0 ? 1.0 - min(abs(gestureProgress) * 0.1, 0.3) : 1.0)
+            } else {
+                Rectangle().fill(.clear).frame(width: vm.closedNotchSize.width - 20, height: vm.effectiveClosedNotchHeight)
             }
         }
-    }
-
-    @ViewBuilder
-    func FlowDockFaceAnimation() -> some View {
-        HStack {
-            HStack {
-                Rectangle()
-                    .fill(.clear)
-                    .frame(
-                        width: max(0, vm.effectiveClosedNotchHeight - 12),
-                        height: max(0, vm.effectiveClosedNotchHeight - 12)
-                    )
-                Rectangle()
-                    .fill(.black)
-                    .frame(width: vm.closedNotchSize.width - 20)
-                MinimalFaceFeatures()
-            }
-        }.frame(
-            height: vm.effectiveClosedNotchHeight,
-            alignment: .center
-        )
     }
 
     private func doOpen() {
