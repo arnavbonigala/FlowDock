@@ -173,12 +173,9 @@ Ties inside a band go to the activity that started most recently. New activities
 
 ### Current implementation
 
-- Priority is an `if / else if` chain inside `NotchLayout`, so its order is a rendering side effect and adding an activity means editing a branch.
-- The standard sneak peek renders *below* the music activity in the same stack rather than taking the chin — the one case of stacking that the rules forbid.
-- Two expiration mechanisms exist for one class: `sneakPeek` at 1.5 s and `expandingView` at 2 s for downloads, 3 s for battery.
-- Downloads and battery share `expandingView` despite being progress and a state change, in different bands.
-- The face animation is band 6 decoration occupying persistent state whenever media is idle.
-- No activity publishes completion. Media is inferred from `isPlayerIdle`, which is why a quit player can leave the chin populated.
+- Priority is a band on `Activity`, so adding an activity declares a rank instead of editing a rendering branch, and `Activity.owner(of:)` resolves the chin from that alone.
+- One expiration mechanism serves the whole contextual class: `ActivityStore.contextualDwell`.
+- Media completion is still inferred from `isPlayerIdle` rather than published by the activity, which is why a quit player can leave the chin populated.
 
 ## Displays
 
@@ -218,23 +215,12 @@ Every display's interactive region matches what that display is currently drawin
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
 
-- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge, `AnyTransition.scale(scale: 0.9, anchor: .top)` — declared in `FlowDock/Experience/ExperienceMotion.swift`. Nothing fades: opacity is not part of it. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
+- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge, `AnyTransition.scale(scale: 0.9, anchor: .top)` — declared in `FlowDock/animations/ExperienceMotion.swift`. Nothing fades: opacity is not part of it. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
 - **Call sites choose timing, never the anchor.** Attaching `.animation(…)` where a surface needs its own pacing is fine. Redefining the scale or the anchor is not.
 - **Scale and offset anchor to `.top`** wherever they animate, including gesture tracking.
 - **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` — album artwork and the spectrum already do — instead of one copy fading out while another fades in.
 - **Growth is a shape change.** The panel's top edge and horizontal center are fixed by construction (`windowSize` with `.top` alignment); animate width and height, never position.
 - Reduce Motion is honored inside the shared transition itself, so there is one place to change. See [Accessibility](#accessibility).
-
-Every transition in the inherited interface is unanchored and is replaced when its surface is rebuilt in roadmap section 3:
-
-| Site | Today |
-|---|---|
-| `ContentView` inline HUD | `.opacity` |
-| `ContentView` panel content | `.scale(0.8, anchor: .top)` — anchored, but its own value |
-| `FlowDockHeader` open-notch HUD | `.scale(0.8)`, center anchor |
-| `NotchHomeView` app icon, volume slider | `.scale`, center anchor |
-| `NotchHomeView` lyrics, home content | `.opacity`, `.move(edge: .top)`, asymmetric removal |
-| `EmptyState` | `.blurReplace` |
 
 ## Accessibility
 
@@ -283,28 +269,23 @@ Current values, in one place so they stay consistent:
 
 | Interval | Value | Source |
 |---|---|---|
-| Contextual dwell | 1.5 s | `sneakPeekDuration` |
+| Contextual dwell | 1.5 s | `ActivityStore.contextualDwell` |
 | Hover intent | 0.3 s, configurable | `minimumHoverDuration` |
-| Close grace after pointer exit | 100 ms | `ContentView.handleHover` |
+| Close grace after pointer exit | 100 ms | `ExperienceView.hover(_:)` |
 | Drop settle before collapse | 500 ms | `ExperienceView.settle()` |
-| Expand animation | spring, response 0.42, damping 0.8 | `ContentView` |
-| Collapse animation | spring, response 0.45, damping 1.0 | `ContentView` |
+| Expand animation | spring, response 0.42, damping 0.8 | `Animation.experience(reduceMotion:collapsing:)` |
+| Collapse animation | spring, response 0.45, damping 1.0 | `Animation.experience(reduceMotion:collapsing:)` |
 
 Every duration a user waits on is one of these. New timeouts are not invented per activity; an activity that needs different pacing changes state, not the clock.
 
 ## Current implementation
 
-Today's code implements two of the four states, plus two ad-hoc timed mechanisms that together approximate the other two:
+The shell implements the four-state ladder: `ActivityStore.state` derives idle, contextual, and persistent from which activity owns the chin, and `isExpanded` is the fourth. `NotchState` survives only as the one notion of "open" that surfaces outside the shell — the system feedback pill — position themselves against.
 
-- `NotchState` has `closed` and `open`. It becomes the four-case ladder when the first surface is rebuilt; `closed` splits into idle, contextual, and persistent.
-- `sneakPeek` is contextual state, with its own 1.5 s timer.
-- `expandingView` is also contextual state, with a separate 2 s / 3 s timer, a separate struct, and a separate code path. The two are one concept and collapse into one.
-- The music live activity is persistent state, expressed as a special case inside the closed layout rather than as a state.
-- The battery notification renders at 640 pt while `closed`, which breaks invariant 1.
-- `close()` already re-derives what to show underneath, which is invariant 4 by accident. It becomes explicit.
-- Escape dismisses in the new shell, but not in the inherited layout, which has no dismissal key at all.
+- `close()` re-derives what to show underneath, which is invariant 4.
+- Escape dismisses; the hotkey is registered only while there is something to dismiss.
 - Nothing in the panel is focusable and there is no tab order; the keyboard reaches FlowDock only through global shortcuts.
-- The context menu is attached to the notch layout, so it is unavailable wherever that layout is not hit-testable.
+- The context menu is attached to the shell surface, so it is unavailable wherever that surface is not hit-testable.
 - Haptics fire the moment the pointer enters the closed notch, before hover intent, so transit is rewarded like an action.
-- The `toggleSneakPeek` shortcut lets a user summon contextual state, which by definition is system-caused. It becomes a persistent or expanded surface instead.
 - Contextual state is gated behind `hudReplacement` for non-media types; that is a permissions concern, not a state concern, and does not change the ladder.
+- Activities are still declared by the display's own view rather than routed from the managers, so an activity that should mirror across displays is created per display.

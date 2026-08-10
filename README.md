@@ -6,7 +6,7 @@ FlowDock began as a fork of [BoringNotch](https://github.com/TheBoredTeam/boring
 
 ## Status
 
-FlowDock is in active development. The inherited feature set is available, but the FlowDock experience and release process are still being established.
+FlowDock is in active development. The FlowDock experience is what the app now runs — music, system feedback, battery, calendar, and the file shelf all live in it — and the inherited interface has been removed. Reliability work and the release process are still being established.
 
 ## Requirements
 

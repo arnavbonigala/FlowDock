@@ -3,7 +3,7 @@
 //  FlowDock
 //
 //  Owns which activity holds the chin, and what state that puts FlowDock in.
-//  Replaces the inherited `sneakPeek` and `expandingView` pair. See INTERACTION.md.
+//  See INTERACTION.md.
 //
 
 import Foundation

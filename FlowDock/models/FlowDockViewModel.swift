@@ -13,10 +13,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     @ObservedObject var detector = FullscreenMediaDetector.shared
 
-    let animationLibrary: FlowDockAnimations = .init()
-    let animation: Animation?
-
-    @Published var contentType: ContentType = .normal
     @Published private(set) var notchState: NotchState = .closed
 
     var cancellables: Set<AnyCancellable> = []
@@ -40,8 +36,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
     }
 
     init(screenUUID: String? = nil) {
-        animation = animationLibrary.animation
-
         super.init()
         
         self.screenUUID = screenUUID
@@ -91,7 +85,7 @@ class FlowDockViewModel: NSObject, ObservableObject {
 
         let screen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) } ?? NSScreen.main
         let menuBarHeight = screen.map { $0.frame.maxY - $0.visibleFrame.maxY } ?? 0
-        return max(effectiveClosedNotchHeight + chinHeight, menuBarHeight)
+        return max(effectiveClosedNotchHeight, menuBarHeight)
     }
 
     // Computed property for effective notch height
@@ -99,25 +93,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
         let currentScreen = screenUUID.flatMap { NSScreen.screen(withUUID: $0) }
         let noNotchAndFullscreen = hideOnClosed && (currentScreen?.safeAreaInsets.top ?? 0 <= 0 || currentScreen == nil)
         return noNotchAndFullscreen ? 0 : closedNotchSize.height
-    }
-
-    var chinHeight: CGFloat {
-        if !Defaults[.hideTitleBar] {
-            return 0
-        }
-
-        guard let currentScreen = screenUUID.flatMap({ NSScreen.screen(withUUID: $0) }) else {
-            return 0
-        }
-
-        if notchState == .open { return 0 }
-
-        let menuBarHeight = currentScreen.frame.maxY - currentScreen.visibleFrame.maxY
-        let currentHeight = effectiveClosedNotchHeight
-
-        if currentHeight == 0 { return 0 }
-
-        return max(0, menuBarHeight - currentHeight)
     }
 
     func isMouseHovering(position: NSPoint = NSEvent.mouseLocation) -> Bool {
@@ -149,16 +124,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
         self.notchSize = getClosedNotchSize(screenUUID: self.screenUUID)
         self.closedNotchSize = self.notchSize
         self.notchState = .closed
-        self.coordinator.sneakPeek.show = false
         self.edgeAutoOpenActive = false
-    }
-
-    func closeHello() {
-        Task { @MainActor in
-            withAnimation(animationLibrary.animation) {
-                coordinator.helloAnimationRunning = false
-                close()
-            }
-        }
     }
 }

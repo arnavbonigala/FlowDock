@@ -12,23 +12,6 @@ import KeyboardShortcuts
 import SwiftUI
 import UniformTypeIdentifiers
 
-extension Defaults.Keys {
-    /// ponytail: debug switch, read once when the window is built. Relaunch to change it.
-    /// Deleted along with `FlowDock/Experience/` when the last capability is ported.
-    static let useNewExperience = Key<Bool>("useNewExperience", default: false)
-}
-
-/// Chooses between the inherited interface and the new shell.
-struct ExperienceRootView: View {
-    var body: some View {
-        if Defaults[.useNewExperience] {
-            ExperienceView()
-        } else {
-            ContentView()
-        }
-    }
-}
-
 struct ExperienceView: View {
     @EnvironmentObject var vm: FlowDockViewModel
     @StateObject private var store = ActivityStore()
@@ -38,6 +21,7 @@ struct ExperienceView: View {
     @State private var settleTask: Task<Void, Never>?
     @State private var isDropTargeted = false
     @State private var isOverAgenda = false
+    @State private var haptics = false
 
     @ObservedObject private var calendar = CalendarManager.shared
     @Default(.showCalendar) private var showCalendar
@@ -108,7 +92,12 @@ struct ExperienceView: View {
                             : cornerRadiusInsets.closed.bottom
                     )
                 )
+                .shadow(
+                    color: Defaults[.enableShadow] && state != .idle ? .black.opacity(0.7) : .clear,
+                    radius: 6
+                )
                 .contentShape(Rectangle())
+                .sensoryFeedback(.alignment, trigger: haptics)
                 .task {
                     KeyboardShortcuts.disable(.dismissExpanded)
                     KeyboardShortcuts.onKeyDown(for: .dismissExpanded) { collapse() }
@@ -124,12 +113,16 @@ struct ExperienceView: View {
                 }
                 .onHover(perform: hover)
                 .onTapGesture { expand() }
-                .panGesture(direction: .down) { translation, _ in
-                    if translation > Defaults[.gestureSensitivity] { expand() }
+                .conditionalModifier(Defaults[.enableGestures]) { view in
+                    view.panGesture(direction: .down) { translation, _ in
+                        if translation > Defaults[.gestureSensitivity] { expand() }
+                    }
                 }
-                .panGesture(direction: .up) { translation, _ in
-                    guard !isOverAgenda else { return }
-                    if translation > Defaults[.gestureSensitivity] { collapse() }
+                .conditionalModifier(Defaults[.enableGestures] && Defaults[.closeGestureEnabled]) { view in
+                    view.panGesture(direction: .up) { translation, _ in
+                        guard !isOverAgenda else { return }
+                        if translation > Defaults[.gestureSensitivity] { collapse() }
+                    }
                 }
                 .onDrop(
                     of: [.fileURL, .url, .utf8PlainText, .plainText, .data],
@@ -253,6 +246,8 @@ struct ExperienceView: View {
         }
 
         settleTask?.cancel()
+
+        if !store.isExpanded, Defaults[.enableHaptics] { haptics.toggle() }
 
         guard !store.isExpanded, store.state != .contextual, Defaults[.openNotchOnHover] else { return }
 

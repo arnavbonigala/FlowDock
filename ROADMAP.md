@@ -37,7 +37,7 @@ The shell is the state store that replaces `sneakPeek` and `expandingView`, the 
 
 The backend is reused, not rewritten or copied: `managers/`, `MediaControllers/`, `Providers/`, `observers/`, `XPCHelperClient/`, and the shelf services already do their jobs and know nothing about the notch.
 
-Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the inherited interface remaining the one users get. Section 3 then ports one capability per change: its activity is added and its inherited view is deleted in the same change, so nothing exists in both. When the last capability lands, `Experience/` is flattened back and the flag is removed.
+Section 2 work landed in `FlowDock/Experience/` behind a debug default while the inherited interface remained the one users got. Section 3 then ported one capability per change: its activity was added and its inherited view deleted in the same change, so nothing existed in both. With the last capability landed, the flag is gone, the inherited shell is deleted, and `Experience/` has been flattened back into `FlowDock/`.
 
 ## 3. Bring existing capabilities into the new experience
 
@@ -48,7 +48,7 @@ Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the 
 - [x] Migrate the existing file shelf, sharing, preview, and file actions into the FlowDock drop experience
 - [x] Reassess the camera mirror and other inherited secondary features against the product direction
 - [x] Replace the inherited onboarding, settings, menu bar, and update experiences
-- [ ] Remove or retire inherited product elements that do not fit FlowDock
+- [x] Remove or retire inherited product elements that do not fit FlowDock
 
 ## 4. Eliminate inherited critical failures
 

@@ -547,12 +547,6 @@ struct AppearanceSettings: View {
                 Defaults.Toggle(key: .enableShadow) {
                     Text("Shadow under the panel")
                 }
-                Defaults.Toggle(key: .cornerRadiusScaling) {
-                    Text("Scale corner radius when expanded")
-                }
-                Defaults.Toggle(key: .hideTitleBar) {
-                    Text("Cover the menu bar behind the panel")
-                }
             } header: {
                 Text("Panel")
             }

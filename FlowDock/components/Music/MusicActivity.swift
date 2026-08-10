@@ -149,13 +149,8 @@ private struct MusicArtwork: View {
 
     @ObservedObject private var music = MusicManager.shared
     @Default(.lightingEffect) private var lightingEffect
-    @Default(.cornerRadiusScaling) private var cornerRadiusScaling
 
-    private var radius: CGFloat {
-        cornerRadiusScaling
-            ? MusicPlayerImageSizes.cornerRadiusInset.opened
-            : MusicPlayerImageSizes.cornerRadiusInset.closed
-    }
+    private var radius: CGFloat { MusicPlayerImageSizes.cornerRadiusInset.opened }
 
     var body: some View {
         Button {

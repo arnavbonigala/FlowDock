@@ -35,7 +35,6 @@ class MusicManager: ObservableObject {
     @Published var isPlaying = false
     @Published var album: String = "Self Love"
     @Published var isPlayerIdle: Bool = true
-    @Published var animations: FlowDockAnimations = .init()
     @Published var avgColor: NSColor = .white
     @Published var bundleIdentifier: String? = nil
     @Published var songDuration: TimeInterval = 0

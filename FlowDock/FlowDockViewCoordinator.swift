@@ -10,41 +10,13 @@ import Combine
 import Defaults
 import SwiftUI
 
-enum SneakContentType {
-    case music
-    case download
-}
-
-struct sneakPeek {
-    var show: Bool = false
-    var type: SneakContentType = .music
-    var value: CGFloat = 0
-    var icon: String = ""
-}
-
-enum BrowserType {
-    case chromium
-    case safari
-}
-
-struct ExpandedItem {
-    var show: Bool = false
-    var type: SneakContentType = .download
-    var value: CGFloat = 0
-    var browser: BrowserType = .chromium
-}
-
 @MainActor
 class FlowDockViewCoordinator: ObservableObject {
     static let shared = FlowDockViewCoordinator()
 
-    @Published var helloAnimationRunning: Bool = false
-    private var sneakPeekDispatch: DispatchWorkItem?
-    private var expandingViewDispatch: DispatchWorkItem?
     private var hudEnableTask: Task<Void, Never>?
 
     @AppStorage("firstLaunch") var firstLaunch: Bool = true
-    @AppStorage("showWhatsNew") var showWhatsNew: Bool = true
     @AppStorage("musicLiveActivityEnabled") var musicLiveActivityEnabled: Bool = true
 
     @Default(.hudReplacement) var hudReplacement: Bool
@@ -125,92 +97,11 @@ class FlowDockViewCoordinator: ObservableObject {
             }
 
         Task { @MainActor in
-            helloAnimationRunning = firstLaunch
-
             // The setting is what the user wants; accessibility is whether we can do it
             // yet. On a first launch the answer is no until onboarding asks, and the
             // authorization observer above starts the tap the moment it changes.
             if Defaults[.hudReplacement] {
                 await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
-            }
-        }
-    }
-    
-    func toggleSneakPeek(
-        status: Bool, type: SneakContentType, duration: TimeInterval = 1.5, value: CGFloat = 0,
-        icon: String = ""
-    ) {
-        sneakPeekDuration = duration
-        Task { @MainActor in
-            withAnimation(.smooth) {
-                self.sneakPeek.show = status
-                self.sneakPeek.type = type
-                self.sneakPeek.value = value
-                self.sneakPeek.icon = icon
-            }
-        }
-    }
-
-    private var sneakPeekDuration: TimeInterval = 1.5
-    private var sneakPeekTask: Task<Void, Never>?
-
-    // Helper function to manage sneakPeek timer using Swift Concurrency
-    private func scheduleSneakPeekHide(after duration: TimeInterval) {
-        sneakPeekTask?.cancel()
-
-        sneakPeekTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(duration))
-            guard let self = self, !Task.isCancelled else { return }
-            await MainActor.run {
-                withAnimation {
-                    self.toggleSneakPeek(status: false, type: .music)
-                    self.sneakPeekDuration = 1.5
-                }
-            }
-        }
-    }
-
-    @Published var sneakPeek: sneakPeek = .init() {
-        didSet {
-            if sneakPeek.show {
-                scheduleSneakPeekHide(after: sneakPeekDuration)
-            } else {
-                sneakPeekTask?.cancel()
-            }
-        }
-    }
-
-    func toggleExpandingView(
-        status: Bool,
-        type: SneakContentType,
-        value: CGFloat = 0,
-        browser: BrowserType = .chromium
-    ) {
-        Task { @MainActor in
-            withAnimation(.smooth) {
-                self.expandingView.show = status
-                self.expandingView.type = type
-                self.expandingView.value = value
-                self.expandingView.browser = browser
-            }
-        }
-    }
-
-    private var expandingViewTask: Task<Void, Never>?
-
-    @Published var expandingView: ExpandedItem = .init() {
-        didSet {
-            if expandingView.show {
-                expandingViewTask?.cancel()
-                let duration: TimeInterval = (expandingView.type == .download ? 2 : 3)
-                let currentType = expandingView.type
-                expandingViewTask = Task { [weak self] in
-                    try? await Task.sleep(for: .seconds(duration))
-                    guard let self = self, !Task.isCancelled else { return }
-                    self.toggleExpandingView(status: false, type: currentType)
-                }
-            } else {
-                expandingViewTask?.cancel()
             }
         }
     }
