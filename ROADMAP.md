@@ -16,7 +16,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [x] Complete the FlowDock identity across the app, repository, distribution, and community surfaces
 - [x] Preserve required open-source licensing, attribution, and contributor history
 - [x] Document the inherited capabilities, known limitations, and supported Mac configurations
-- [ ] Establish a reliable baseline for building, testing, and releasing the app
+- [x] Establish a reliable baseline for building, testing, and tag-driven releases
 - [ ] Define measurable standards for responsiveness, stability, resource use, accessibility, and visual quality
 
 ## 2. Build the core FlowDock experience
