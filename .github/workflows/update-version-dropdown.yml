@@ -5,7 +5,7 @@ permissions:
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch: {}
   release:
     types:
@@ -28,7 +28,7 @@ jobs:
       - name: Get latest 5 versions with placeholder
         id: tags
         run: |
-          TAGS=$(git tag --sort=-v:refname | head -n 5 | jq -R -s -c 'split("\n")[:-1]')
+          TAGS=$(git tag --contains 8da14d79c5eaaf4edec04ab9fd6df00e172f130e --sort=-v:refname 'v[0-9]*' | head -n 5 | jq -R -s -c 'split("\n")[:-1]')
           VERSIONS=$(echo '["Select a version"]' | jq -c --argjson tags "$TAGS" '. + $tags')
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 

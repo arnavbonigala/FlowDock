@@ -12,14 +12,9 @@ on:
       build_number:
         description: 'Build number (optional)'
         required: false
-      xcode_version:
-        description: 'Xcode version (optional)'
-        required: false
-        default: '16.4'
-
-# Least-privilege: workflow_dispatch build only; no token access needed beyond artifacts.
+# Manual artifact build. Version inputs affect the artifact without modifying the repository.
 permissions:
-  contents: write
+  contents: read
 
 
 jobs:
@@ -30,7 +25,6 @@ jobs:
       head_ref: ${{ github.event.inputs.head_ref || github.ref_name || 'main' }}
       version: ${{ github.event.inputs.version || '' }}
       build_number: ${{ github.event.inputs.build_number || '' }}
-      xcode_version: ${{ github.event.inputs.xcode_version || '16.4' }}
       code_sign_identity: "Apple Development"
     secrets:
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}

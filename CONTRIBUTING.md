@@ -19,6 +19,14 @@ open FlowDock.xcodeproj
 
 FlowDock currently requires macOS 15.6 or later and Xcode 26 or later for development.
 
+Before submitting a change, run:
+
+```sh
+./scripts/verify.sh
+```
+
+This runs the release-tool tests and builds the app without code signing, matching CI.
+
 ## Submit a change
 
 1. Create a focused branch from the appropriate base branch.

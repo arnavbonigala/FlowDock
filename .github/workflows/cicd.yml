@@ -1,4 +1,4 @@
-name: Build for macOS
+name: Verify
 
 on:
   push:
@@ -18,28 +18,11 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build FlowDock
-    strategy:
-      matrix:
-        platform:
-          - macOS
-        xcode:
-          - ^26
-        scheme:
-          - FlowDock
-    runs-on: macos-latest
+  verify:
+    name: Test and build
+    runs-on: macos-26
     steps:
-    - name: Code Checkout
-      # TODO: pin to immutable SHA
+    - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - # TODO: pin to immutable SHA
-      uses: mxcl/xcodebuild@d3ee9b419c1be9a988086c58fe0988f32d99cfc5 # v3.6.0
-      with:
-        xcode: ${{ matrix.xcode }}
-        platform: ${{ matrix.platform }}
-        scheme: ${{ matrix.scheme }}
-        action: build
-        verbosity: xcpretty
-        upload-logs: always
-        configuration: release
+    - name: Verify
+      run: ./scripts/verify.sh

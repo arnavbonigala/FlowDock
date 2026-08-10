@@ -24,6 +24,14 @@ open FlowDock.xcodeproj
 
 Select the `FlowDock` scheme in Xcode, then build and run.
 
+Run the same tests and unsigned debug build used by CI:
+
+```sh
+./scripts/verify.sh
+```
+
+See [RELEASING.md](RELEASING.md) for the current artifact and release process.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
