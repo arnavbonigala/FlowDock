@@ -1,0 +1,69 @@
+//
+//  ActivityStore.swift
+//  FlowDock
+//
+//  Owns which activity holds the chin, and what state that puts FlowDock in.
+//  Replaces the inherited `sneakPeek` and `expandingView` pair. See INTERACTION.md.
+//
+
+import Foundation
+
+@MainActor
+final class ActivityStore: ObservableObject {
+    /// One duration for the whole contextual class. An activity does not get its own.
+    static let contextualDwell: Duration = .seconds(1.5)
+
+    /// ponytail: one store per display, created by that display's view. Routing activities
+    /// from the managers to the right store lands with the first activity in section 3.
+    @Published private(set) var activities: [Activity] = []
+    @Published var isExpanded = false
+
+    private var expiry: [String: Task<Void, Never>] = [:]
+
+    init() {
+        #if DEBUG
+        Activity.selfCheck()
+        #endif
+    }
+
+    deinit {
+        expiry.values.forEach { $0.cancel() }
+    }
+
+    var owner: Activity? { Activity.owner(of: activities) }
+
+    var state: ActivityState {
+        if isExpanded { return .expanded }
+        guard let owner else { return .idle }
+        return owner.activityClass == .contextual ? .contextual : .persistent
+    }
+
+    /// Starts an activity, or updates one already running. An update keeps the original
+    /// start time — it is the same activity, not a new one — and restarts the dwell.
+    func begin(_ activity: Activity) {
+        var activity = activity
+        if let index = activities.firstIndex(where: { $0.id == activity.id }) {
+            activity.startedAt = activities[index].startedAt
+            activities[index] = activity
+        } else {
+            activities.append(activity)
+        }
+        scheduleExpiry(for: activity)
+    }
+
+    func end(_ id: String) {
+        expiry.removeValue(forKey: id)?.cancel()
+        activities.removeAll { $0.id == id }
+    }
+
+    private func scheduleExpiry(for activity: Activity) {
+        expiry.removeValue(forKey: activity.id)?.cancel()
+        guard activity.activityClass == .contextual else { return }
+
+        expiry[activity.id] = Task { [weak self] in
+            try? await Task.sleep(for: Self.contextualDwell)
+            guard !Task.isCancelled else { return }
+            self?.end(activity.id)
+        }
+    }
+}

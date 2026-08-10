@@ -218,14 +218,14 @@ Every display's interactive region matches what that display is currently drawin
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
 
-- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge combined with opacity, `AnyTransition.scale(scale: 0.9, anchor: .top).combined(with: .opacity)` — declared in `FlowDock/animations/FlowDockAnimations.swift`, whose existing `// TODO: Move all animations to this file` is where it belongs. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
+- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge combined with opacity, `AnyTransition.scale(scale: 0.9, anchor: .top).combined(with: .opacity)` — declared in `FlowDock/Experience/ExperienceMotion.swift`. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
 - **Call sites choose timing, never the anchor.** Attaching `.animation(…)` where a surface needs its own pacing is fine. Redefining the scale or the anchor is not.
 - **Scale and offset anchor to `.top`** wherever they animate, including gesture tracking.
 - **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` — album artwork and the spectrum already do — instead of one copy fading out while another fades in.
 - **Growth is a shape change.** The panel's top edge and horizontal center are fixed by construction (`windowSize` with `.top` alignment); animate width and height, never position.
 - Reduce Motion is honored inside the shared transition itself, so there is one place to change. See [Accessibility](#accessibility).
 
-Every transition in the current code is unanchored and is replaced when its surface is rebuilt in roadmap section 3:
+Every transition in the inherited interface is unanchored and is replaced when its surface is rebuilt in roadmap section 3:
 
 | Site | Today |
 |---|---|

@@ -245,7 +245,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         window.contentView = NSHostingView(
-            rootView: ContentView()
+            rootView: ExperienceRootView()
                 .environmentObject(viewModel)
         )
 
