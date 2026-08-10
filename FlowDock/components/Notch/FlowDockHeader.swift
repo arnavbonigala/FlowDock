@@ -10,7 +10,6 @@ import SwiftUI
 
 struct FlowDockHeader: View {
     @EnvironmentObject var vm: FlowDockViewModel
-    @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     @StateObject var tvm = ShelfStateViewModel.shared
     var body: some View {
@@ -73,18 +72,6 @@ struct FlowDockHeader: View {
                                     }
                             }
                             .buttonStyle(PlainButtonStyle())
-                        }
-                        if Defaults[.showBatteryIndicator] {
-                            FlowDockBatteryView(
-                                batteryWidth: 30,
-                                isCharging: batteryModel.isCharging,
-                                isInLowPowerMode: batteryModel.isInLowPowerMode,
-                                isPluggedIn: batteryModel.isPluggedIn,
-                                levelBattery: batteryModel.levelBattery,
-                                maxCapacity: batteryModel.maxCapacity,
-                                timeToFullCharge: batteryModel.timeToFullCharge,
-                                isForNotification: false
-                            )
                         }
                     }
                 }

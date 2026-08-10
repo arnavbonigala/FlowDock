@@ -11,8 +11,6 @@ class BatteryStatusViewModel: ObservableObject {
     private var powerSourceChangedCallback: IOPowerSourceCallbackType?
     private var runLoopSource: Unmanaged<CFRunLoopSource>?
 
-    @ObservedObject var coordinator = FlowDockViewCoordinator.shared
-
     @Published private(set) var levelBattery: Float = 0.0
     @Published private(set) var maxCapacity: Float = 0.0
     @Published private(set) var isPluggedIn: Bool = false
@@ -20,12 +18,34 @@ class BatteryStatusViewModel: ObservableObject {
     @Published private(set) var isInLowPowerMode: Bool = false
     @Published private(set) var isInitial: Bool = false
     @Published private(set) var timeToFullCharge: Int = 0
-    @Published private(set) var statusText: String = ""
+
+    var statusText: String {
+        let state: String
+        if isCharging {
+            state = "Charging"
+        } else if isPluggedIn {
+            state = levelBattery < maxCapacity ? "Plugged In" : "Charged"
+        } else {
+            state = "Unplugged"
+        }
+        return isInLowPowerMode ? "\(state), Low Power" : state
+    }
 
     private let managerBattery = BatteryActivityManager.shared
     private var managerBatteryId: Int?
 
     static let shared = BatteryStatusViewModel()
+
+    var reading: PowerReading {
+        PowerReading(
+            level: levelBattery,
+            isPluggedIn: isPluggedIn,
+            isCharging: isCharging,
+            isInLowPowerMode: isInLowPowerMode,
+            timeToFullCharge: timeToFullCharge,
+            status: statusText
+        )
+    }
 
     /// Initializes the view model with a given FlowDockViewModel instance
     /// - Parameter vm: The FlowDockViewModel instance
@@ -56,8 +76,6 @@ class BatteryStatusViewModel: ObservableObject {
             print("🔌 Power source: \(isPluggedIn ? "Connected" : "Disconnected")")
             withAnimation {
                 self.isPluggedIn = isPluggedIn
-                self.statusText = isPluggedIn ? "Plugged In" : "Unplugged"
-                self.notifyImportanChangeStatus()
             }
 
         case .batteryLevelChanged(let level):
@@ -68,23 +86,16 @@ class BatteryStatusViewModel: ObservableObject {
 
         case .lowPowerModeChanged(let isEnabled):
             print("⚡ Low power mode: \(isEnabled ? "Enabled" : "Disabled")")
-            self.notifyImportanChangeStatus()
             withAnimation {
                 self.isInLowPowerMode = isEnabled
-                self.statusText = "Low Power: \(self.isInLowPowerMode ? "On" : "Off")"
             }
 
         case .isChargingChanged(let isCharging):
             print("🔌 Charging: \(isCharging ? "Yes" : "No")")
             print("maxCapacity: \(self.maxCapacity)")
             print("levelBattery: \(self.levelBattery)")
-            self.notifyImportanChangeStatus()
             withAnimation {
                 self.isCharging = isCharging
-                self.statusText =
-                    isCharging
-                    ? "Charging battery"
-                    : (self.levelBattery < self.maxCapacity ? "Not charging" : "Full charge")
             }
 
         case .timeToFullChargeChanged(let time):
@@ -114,18 +125,9 @@ class BatteryStatusViewModel: ObservableObject {
             self.isInLowPowerMode = batteryInfo.isInLowPowerMode
             self.timeToFullCharge = batteryInfo.timeToFullCharge
             self.maxCapacity = batteryInfo.maxCapacity
-            self.statusText = batteryInfo.isPluggedIn ? "Plugged In" : "Unplugged"
         }
     }
 
-    /// Notifies important changes in the battery status with an optional delay
-    /// - Parameter delay: The delay before notifying the change, default is 0.0
-    private func notifyImportanChangeStatus(delay: Double = 0.0) {
-        Task {
-            try? await Task.sleep(for: .seconds(delay))
-            self.coordinator.toggleExpandingView(status: true, type: .battery)
-        }
-    }
 
     deinit {
         print("🔌 Cleaning up battery monitoring...")

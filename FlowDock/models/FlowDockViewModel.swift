@@ -30,7 +30,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
 
     @Published var edgeAutoOpenActive: Bool = false
     @Published var isHoveringCalendar: Bool = false
-    @Published var isBatteryPopoverActive: Bool = false
 
     @Published var screenUUID: String?
 
@@ -215,7 +214,6 @@ class FlowDockViewModel: NSObject, ObservableObject {
         self.notchSize = getClosedNotchSize(screenUUID: self.screenUUID)
         self.closedNotchSize = self.notchSize
         self.notchState = .closed
-        self.isBatteryPopoverActive = false
         self.coordinator.sneakPeek.show = false
         self.edgeAutoOpenActive = false
 

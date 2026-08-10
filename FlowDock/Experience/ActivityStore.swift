@@ -23,6 +23,7 @@ final class ActivityStore: ObservableObject {
     init() {
         #if DEBUG
         Activity.selfCheck()
+        PowerReading.selfCheck()
         #endif
     }
 

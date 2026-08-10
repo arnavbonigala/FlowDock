@@ -51,8 +51,12 @@ struct ExperienceView: View {
         case .expanded: openNotchSize.width
         case .idle: anchor.width
         case .contextual, .persistent:
-            anchor.width + 2 * max(0, vm.effectiveClosedNotchHeight - 12) + 2 * chinInset
+            anchor.width + 2 * chinSide + 2 * chinInset
         }
+    }
+
+    private var chinSide: CGFloat {
+        store.owner?.chinSideWidth ?? max(0, vm.effectiveClosedNotchHeight - 12)
     }
 
     private var chinInset: CGFloat {
@@ -133,6 +137,7 @@ struct ExperienceView: View {
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .preferredColorScheme(.dark)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
+        .powerActivity(in: store)
     }
 
     // MARK: - Surfaces
@@ -167,7 +172,7 @@ struct ExperienceView: View {
 
     private var expandedPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Group {
+            HStack(spacing: 8) {
                 if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
                     HStack(spacing: 4) {
                         contextual.leading()
@@ -175,9 +180,11 @@ struct ExperienceView: View {
                     }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(contextual.label)
-                } else {
-                    Color.clear.accessibilityHidden(true)
                 }
+
+                Spacer(minLength: 0)
+
+                PowerPanelIndicator()
             }
             .frame(height: max(24, vm.effectiveClosedNotchHeight))
 

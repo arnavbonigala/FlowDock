@@ -100,7 +100,6 @@
 		14D570C62C5F38210011E668 /* FlowDockHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D570C52C5F38210011E668 /* FlowDockHeader.swift */; };
 		14D570C92C5F38890011E668 /* FlowDockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D570C82C5F38890011E668 /* FlowDockViewModel.swift */; };
 		14D570CB2C5F4B2C0011E668 /* BatteryStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D570CA2C5F4B2C0011E668 /* BatteryStatusViewModel.swift */; };
-		14D570CD2C5F4BB70011E668 /* FlowDockBattery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D570CC2C5F4BB70011E668 /* FlowDockBattery.swift */; };
 		14D570D22C5F6C6A0011E668 /* FlowDockExtrasMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D570D12C5F6C6A0011E668 /* FlowDockExtrasMenu.swift */; };
 		14E9FEAA2C70BF610062E83F /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E9FEA92C70BF610062E83F /* DownloadView.swift */; };
 		14E9FEAE2C7325770062E83F /* Button+Bouncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E9FEAD2C7325770062E83F /* Button+Bouncing.swift */; };
@@ -267,7 +266,6 @@
 		14D570C52C5F38210011E668 /* FlowDockHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowDockHeader.swift; sourceTree = "<group>"; };
 		14D570C82C5F38890011E668 /* FlowDockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowDockViewModel.swift; sourceTree = "<group>"; };
 		14D570CA2C5F4B2C0011E668 /* BatteryStatusViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusViewModel.swift; sourceTree = "<group>"; };
-		14D570CC2C5F4BB70011E668 /* FlowDockBattery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowDockBattery.swift; sourceTree = "<group>"; };
 		14D570D12C5F6C6A0011E668 /* FlowDockExtrasMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowDockExtrasMenu.swift; sourceTree = "<group>"; };
 		14E9FEA92C70BF610062E83F /* DownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
 		14E9FEAD2C7325770062E83F /* Button+Bouncing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Button+Bouncing.swift"; sourceTree = "<group>"; };
@@ -726,7 +724,6 @@
 		B18654312C6F45AE000B926A /* Live activities */ = {
 			isa = PBXGroup;
 			children = (
-				14D570CC2C5F4BB70011E668 /* FlowDockBattery.swift */,
 				B1C974332C642B6D0000E707 /* MarqueeTextView.swift */,
 				B1D365CD2C6A979C0047BDBC /* LiveActivityModifier.swift */,
 				14E9FEA92C70BF610062E83F /* DownloadView.swift */,
@@ -966,7 +963,6 @@
 				14D570C62C5F38210011E668 /* FlowDockHeader.swift in Sources */,
 				B17266E32C65F7FB0031BA0D /* WhatsNewView.swift in Sources */,
 				14C08BB62C8DE42D000F8AA0 /* CalendarManager.swift in Sources */,
-				14D570CD2C5F4BB70011E668 /* FlowDockBattery.swift in Sources */,
 				B10F84A32C6C9596009F3026 /* TestView.swift in Sources */,
 				1443E7F32C609DCE0027C1FC /* matters.swift in Sources */,
 				11C5E3162DFE88510065821E /* SettingsView.swift in Sources */,

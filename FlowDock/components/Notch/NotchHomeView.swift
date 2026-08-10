@@ -15,7 +15,6 @@ import SwiftUI
 struct NotchHomeView: View {
     @EnvironmentObject var vm: FlowDockViewModel
     @ObservedObject var webcamManager = WebcamManager.shared
-    @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
 
     var body: some View {

@@ -45,6 +45,8 @@ struct Activity: Identifiable {
     /// One element per side, with the cutout between them.
     let leading: () -> AnyView
     let trailing: () -> AnyView
+    /// How much room each side needs. `nil` takes the shell's square default.
+    let chinSideWidth: CGFloat?
     /// Contextual activities have no expanded form.
     private(set) var expanded: (() -> AnyView)?
     /// Used to break ties within a band. Preserved when a live activity updates, so the
@@ -56,6 +58,7 @@ struct Activity: Identifiable {
         activityClass: ActivityClass,
         band: ActivityBand,
         label: String,
+        chinSideWidth: CGFloat? = nil,
         @ViewBuilder leading: @escaping () -> Leading,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) {
@@ -63,6 +66,7 @@ struct Activity: Identifiable {
         self.activityClass = activityClass
         self.band = band
         self.label = label
+        self.chinSideWidth = chinSideWidth
         self.leading = { AnyView(leading()) }
         self.trailing = { AnyView(trailing()) }
     }

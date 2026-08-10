@@ -12,7 +12,6 @@ import SwiftUI
 
 enum SneakContentType {
     case music
-    case battery
     case download
 }
 
@@ -30,7 +29,7 @@ enum BrowserType {
 
 struct ExpandedItem {
     var show: Bool = false
-    var type: SneakContentType = .battery
+    var type: SneakContentType = .download
     var value: CGFloat = 0
     var browser: BrowserType = .chromium
 }

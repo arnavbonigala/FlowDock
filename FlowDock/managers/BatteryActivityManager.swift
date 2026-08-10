@@ -7,18 +7,9 @@ class BatteryActivityManager {
 
     static let shared = BatteryActivityManager()
 
-    var onBatteryLevelChange: ((Float) -> Void)?
-    var onMaxCapacityChange: ((Float) -> Void)?
-    var onPowerModeChange: ((Bool) -> Void)?
-    var onPowerSourceChange: ((Bool) -> Void)?
-    var onChargingChange: ((Bool) -> Void)?
-    var onTimeToFullChargeChange: ((Int) -> Void)?
-
     private var batterySource: CFRunLoopSource?
     private var observers: [(BatteryEvent) -> Void] = []
     private var previousBatteryInfo: BatteryInfo?
-    private var notificationQueue: [BatteryEvent] = []
-    private var isProcessingNotifications = false
 
     enum BatteryEvent {
         case powerSourceChanged(isPluggedIn: Bool)
@@ -93,7 +84,7 @@ class BatteryActivityManager {
         eventGenerator: (T) -> BatteryEvent
     ) {
         if previous != current {
-            enqueueNotification(eventGenerator(current))
+            notifyObservers(event: eventGenerator(current))
         }
     }
     
@@ -142,56 +133,18 @@ class BatteryActivityManager {
             )
         } else {
             // First time notification
-            enqueueNotification(.powerSourceChanged(isPluggedIn: batteryInfo.isPluggedIn))
-            enqueueNotification(.batteryLevelChanged(level: batteryInfo.currentCapacity))
-            enqueueNotification(.isChargingChanged(isCharging: batteryInfo.isCharging))
-            enqueueNotification(.lowPowerModeChanged(isEnabled: batteryInfo.isInLowPowerMode))
-            enqueueNotification(.timeToFullChargeChanged(time: batteryInfo.timeToFullCharge))
-            enqueueNotification(.maxCapacityChanged(capacity: batteryInfo.maxCapacity))
+            notifyObservers(event: .powerSourceChanged(isPluggedIn: batteryInfo.isPluggedIn))
+            notifyObservers(event: .batteryLevelChanged(level: batteryInfo.currentCapacity))
+            notifyObservers(event: .isChargingChanged(isCharging: batteryInfo.isCharging))
+            notifyObservers(event: .lowPowerModeChanged(isEnabled: batteryInfo.isInLowPowerMode))
+            notifyObservers(event: .timeToFullChargeChanged(time: batteryInfo.timeToFullCharge))
+            notifyObservers(event: .maxCapacityChanged(capacity: batteryInfo.maxCapacity))
         }
 
         // Update previous battery info
         previousBatteryInfo = batteryInfo
-
-        // Trigger optional callbacks
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.onBatteryLevelChange?(batteryInfo.currentCapacity)
-            self.onPowerSourceChange?(batteryInfo.isPluggedIn)
-            self.onChargingChange?(batteryInfo.isCharging)
-            self.onPowerModeChange?(batteryInfo.isInLowPowerMode)
-            self.onTimeToFullChargeChange?(batteryInfo.timeToFullCharge)
-            self.onMaxCapacityChange?(batteryInfo.maxCapacity)
-        }
     }
 
-    /// Enqueues a notification to be processed
-    /// - Parameter event: The battery event
-    private func enqueueNotification(_ event: BatteryEvent) {
-        notificationQueue.append(event)
-        processNextNotification()
-    }
-    
-    /// Processes the next notification in the queue
-    /// If there are no more notifications, the queue is cleared
-    /// and the processing flag is set to false
-    private func processNextNotification() {
-        guard !isProcessingNotifications, !notificationQueue.isEmpty else { return }
-        isProcessingNotifications = true
-        
-        let event = notificationQueue.removeFirst()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self = self else { return }
-            self.notifyObservers(event: event)
-            self.isProcessingNotifications = false
-            
-            // Check if there are more items in the queue
-            if !self.notificationQueue.isEmpty {
-                self.processNextNotification()
-            }
-        }
-    }
-    
     /// Initializes the battery information when the manager starts
     /// - Returns: Current battery information
     func initializeBatteryInfo() -> BatteryInfo {
@@ -297,7 +250,7 @@ class BatteryActivityManager {
     /// - Parameter event: The battery event to notify
     private func notifyObservers(event: BatteryEvent) {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             for observer in self.observers {
                 observer(event)
             }
