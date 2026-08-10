@@ -29,6 +29,16 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [x] Support reduced motion and other core accessibility needs from the start
 - [x] Ensure the experience works coherently on notch and non-notch displays, including multiple displays
 
+### Sequencing
+
+Section 2 builds the shell and nothing else. No capability moves into it — the first surface a user sees in the new experience arrives in section 3.
+
+The shell is the state store that replaces `sneakPeek` and `expandingView`, the contract every activity declares itself through, the anchored window and geometry, the one shared transition, input handling, and accessibility scaffolding. It is specified by [DESIGN.md](DESIGN.md) and [INTERACTION.md](INTERACTION.md) and gated by [QUALITY.md](QUALITY.md).
+
+The backend is reused, not rewritten or copied: `managers/`, `MediaControllers/`, `Providers/`, `observers/`, `XPCHelperClient/`, and the shelf services already do their jobs and know nothing about the notch.
+
+Section 2 work lands in `FlowDock/Experience/` behind a debug default, with the inherited interface remaining the one users get. Section 3 then ports one capability per change: its activity is added and its inherited view is deleted in the same change, so nothing exists in both. When the last capability lands, `Experience/` is flattened back and the flag is removed.
+
 ## 3. Bring existing capabilities into the new experience
 
 - [ ] Migrate music playback, source selection, lyrics, and playback controls into the FlowDock experience
