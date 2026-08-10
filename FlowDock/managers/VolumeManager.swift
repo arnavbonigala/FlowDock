@@ -25,6 +25,12 @@ final class VolumeManager: NSObject, ObservableObject {
     private var previousVolumeBeforeMute: Float32 = 0.2
     private var softwareMuted: Bool = false
 
+    /// Every CoreAudio callback lands here, so registering and tearing down the per-device
+    /// listeners needs no further locking.
+    private let listenerQueue = DispatchQueue(label: "com.arnavbonigala.flowdock.volume-listeners")
+    private var deviceListeners:
+        [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
+
     private override init() {
         super.init()
         setupAudioListener()
@@ -152,14 +158,20 @@ final class VolumeManager: NSObject, ObservableObject {
         if !volumes.isEmpty {
             let avg = max(0, min(1, volumes.reduce(0, +) / Float32(volumes.count)))
             DispatchQueue.main.async {
-                if self.rawVolume != avg {  
+                if self.rawVolume != avg {
                     if self.didInitialFetch {
                         self.lastChangeAt = Date()
+                        // Our own writes publish the new value before the listener fires,
+                        // so reaching here means something else moved it: Control Center,
+                        // an app, an AirPods stem. The first fetch is state, not a change.
+                        MainActor.assumeIsolated {
+                            SystemFeedbackStore.shared.report(
+                                .volume(muted: self.isMuted), value: CGFloat(avg))
+                        }
                     }
                 }
                 self.rawVolume = avg
                 self.didInitialFetch = true
-
             }
         }
 
@@ -179,7 +191,16 @@ final class VolumeManager: NSObject, ObservableObject {
                 {
                     let newMuted = muted != 0
                     DispatchQueue.main.async {
-                        if self.isMuted != newMuted { self.lastChangeAt = Date() }
+                        if self.isMuted != newMuted {
+                            self.lastChangeAt = Date()
+                            if self.didInitialFetch {
+                                MainActor.assumeIsolated {
+                                    SystemFeedbackStore.shared.report(
+                                        .volume(muted: newMuted),
+                                        value: CGFloat(newMuted ? 0 : self.rawVolume))
+                                }
+                            }
+                        }
                         self.isMuted = newMuted
                     }
                 }
@@ -188,55 +209,81 @@ final class VolumeManager: NSObject, ObservableObject {
     }
 
     private func setupAudioListener() {
-        let deviceID = systemOutputDeviceID()
-        guard deviceID != kAudioObjectUnknown else { return }
-
         var defaultDevAddr = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDefaultOutputDevice,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
         AudioObjectAddPropertyListenerBlock(
-            AudioObjectID(kAudioObjectSystemObject), &defaultDevAddr, nil
-        ) { _, _ in
-            self.fetchCurrentVolume()
+            AudioObjectID(kAudioObjectSystemObject), &defaultDevAddr, listenerQueue
+        ) { [weak self] _, _ in
+            self?.handleDefaultDeviceChange()
         }
 
+        listenerQueue.async { [weak self] in
+            self?.attachDeviceListeners()
+        }
+    }
+
+    /// The scalar and mute listeners belong to one device, so a switch to AirPods leaves
+    /// them attached to the speakers and external changes stop arriving. Re-attach, then
+    /// announce the new device — the pill titles itself from `outputDeviceName()`, so a
+    /// plain volume reading is already the "AirPods Pro" feedback.
+    private func handleDefaultDeviceChange() {
+        attachDeviceListeners()
+        fetchCurrentVolume()
+
+        let muted = isMutedInternal()
+        let volume = readVolumeInternal() ?? 0
+        Task { @MainActor in
+            SystemFeedbackStore.shared.report(.volume(muted: muted), value: CGFloat(volume))
+        }
+    }
+
+    private func attachDeviceListeners() {
+        for (deviceID, address, block) in deviceListeners {
+            var address = address
+            AudioObjectRemovePropertyListenerBlock(deviceID, &address, listenerQueue, block)
+        }
+        deviceListeners.removeAll()
+
+        let deviceID = systemOutputDeviceID()
+        guard deviceID != kAudioObjectUnknown else { return }
+
+        var scalarElements = [kAudioObjectPropertyElementMain]
         var masterAddr = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyVolumeScalar,
             mScope: kAudioDevicePropertyScopeOutput,
             mElement: kAudioObjectPropertyElementMain
         )
-        if AudioObjectHasProperty(deviceID, &masterAddr) {
-            AudioObjectAddPropertyListenerBlock(deviceID, &masterAddr, nil) { _, _ in
-                self.fetchCurrentVolume()
-            }
-        } else {
-            for ch in [UInt32(1), UInt32(2)] {
-                var chAddr = AudioObjectPropertyAddress(
-                    mSelector: kAudioDevicePropertyVolumeScalar,
-                    mScope: kAudioDevicePropertyScopeOutput,
-                    mElement: ch
-                )
-                if AudioObjectHasProperty(deviceID, &chAddr) {
-                    AudioObjectAddPropertyListenerBlock(deviceID, &chAddr, nil) { _, _ in
-                        self.fetchCurrentVolume()
-                    }
-                }
-            }
+        if !AudioObjectHasProperty(deviceID, &masterAddr) {
+            scalarElements = [UInt32(1), UInt32(2)]
         }
 
-        // Mute
-        var muteAddr = AudioObjectPropertyAddress(
-            mSelector: kAudioDevicePropertyMute,
-            mScope: kAudioDevicePropertyScopeOutput,
-            mElement: kAudioObjectPropertyElementMain
-        )
-        if AudioObjectHasProperty(deviceID, &muteAddr) {
-            AudioObjectAddPropertyListenerBlock(deviceID, &muteAddr, nil) { _, _ in
-                self.fetchCurrentVolume()
-            }
+        for element in scalarElements {
+            observe(deviceID: deviceID, selector: kAudioDevicePropertyVolumeScalar, element: element)
         }
+        observe(
+            deviceID: deviceID,
+            selector: kAudioDevicePropertyMute,
+            element: kAudioObjectPropertyElementMain
+        )
+    }
+
+    private func observe(deviceID: AudioObjectID, selector: AudioObjectPropertySelector, element: UInt32) {
+        var address = AudioObjectPropertyAddress(
+            mSelector: selector,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: element
+        )
+        guard AudioObjectHasProperty(deviceID, &address) else { return }
+
+        let block: AudioObjectPropertyListenerBlock = { [weak self] _, _ in
+            self?.fetchCurrentVolume()
+        }
+        guard AudioObjectAddPropertyListenerBlock(deviceID, &address, listenerQueue, block) == noErr
+        else { return }
+        deviceListeners.append((deviceID, address, block))
     }
 
     private func readVolumeInternal() -> Float32? {
