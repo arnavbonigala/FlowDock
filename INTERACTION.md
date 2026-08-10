@@ -2,7 +2,7 @@
 
 FlowDock has four states: **idle**, **contextual**, **persistent**, and **expanded**. Every surface FlowDock draws is in exactly one of them, and every activity — music, a HUD, a download, the shelf, an extension — moves through the same progression. A user who learns one activity has learned all of them.
 
-This document defines the states and the transitions between them. Visual rules are in [DESIGN.md](DESIGN.md); measurable timing and stability gates are in [QUALITY.md](QUALITY.md). Which activity wins when two want the same state, and how activities coexist, is defined by a later roadmap item — this document defines only the ladder each one climbs.
+This document defines the states and the transitions between them. Visual rules are in [DESIGN.md](DESIGN.md); measurable timing and stability gates are in [QUALITY.md](QUALITY.md). It also defines which activity wins when several want the same state, in [Activities](#activities).
 
 ## The four states
 
@@ -99,7 +99,7 @@ Three rules cut across all six input kinds:
 
 - Direction follows geometry: **two-finger pan down expands, pan up dismisses.** Down grows, up collapses, in every state.
 - Gestures track the pointer continuously and are cancellable — releasing before `gestureSensitivity` returns to the starting state with no action taken.
-- Horizontal pan on the anchor is reserved for moving between activities and stays unassigned until the activity priority item defines it.
+- Horizontal pan is unassigned and stays that way. The chin has one owner at a time, so there is nothing to swipe between.
 - Scrolling inside expanded content is not a gesture and never collapses the panel.
 - No gesture is the only route to anything.
 
@@ -122,6 +122,63 @@ Three rules cut across all six input kinds:
 - Any accepted input shows a visible result within 100 ms ([QUALITY.md](QUALITY.md)).
 - An input that is unavailable does nothing — no alert, no beep, no shake.
 - Haptics fire on state changes only, never per control, and only when `enableHaptics` is on.
+
+## Activities
+
+An activity is anything that can occupy a state: a HUD, media playback, a download, the shelf, an extension. The chin has **exactly one owner at a time**. It is never split in half, never stacked, and never rotated between activities — a surface this small is read at a glance or not at all.
+
+Every activity declares three things. Anything that cannot is not an activity yet:
+
+- **Class** — contextual or persistent, per [The four states](#the-four-states).
+- **Band** — where it sits in the priority ladder below.
+- **Completion** — the observable signal that it is over. A persistent activity with no completion signal is a contextual one wearing a costume, and it is the reason chins get stuck.
+
+### Priority
+
+**Priority is proximity to what the user just did, not importance of the information.** A volume HUD outranks a download not because volume matters more, but because the user pressed a key half a second ago and is waiting to see whether it worked.
+
+| Band | Activity | Class |
+|---|---|---|
+| 1 | A drag in progress, or the shelf receiving content | Persistent |
+| 2 | System feedback the user just caused: volume, brightness, backlight, microphone | Contextual |
+| 3 | Power state changes: connected, disconnected, low power | Contextual |
+| 4 | Progress with a known end: downloads, transfers, timers | Persistent |
+| 5 | Ongoing media | Persistent |
+| 6 | Ambient decoration | Persistent |
+
+Ties inside a band go to the activity that started most recently. New activities and extensions join an existing band; the ladder does not grow a band per feature.
+
+### Coexistence
+
+- **In the chin, one owner.** A lower-priority activity that is still true stays live and invisible, and takes the chin back the moment the higher one ends.
+- **Two contextual activities never coexist.** A newer one replaces the older immediately, with no queue — a user who changes volume and then brightness wants the brightness, not a backlog. The replaced one is dropped, not deferred.
+- **In expanded state, coexistence is allowed**, because there is room. Contextual feedback appears in the header without displacing or resizing content, and every live persistent activity is listed.
+- Ambient decoration yields to everything and appears only when nothing else is true.
+
+### Interruption
+
+- A higher-priority activity **interrupts immediately**. It does not wait for the current owner to expire.
+- **Interruption is a loan, not a handoff.** When a contextual activity takes the chin from a persistent one, the persistent one gets it back on expiry — the chin returns to it, never to idle.
+- **Interruption never passes through idle.** The chin morphs its contents in place; it does not collapse and reopen.
+- **Lower priority never interrupts.** A contextual activity that is outranked at the moment it fires is dropped. Its moment has passed and showing it late is worse than not showing it.
+- **Nothing interrupts the user.** An expanded panel is never resized, collapsed, or re-laid-out by a system activity, and a drag in progress is never interrupted at all.
+
+### Expiration
+
+- **Contextual expires on a timer**, 1.5 s after its last update. A value that keeps changing — a held volume key — keeps restarting the timer and stays up as long as the user is acting. One duration for the whole class; an activity does not get its own.
+- **Persistent expires on its completion signal**, never on a timer. Playback stops, the download finishes, the timer fires.
+- **A source that vanishes ends its activity immediately.** If the app quits, the device unplugs, or the connection drops, the activity ends rather than freezing on its last known value. Stale is worse than absent.
+- Expiration is silent and uses the standard transition. There is no farewell.
+- An activity expiring while the panel is open simply disappears from the panel. **Expiration never closes the panel.**
+
+### Current implementation
+
+- Priority is an `if / else if` chain inside `NotchLayout`, so its order is a rendering side effect and adding an activity means editing a branch.
+- The standard sneak peek renders *below* the music activity in the same stack rather than taking the chin — the one case of stacking that the rules forbid.
+- Two expiration mechanisms exist for one class: `sneakPeek` at 1.5 s and `expandingView` at 2 s for downloads, 3 s for battery.
+- Downloads and battery share `expandingView` despite being progress and a state change, in different bands.
+- The face animation is band 6 decoration occupying persistent state whenever media is idle.
+- No activity publishes completion. Media is inferred from `isPlayerIdle`, which is why a quit player can leave the chin populated.
 
 ## Anchoring
 
@@ -180,6 +237,5 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 
 ## Deferred
 
-- Which activity owns the chin when several are eligible, how they queue, and whether any may coexist — the activity priority roadmap item.
 - Reduce Motion, VoiceOver order, and full-keyboard-access detail — the accessibility roadmap item.
 - Behavior specific to non-notch and multi-display arrangements — the display coherence roadmap item.
