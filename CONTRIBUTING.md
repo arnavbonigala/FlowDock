@@ -27,6 +27,8 @@ Before submitting a change, run:
 
 This runs the release-tool tests and builds the app without code signing, matching CI.
 
+Changes must meet the applicable release gates in [QUALITY.md](QUALITY.md).
+
 ## Submit a change
 
 1. Create a focused branch from the appropriate base branch.

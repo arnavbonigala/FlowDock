@@ -17,7 +17,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [x] Preserve required open-source licensing, attribution, and contributor history
 - [x] Document the inherited capabilities, known limitations, and supported Mac configurations
 - [x] Establish a reliable baseline for building, testing, and tag-driven releases
-- [ ] Define measurable standards for responsiveness, stability, resource use, accessibility, and visual quality
+- [x] Define measurable standards for responsiveness, stability, resource use, accessibility, and visual quality
 
 ## 2. Build the core FlowDock experience
 
