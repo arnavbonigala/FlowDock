@@ -22,7 +22,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 ## 2. Build the core FlowDock experience
 
 - [x] Define the visual language for layout, typography, materials, spacing, and iconography
-- [ ] Define a consistent progression from idle to contextual, persistent, and expanded experiences
+- [x] Define a consistent progression from idle to contextual, persistent, and expanded experiences
 - [ ] Make every transition feel anchored to the notch or top-of-screen origin
 - [ ] Establish consistent interaction behavior across hover, click, keyboard, gesture, drag, and dismissal
 - [ ] Establish clear rules for activity priority, coexistence, interruption, and expiration
