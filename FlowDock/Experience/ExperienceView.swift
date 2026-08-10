@@ -47,7 +47,14 @@ struct ExperienceView: View {
         let state = store.state
 
         VStack(spacing: 0) {
-            surface(for: state)
+            // The surface itself grows and shrinks — a shape change, never a fade. Only the
+            // content inside it transitions.
+            content(for: state)
+                .frame(
+                    width: state == .expanded ? openNotchSize.width : nil,
+                    height: state == .expanded ? openNotchSize.height : vm.effectiveClosedNotchHeight,
+                    alignment: .top
+                )
                 .background(.black)
                 .clipShape(
                     NotchShape(
@@ -99,16 +106,15 @@ struct ExperienceView: View {
     // MARK: - Surfaces
 
     @ViewBuilder
-    private func surface(for state: ActivityState) -> some View {
+    private func content(for state: ActivityState) -> some View {
         switch state {
         case .idle:
             Color.clear
-                .frame(width: anchor.width, height: vm.effectiveClosedNotchHeight)
+                .frame(width: anchor.width)
                 .accessibilityHidden(true)
 
         case .contextual, .persistent:
             chin
-                .frame(height: vm.effectiveClosedNotchHeight)
                 // One element, one label. The chin is not a container to navigate into.
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(store.owner?.label ?? "")
@@ -116,7 +122,6 @@ struct ExperienceView: View {
 
         case .expanded:
             expandedPanel
-                .frame(width: openNotchSize.width, height: openNotchSize.height, alignment: .top)
                 .transition(.fromNotch(reduceMotion: reduceMotion))
         }
     }

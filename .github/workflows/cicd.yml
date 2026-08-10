@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - '*'
+  workflow_dispatch:
 
 # https://stackoverflow.com/a/72408109/6942800
 concurrency:
@@ -18,8 +19,20 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  scripts:
+    name: Release tool tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Verify scripts
+      run: ./scripts/verify.sh --scripts-only
+
+  build:
     name: Test and build
+    # macOS runners bill at ten times the Linux rate, so the Xcode build runs on request
+    # rather than on every push. Release tags still build through release.yml.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-26
     steps:
     - name: Checkout
