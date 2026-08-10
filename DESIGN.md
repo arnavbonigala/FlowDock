@@ -1,0 +1,91 @@
+# FlowDock Visual Language
+
+FlowDock should read as part of macOS, not as an app drawn on top of it. The default answer to any visual question is whatever AppKit, SwiftUI, and SF Symbols already do; a custom value is a decision that needs a reason.
+
+This document defines layout, typography, materials, spacing, and iconography. Motion, interaction, and activity-priority rules are defined separately in later roadmap work. Release gates for contrast, frame budget, and accessibility live in [QUALITY.md](QUALITY.md) and apply to everything here.
+
+Values that already exist in code are cited rather than restated. Where current code disagrees with a rule, it is listed under [Known deviations](#known-deviations); it is debt, not precedent.
+
+## 1. Layout
+
+**The cutout is the origin.** Every surface is anchored to the physical notch and grows from it. Nothing appears at a screen edge unrelated to the anchor, and nothing is centered on the screen when it could be centered on the cutout.
+
+- **Anchor.** The closed surface matches the display's real notch: width and height come from `getClosedNotchSize()` in `FlowDock/sizing/matters.swift`. Heights are never invented — on notch displays use `safeAreaInsets.top`, on non-notch displays use the menu bar height, with a 185 × 32 pt synthetic anchor as the fallback.
+- **Growth is symmetric.** Width expands equally left and right of the cutout's horizontal center, not the screen's. Height grows downward only. A surface never grows upward, past the display edge, or off-center.
+- **Three widths, one shape.** Closed (the anchor), contextual (the anchor plus a chin extension, as in `computedChinWidth`), and expanded (`openNotchSize`, 640 × 190 pt). All three use `NotchShape`; only its radii and frame change.
+- **Concentric corners.** Inner radius = outer radius − inset. Content sits 12 pt inside a 24 pt opened bottom radius, so content corners are 12 pt. Any nested container recomputes from its own inset; parallel corner values are not allowed.
+- **Expanded layout.** A leading primary column (the activity in focus) and a trailing context column, separated by one 16 pt gutter (`spacing` in `FlowDock/models/Constants.swift`). Two columns maximum. If a third region is needed, the activity is too large for the expanded state.
+- **Closed layout.** A single row: leading glyph or artwork, trailing indicator, cutout between them. Never more than one item per side.
+- **Multiple displays.** Each display renders its own anchor from its own metrics. Nothing is shared across displays except state.
+
+## 2. Typography
+
+**San Francisco, system text styles, nothing else.**
+
+- Use `Font` text styles (`.body`, `.subheadline`, `.caption`). `Font.system(size:)` is permitted only to optically match a system HUD or a fixed-size glyph, and carries a comment saying which.
+- No `design: .rounded`, no `design: .serif`, no bundled faces. Rounded is the system's playful voice; FlowDock is a calm one. Non-Latin scripts fall back through the system font, not a custom file.
+- **Role mapping.** Expanded title: `.title3` semibold. Primary: `.body`. Secondary: `.subheadline`. Metadata, timestamps, counts: `.caption`. Nothing smaller than `.caption2`, and nothing below 11 pt effective size at any Dynamic Type setting.
+- **Two sizes maximum** are visible in the closed and contextual states. Hierarchy there comes from weight and color, not size.
+- **Anything that changes in place uses `.monospacedDigit()`** — elapsed time, remaining time, percentages, countdowns, byte counts. Digits must not reflow while ticking.
+- **Color is semantic.** `.primary` and `.secondary` only. No hard-coded greys, no opacity applied to text to fake a tier.
+- **Truncation.** One line closed, two lines maximum expanded, `.truncationMode(.tail)`. Scrolling text is reserved for a title that loses meaning when cut, and only while hovered or immediately after the value changes.
+- Sentence case for labels, title case for proper names. No all-caps.
+
+## 3. Materials and color
+
+**The anchored surface is opaque black. This is the one non-negotiable rule.**
+
+The closed and contextual surfaces must be indistinguishable from the display bezel, so they are `Color.black` — never a material, never translucent, never tinted, and never lighter in light appearance. A blur that lets the desktop through breaks the illusion that the hardware grew.
+
+- **Elevation inside the panel is opacity, not shadow.** Base is black; a raised region uses `.quaternary` fill; a raised region on top of that uses `.tertiary`. Shadows are used only where the panel meets the desktop (`enableShadow`), never between internal layers.
+- **Materials belong to detached surfaces only** — settings, popovers, menus, and windows that are not attached to the bezel. Those use `.regularMaterial` and follow the system appearance normally.
+- **The panel is always dark**, in both light and dark appearance, because it is bezel. Detached surfaces are not.
+- **Accent.** `Color.accentColor`, or the user's override (`useCustomAccentColor`). Accent marks state — progress, selection, activity — and is never used for body text or as a large fill.
+- **Artwork tinting** (`playerColorTinting`) may color a progress track, a glyph, or a gradient wash. It may not color text, and any tinted element still meets the 4.5:1 text and 3:1 non-text contrast gates in QUALITY.md against black. Clamp the extracted color; do not trust the source image.
+- **Reduce Transparency** replaces every material with its opaque equivalent. **Increase Contrast** raises fill tiers by one step and adds a hairline border to any region that relied on fill alone to define its edge.
+
+## 4. Spacing
+
+**4 pt grid.** Permitted steps: 4, 8, 12, 16, 24. 2 pt is allowed only for optical correction and needs a comment. No other values.
+
+| Relationship | Step |
+|---|---|
+| Inside a control cluster (glyph to its label) | 4 |
+| Between related items in a group | 8 |
+| Panel content inset from the panel edge | 12 |
+| Between columns and unrelated groups | 16 |
+| Between major sections of the expanded state | 24 |
+
+- Prefer `VStack(spacing:)` / `HStack(spacing:)` over per-child padding. A bare `.padding()` is not acceptable in new code — it resolves to a system default that ignores this scale.
+- Content is inset from the panel edge, never from the screen edge.
+- **Hit targets are at least 28 × 28 pt** regardless of glyph size, expanded with `.contentShape(Rectangle())` rather than by growing the visual.
+- Optical over mathematical: a glyph with visual weight below its baseline may be nudged, and the nudge is a 2 pt correction, not a new spacing step.
+
+## 5. Iconography
+
+**SF Symbols only.** The app icon and the brand mark are the only custom art. A concept macOS already has a symbol for uses that symbol — `speaker.wave.2.fill`, `sun.max.fill`, `keyboard`, `mic.fill`, `battery.75percent` — because FlowDock stands in for system HUDs and must not invent a second vocabulary for the same thing.
+
+- **Sizes.** 12 pt metadata, 15 pt default control, 18 pt primary control (matching the existing `prefersLargeScale ? 18 : 15` split). Symbols paired with text use the text's own style so they scale together.
+- **Weight** matches the adjacent text weight; default `.medium`.
+- **Rendering** is `.hierarchical` by default. `.palette` is used only when a second color carries meaning, `.multicolor` only where the system's own multicolor form is expected.
+- **State changes animate the symbol**, not the view: `.contentTransition(.symbolEffect(.replace))` for play/pause, mute/unmute, and similar pairs. Never crossfade two `Image` views.
+- Filled variants inside the panel, outline variants in detached surfaces such as settings — matching macOS.
+- The menu bar icon is a monochrome template image and inherits menu bar tinting.
+- Every symbol that is the only content of a control carries an `.accessibilityLabel`. A symbol is never the only carrier of state where color or shape alone would have to communicate it.
+
+## Conformance
+
+- New or reworked interface code follows this document. Existing code is brought into line when it is touched, not in a separate sweep.
+- Pull requests with visible changes include light and dark screenshots at 1× and 2×, plus Reduce Motion and Reduce Transparency where relevant, per [CONTRIBUTING.md](CONTRIBUTING.md).
+- A deliberate exception is allowed with a comment giving the reason. An undocumented one-off value is a bug.
+
+## Known deviations
+
+Inherited from BoringNotch, to be resolved as the surfaces are rebuilt in roadmap sections 2 and 3:
+
+- Spacing values off the grid: 3, 5, 6, 10, 22 pt appear throughout.
+- Corner radii that are not concentric with their container: 2, 2.5, 5, 6, 10, 16, 20 pt.
+- `design: .rounded` on four call sites.
+- Hard-coded `Font.system(size:)` where a text style would do.
+- A bundled Persian face selected in code rather than left to system fallback.
+- Widespread bare `.padding()`.
