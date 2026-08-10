@@ -252,8 +252,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.orderFrontRegardless()
         NotchSpaceManager.shared.notchSpace.windows.insert(window)
 
-        // Its CoreAudio listeners are what report changes made outside FlowDock, and a lazy
-        // singleton would not exist until a media key arrived.
         _ = VolumeManager.shared
 
         let feedback = SystemFeedbackWindow(viewModel: viewModel)

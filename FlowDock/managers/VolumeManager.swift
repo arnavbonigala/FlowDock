@@ -25,8 +25,6 @@ final class VolumeManager: NSObject, ObservableObject {
     private var previousVolumeBeforeMute: Float32 = 0.2
     private var softwareMuted: Bool = false
 
-    /// Every CoreAudio callback lands here, so registering and tearing down the per-device
-    /// listeners needs no further locking.
     private let listenerQueue = DispatchQueue(label: "com.arnavbonigala.flowdock.volume-listeners")
     private var deviceListeners:
         [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
@@ -161,9 +159,6 @@ final class VolumeManager: NSObject, ObservableObject {
                 if self.rawVolume != avg {
                     if self.didInitialFetch {
                         self.lastChangeAt = Date()
-                        // Our own writes publish the new value before the listener fires,
-                        // so reaching here means something else moved it: Control Center,
-                        // an app, an AirPods stem. The first fetch is state, not a change.
                         MainActor.assumeIsolated {
                             SystemFeedbackStore.shared.report(
                                 .volume(muted: self.isMuted), value: CGFloat(avg))
@@ -225,10 +220,6 @@ final class VolumeManager: NSObject, ObservableObject {
         }
     }
 
-    /// The scalar and mute listeners belong to one device, so a switch to AirPods leaves
-    /// them attached to the speakers and external changes stop arriving. Re-attach, then
-    /// announce the new device — the pill titles itself from `outputDeviceName()`, so a
-    /// plain volume reading is already the "AirPods Pro" feedback.
     private func handleDefaultDeviceChange() {
         attachDeviceListeners()
         fetchCurrentVolume()
