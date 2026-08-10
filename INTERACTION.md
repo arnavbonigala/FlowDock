@@ -189,7 +189,7 @@ Everything FlowDock draws hangs below the cutout, so everything it animates must
 - **Scale and offset anchor to `.top`** wherever they animate, including gesture tracking.
 - **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` — album artwork and the spectrum already do — instead of one copy fading out while another fades in.
 - **Growth is a shape change.** The panel's top edge and horizontal center are fixed by construction (`windowSize` with `.top` alignment); animate width and height, never position.
-- Reduce Motion is honored inside the shared transition itself when the accessibility item lands, so there is one place to change.
+- Reduce Motion is honored inside the shared transition itself, so there is one place to change. See [Accessibility](#accessibility).
 
 Every transition in the current code is unanchored and is replaced when its surface is rebuilt in roadmap section 3:
 
@@ -201,6 +201,47 @@ Every transition in the current code is unanchored and is replaced when its surf
 | `NotchHomeView` app icon, volume slider | `.scale`, center anchor |
 | `NotchHomeView` lyrics, home content | `.opacity`, `.move(edge: .top)`, asymmetric removal |
 | `EmptyState` | `.blurReplace` |
+
+## Accessibility
+
+**An accessibility setting changes how FlowDock behaves, never what it can do.** No feature is withdrawn, no information is dropped, and nothing is "simplified" for a user who turned one on. These are release gates in [QUALITY.md](QUALITY.md), not aspirations.
+
+### Reduce Motion
+
+- **The shared transition becomes a cross-fade in place** — opacity only, no scale, no movement. It keeps its duration; an instant swap is its own kind of disorienting.
+- **Springs become an ease curve.** The chin still resizes and the panel still grows, because size *is* the information. What goes is the overshoot, the bounce, and the settle.
+- **Looping decoration stops entirely** — the music visualizer, the face animation, and anything else that moves without being asked. It is switched off, not slowed down.
+- **Scrolling text stops.** A title that would marquee truncates instead, and the full value is available to VoiceOver and in expanded state.
+- Auto-scrolling to the next calendar event becomes an instant jump.
+- Gesture tracking is unaffected. Movement the user is driving with their own finger is not animation.
+
+### VoiceOver
+
+- **Each state announces once on entry**, describing the activity and its value — "Volume, 40 percent" — not the interface around it.
+- **An activity the user caused announces immediately; one the system caused announces politely** and never interrupts what VoiceOver is already reading. This is the same proximity rule that orders the [priority ladder](#priority).
+- **The chin is one element with one label**, not a container to navigate into. Expanded state is fully navigable, in visual order.
+- Progress does not re-announce on every tick. It is exposed as a value VoiceOver reads on request.
+- Every control has a name, a role, and a value. Decorative elements are hidden from the accessibility tree rather than left to announce themselves.
+
+### Keyboard and pointer
+
+- **No affordance is hover-only or pointer-only.** Everything reachable with the mouse in expanded state is reachable with [the keyboard](#keyboard), with a visible system focus ring.
+- Hover-to-expand can be disabled entirely; click, gesture, and the global shortcut remain.
+- Hit targets are at least 28 × 28 pt regardless of glyph size, per [DESIGN.md](DESIGN.md).
+
+### Timing
+
+- **No interaction has a time limit.** Nothing expires while the user is deciding.
+- The only two timers a user waits on are contextual dwell and hover intent. Hover intent is configurable and can be turned off.
+- **Contextual dwell extends to at least the length of its announcement when VoiceOver is active.** 1.5 s is enough to glance at a HUD and not enough to hear one.
+
+### Visual
+
+Specified in [DESIGN.md](DESIGN.md) and listed here so the requirements read in one place: Reduce Transparency replaces every material with an opaque equivalent; Increase Contrast raises fill tiers and adds hairline borders to regions defined only by fill; text and controls meet 4.5:1 and 3:1 against the panel, including when tinted by artwork; nothing renders below 11 pt effective size; and no state is carried by color alone.
+
+### Current implementation
+
+None of this exists yet. The app contains one `accessibilityLabel`, one `accessibilityHidden`, no reference to `accessibilityReduceMotion` or `accessibilityReduceTransparency`, no focusable controls, and no VoiceOver labels on any notch surface. Marquee text and the visualizer animate unconditionally.
 
 ## Timing
 
@@ -237,5 +278,4 @@ Today's code implements two of the four states, plus two ad-hoc timed mechanisms
 
 ## Deferred
 
-- Reduce Motion, VoiceOver order, and full-keyboard-access detail — the accessibility roadmap item.
 - Behavior specific to non-notch and multi-display arrangements — the display coherence roadmap item.

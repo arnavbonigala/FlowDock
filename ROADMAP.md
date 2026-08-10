@@ -26,7 +26,7 @@ This roadmap tracks product outcomes rather than implementation details. It shou
 - [x] Make every transition feel anchored to the notch or top-of-screen origin
 - [x] Establish consistent interaction behavior across hover, click, keyboard, gesture, drag, and dismissal
 - [x] Establish clear rules for activity priority, coexistence, interruption, and expiration
-- [ ] Support reduced motion and other core accessibility needs from the start
+- [x] Support reduced motion and other core accessibility needs from the start
 - [ ] Ensure the experience works coherently on notch and non-notch displays, including multiple displays
 
 ## 3. Bring existing capabilities into the new experience
