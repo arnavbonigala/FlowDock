@@ -114,6 +114,21 @@ private struct SetupView: View {
                     }
                 } header: {
                     Text("Permissions")
+                } footer: {
+                    if !accessibilityAuthorized {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("macOS drops accessibility access when FlowDock is moved or updated, and then ignores the request because a stale entry already exists. Remove FlowDock there and add it again.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer()
+                            Button("Open Accessibility settings") {
+                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Section {
@@ -149,10 +164,6 @@ private struct SetupView: View {
         .padding(.horizontal, 24)
         .task {
             accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
-            XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
-        }
-        .onDisappear {
-            XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
         }
         .onReceive(NotificationCenter.default.publisher(for: .accessibilityAuthorizationChanged)) { notification in
             if let granted = notification.userInfo?["granted"] as? Bool {

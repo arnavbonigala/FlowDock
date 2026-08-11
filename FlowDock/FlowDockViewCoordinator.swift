@@ -66,10 +66,14 @@ class FlowDockViewCoordinator: ObservableObject {
             forName: Notification.Name.accessibilityAuthorizationChanged,
             object: nil,
             queue: .main
-        ) { _ in
+        ) { notification in
+            let granted = notification.userInfo?["granted"] as? Bool ?? false
             Task { @MainActor in
-                if Defaults[.hudReplacement] {
+                guard Defaults[.hudReplacement] else { return }
+                if granted {
                     await MediaKeyInterceptor.shared.start(promptIfNeeded: false)
+                } else {
+                    MediaKeyInterceptor.shared.stop()
                 }
             }
         }
@@ -95,6 +99,8 @@ class FlowDockViewCoordinator: ObservableObject {
                     }
                 }
             }
+
+        XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
 
         Task { @MainActor in
             // The setting is what the user wants; accessibility is whether we can do it

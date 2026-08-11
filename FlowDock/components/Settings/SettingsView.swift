@@ -212,9 +212,18 @@ struct SystemFeedbackSettings: View {
                             XPCHelperClient.shared.requestAccessibilityAuthorization()
                         }
                     }
+                    LabeledContent("Nothing happened when you granted it?") {
+                        Button("Open Accessibility settings") {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
                 }
             } footer: {
-                Text("Volume, display brightness, and keyboard brightness appear at the notch instead of the middle of the screen. Accessibility access is required to see the key presses.")
+                Text(accessibilityAuthorized
+                    ? "Volume, display brightness, and keyboard brightness appear at the notch instead of the middle of the screen. Accessibility access is required to see the key presses."
+                    : "Volume, display brightness, and keyboard brightness appear at the notch instead of the middle of the screen. Accessibility access is required to see the key presses. macOS drops that access when FlowDock is moved or updated, and it then ignores the request above because a stale entry already exists. Open Accessibility settings, remove FlowDock, and add it again.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -231,12 +240,6 @@ struct SystemFeedbackSettings: View {
         .accentColor(.effectiveAccent)
         .task {
             accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
-        }
-        .onAppear {
-            XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
-        }
-        .onDisappear {
-            XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
         }
         .onReceive(NotificationCenter.default.publisher(for: .accessibilityAuthorizationChanged)) { notification in
             if let granted = notification.userInfo?["granted"] as? Bool {
