@@ -87,6 +87,7 @@ jobs:
           BUILD_NUMBER: ${{ needs.build.outputs.build_number }}
           ED_SIGNATURE: ${{ needs.build.outputs.ed_signature }}
           DMG_LENGTH: ${{ needs.build.outputs.dmg_length }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
         run: |
           set -euo pipefail
           remote="${APPCAST_REMOTE:-https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git}"
@@ -101,12 +102,17 @@ jobs:
             cp updater/appcast.xml "$work/appcast.xml"
           fi
           [[ -f "$work/appcast.xml" ]] || cp updater/appcast.xml "$work/appcast.xml"
+          channel=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            channel=(--channel beta)
+          fi
           python3 scripts/appcast.py "$work/appcast.xml" \
             --version "$VERSION" \
             --build "$BUILD_NUMBER" \
             --url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/FlowDock.dmg" \
             --length "$DMG_LENGTH" \
-            --signature "$ED_SIGNATURE"
+            --signature "$ED_SIGNATURE" \
+            "${channel[@]}"
           git -C "$work" config user.name "github-actions[bot]"
           git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git -C "$work" add appcast.xml

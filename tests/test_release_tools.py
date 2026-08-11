@@ -46,7 +46,7 @@ class ReleaseVersionTests(unittest.TestCase):
 
 
 class AppcastTests(unittest.TestCase):
-    def write(self, directory, version, build="1"):
+    def write(self, directory, version, build="1", channel=None):
         path = Path(directory) / "appcast.xml"
         if not path.exists():
             path.write_text((ROOT / "updater" / "appcast.xml").read_text(), encoding="utf-8")
@@ -67,6 +67,7 @@ class AppcastTests(unittest.TestCase):
                 "--pub-date",
                 "Mon, 10 Aug 2026 00:00:00 +0000",
             ]
+            + (["--channel", channel] if channel else [])
         )
         return path
 
@@ -91,6 +92,24 @@ class AppcastTests(unittest.TestCase):
             self.assertEqual([item.findtext("title") for item in items], ["1.1.0", "1.0.0"])
             self.assertEqual(items[0].findtext(appcast.sparkle("version")), "3")
             self.assertEqual(channel.findtext("title"), "FlowDock Updates")
+
+    def test_stable_items_carry_no_channel(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write(directory, "1.0.0")
+            item = ET.parse(path).getroot().find("channel").find("item")
+            self.assertIsNone(item.find(appcast.sparkle("channel")))
+
+    def test_a_prerelease_is_confined_to_its_channel(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write(directory, "1.1.0-beta.1", channel="beta")
+            self.write(directory, "1.0.0")
+            items = ET.parse(path).getroot().find("channel").findall("item")
+            channels = {
+                item.findtext("title"): item.findtext(appcast.sparkle("channel"))
+                for item in items
+            }
+            self.assertEqual(channels["1.1.0-beta.1"], "beta")
+            self.assertIsNone(channels["1.0.0"])
 
 
 if __name__ == "__main__":

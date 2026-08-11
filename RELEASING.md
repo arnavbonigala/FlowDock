@@ -114,6 +114,26 @@ Then walk the first-launch steps exactly as written above, on a machine that has
 
 Finally run a real update cycle, which is the only test that proves the release: install the **previous** version, launch it, grant Accessibility, quit, publish the new release, launch the old version again, and take the update from "Check for Updates…". Confirm the update installs and launches. Then check whether HUD replacement still works or whether Accessibility has to be re-granted, and put the answer in the release notes.
 
+## Release channels and compatibility
+
+**Two channels, one feed.** Stable items carry no `sparkle:channel`, which is what makes them the default: Sparkle offers an unmarked item to every install. Prerelease tags publish with `--channel beta`, and only an install that has turned on "Include beta releases" in Settings is offered them. This is not cosmetic — without the channel a `v1.2.0-beta.1` tag would update every stable user to a beta, and there is no way to take it back once they have it.
+
+Turning the toggle off stops future betas being offered. It does not move that install back to stable; the way down from a beta is the next stable release with a higher version, exactly as under Rollback above.
+
+**What a version number promises.**
+
+| Change | What it means |
+|---|---|
+| Patch — `1.2.0` → `1.2.1` | Fixes only. No setting moves, no activity changes shape, no extension recompiles. |
+| Minor — `1.2.0` → `1.3.0` | New activities and settings. Existing settings keep their meaning, and an extension built against `1.2` still loads. |
+| Major — `1.x` → `2.0` | Something on this list breaks. The release notes say exactly what and how to migrate. |
+
+Settings are `Defaults` keys with defaults in `FlowDock/models/Constants.swift`. A key that is renamed or removed in a minor release is a bug — a user who upgrades must never silently lose a preference. Removing a key means giving it a migration, not deleting the line.
+
+**macOS support.** The deployment target is macOS 14, and `sparkle:minimumSystemVersion` in every appcast item repeats it, so an older Mac is never offered a build it cannot run. Raising the floor is a minor release at least, is announced in the release notes of the version before it, and is never done to reach a convenience API. Two versions of macOS are supported at any time; when a third ships, dropping the oldest becomes possible, not automatic.
+
+**Extensions.** The host/extension boundary is the activity declaration in [EXTENSIONS.md](EXTENSIONS.md), decoded by `ActivityExtension.declaration(from:)`. It carries no version field, so compatibility rests entirely on the rule above: within a major version the declaration only ever gains optional keys, and an extension that omits them keeps loading. Adding a required key, renaming one, or changing what a value means is a major version. If the boundary ever needs to change faster than that, it needs a version field first.
+
 ## Uninstall and permission reset
 
 ```sh

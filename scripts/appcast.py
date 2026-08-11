@@ -32,6 +32,7 @@ def build_item(
     signature: str,
     minimum_system_version: str,
     pub_date: str,
+    channel: str | None = None,
 ) -> ET.Element:
     item = ET.Element("item")
     ET.SubElement(item, "title").text = version
@@ -39,6 +40,8 @@ def build_item(
     ET.SubElement(item, sparkle("version")).text = build
     ET.SubElement(item, sparkle("shortVersionString")).text = version
     ET.SubElement(item, sparkle("minimumSystemVersion")).text = minimum_system_version
+    if channel:
+        ET.SubElement(item, sparkle("channel")).text = channel
     ET.SubElement(
         item,
         "enclosure",
@@ -82,6 +85,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--signature", required=True, help="sparkle:edSignature, from sign_update")
     parser.add_argument("--minimum-system-version", default="14.0")
     parser.add_argument("--pub-date", default=None, help="RFC 2822 date; defaults to now")
+    parser.add_argument(
+        "--channel",
+        default=None,
+        help="Sparkle channel, e.g. beta. Omitted means the default channel, which every install is offered.",
+    )
     args = parser.parse_args(argv[1:])
 
     ET.register_namespace("sparkle", SPARKLE_NS)
@@ -95,6 +103,7 @@ def main(argv: list[str]) -> int:
         args.signature,
         args.minimum_system_version,
         pub_date,
+        args.channel,
     )
     update_appcast(tree, item, args.version)
     if hasattr(ET, "indent"):

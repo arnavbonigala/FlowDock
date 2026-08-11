@@ -102,7 +102,7 @@ The boundary and safety model third-party activities live behind is in [EXTENSIO
 - [x] Publish clear installation, update, support, privacy, security, and contribution guidance
 - [ ] Establish dependable signed release and update processes
 - [x] Create a feedback loop for bugs, feature requests, and extension proposals
-- [ ] Define release channels and compatibility expectations
+- [x] Define release channels and compatibility expectations
 - [ ] Launch FlowDock publicly with source, downloads, and attribution in place
 - [ ] Decide whether optional hosted or supporter services are worth pursuing without limiting the open core
 

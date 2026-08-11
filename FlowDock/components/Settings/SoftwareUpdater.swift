@@ -5,8 +5,20 @@
 //  Created by Richard Kunkli on 09/08/2024.
 //
 
-import SwiftUI
+import Defaults
 import Sparkle
+import SwiftUI
+
+/// Sparkle offers an item with no channel to everyone, so a prerelease reaches
+/// stable installs unless it is confined to a channel and the channel is opted into.
+/// See RELEASING.md.
+final class UpdateChannels: NSObject, SPUUpdaterDelegate {
+    static let shared = UpdateChannels()
+
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        Defaults[.receiveBetaUpdates] ? ["beta"] : []
+    }
+}
 
 final class CheckForUpdatesViewModel: ObservableObject {
     @Published var canCheckForUpdates = false
@@ -39,6 +51,7 @@ struct UpdaterSettingsView: View {
     
     @State private var automaticallyChecksForUpdates: Bool
     @State private var automaticallyDownloadsUpdates: Bool
+    @Default(.receiveBetaUpdates) private var receiveBetaUpdates
     
     init(updater: SPUUpdater) {
         self.updater = updater
@@ -58,10 +71,14 @@ struct UpdaterSettingsView: View {
                 .onChange(of: automaticallyDownloadsUpdates) { _, newValue in
                     updater.automaticallyDownloadsUpdates = newValue
                 }
+
+            Toggle("Include beta releases", isOn: $receiveBetaUpdates)
         } header: {
             HStack {
                 Text("Software updates")
             }
+        } footer: {
+            Text("Betas arrive earlier and are less tested. Turning this off stops new betas being offered; it does not move this install back to the last stable release.")
         }
     }
 }
