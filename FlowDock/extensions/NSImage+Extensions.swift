@@ -25,15 +25,14 @@ extension NSImage {
                 return
             }
             
-            let width = cgImage.width
-            let height = cgImage.height
-            let totalPixels = width * height
-            
+            let side = 32
+            let totalPixels = side * side
+
             guard let context = CGContext(data: nil,
-                                          width: width,
-                                          height: height,
+                                          width: side,
+                                          height: side,
                                           bitsPerComponent: 8,
-                                          bytesPerRow: width * 4,
+                                          bytesPerRow: side * 4,
                                           space: CGColorSpaceCreateDeviceRGB(),
                                           bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
                 DispatchQueue.main.async {
@@ -41,8 +40,9 @@ extension NSImage {
                 }
                 return
             }
-            
-            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+            context.interpolationQuality = .medium
+            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: side, height: side))
             
             guard let data = context.data else {
                 DispatchQueue.main.async {
@@ -167,3 +167,22 @@ extension Color {
         return Color(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
     }
 }
+
+#if DEBUG
+extension NSImage {
+    static func selfCheck() {
+        let image = NSImage(size: CGSize(width: 200, height: 200))
+        image.lockFocus()
+        NSColor(red: 0.9, green: 0.1, blue: 0.1, alpha: 1).setFill()
+        NSBezierPath(rect: CGRect(x: 0, y: 0, width: 200, height: 200)).fill()
+        image.unlockFocus()
+
+        image.averageColor { color in
+            guard let color = color?.usingColorSpace(.deviceRGB) else { return assertionFailure() }
+            assert(color.redComponent > color.greenComponent, "downsampling must not lose the dominant hue")
+            assert(color.brightnessComponent >= 0.5, "an extracted color is clamped before it is drawn")
+        }
+    }
+}
+#endif
+

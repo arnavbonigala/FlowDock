@@ -6,6 +6,7 @@
 //  See INTERACTION.md.
 //
 
+import AppKit
 import Defaults
 import Foundation
 
@@ -31,6 +32,7 @@ final class ActivityStore: ObservableObject {
         ProgressPanel.selfCheck()
         MeetingPanel.selfCheck()
         ActivityCatalog.selfCheck()
+        NSImage.selfCheck()
         ExtensionContract.selfCheck()
         #endif
     }
