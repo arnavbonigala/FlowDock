@@ -12,7 +12,6 @@ import UniformTypeIdentifiers
 struct MusicSlotConfigurationView: View {
     @Default(.musicControlSlots) private var musicControlSlots
     @ObservedObject private var musicManager = MusicManager.shared
-    @State private var draggedSlot: MusicControlButton?
 
     private let fixedSlotCount: Int = 5
 
@@ -46,25 +45,16 @@ struct MusicSlotConfigurationView: View {
                         if slot != .none {
                             slotPreview(for: slot)
                                 .frame(maxWidth: 44)
-                                .onDrag {
-                                    // remember what's being dragged for UX
-                                    DispatchQueue.main.async { draggedSlot = slot }
-                                    return NSItemProvider(object: NSString(string: "slot:\(index)"))
-                                }
+                                .onDrag { NSItemProvider(object: NSString(string: "slot:\(index)")) }
                                 .onDrop(of: [UTType.plainText.identifier], isTargeted: nil) { providers in
-                                    let handled = handleDrop(providers, toIndex: index)
-                                    // clear drag state
-                                    DispatchQueue.main.async { draggedSlot = nil }
-                                    return handled
+                                    handleDrop(providers, toIndex: index)
                                 }
                         } else {
                             // empty slot: allow drops but do not allow dragging
                             slotPreview(for: slot)
                                 .frame(maxWidth: 44)
                                 .onDrop(of: [UTType.plainText.identifier], isTargeted: nil) { providers in
-                                    let handled = handleDrop(providers, toIndex: index)
-                                    DispatchQueue.main.async { draggedSlot = nil }
-                                    return handled
+                                    handleDrop(providers, toIndex: index)
                                 }
                         }
                     }
@@ -90,7 +80,7 @@ struct MusicSlotConfigurationView: View {
                 .cornerRadius(10)
                 .contentShape(RoundedRectangle(cornerRadius: 10))
                 .onDrop(of: [UTType.plainText.identifier], isTargeted: nil) { providers in
-                    return handleDropOnTrash(providers)
+                    handleDropOnTrash(providers)
                 }
 
                 Text("Clear slot")
@@ -147,9 +137,7 @@ struct MusicSlotConfigurationView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .iconLabel("Add \(control.label) to the next free slot")
-                                .onDrag {
-                                    return NSItemProvider(object: NSString(string: "control:\(control.rawValue)"))
-                                }
+                                .onDrag { NSItemProvider(object: NSString(string: "control:\(control.rawValue)")) }
 
                                 Text(control.label)
                                     .font(.caption2)
@@ -165,47 +153,6 @@ struct MusicSlotConfigurationView: View {
                 .scrollIndicators(.visible)
             }
         }
-    }
-
-    private func slotConfigRow(for index: Int) -> some View {
-        let currentSlot = slotValue(at: index)
-
-        return HStack(spacing: 12) {
-            Text("\(index + 1)")
-                .font(.body.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(minWidth: 20)
-
-            Group {
-                if currentSlot != .none {
-                    slotPreview(for: currentSlot)
-                        .frame(height: 32)
-                        .onDrag {
-                            DispatchQueue.main.async { draggedSlot = currentSlot }
-                            return NSItemProvider(object: NSString(string: "slot:\(index)"))
-                        }
-                        .onDrop(of: [UTType.plainText.identifier], isTargeted: nil) { providers in
-                            let handled = handleDrop(providers, toIndex: index)
-                            DispatchQueue.main.async { draggedSlot = nil }
-                            return handled
-                        }
-                } else {
-                    // empty slot: allow drops but not dragging
-                    slotPreview(for: currentSlot)
-                        .frame(height: 32)
-                        .onDrop(of: [UTType.plainText.identifier], isTargeted: nil) { providers in
-                            let handled = handleDrop(providers, toIndex: index)
-                            DispatchQueue.main.async { draggedSlot = nil }
-                            return handled
-                        }
-                }
-            }
-
-            Spacer()
-        }
-        .padding(8)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-        .cornerRadius(6)
     }
 
     @ViewBuilder
