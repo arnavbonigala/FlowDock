@@ -298,13 +298,52 @@ private struct MusicContextLine: View {
 
     private func line(at date: Date) -> String {
         if let lyric = lyric(at: date) { return lyric }
-        if let next = music.upNext.first { return "Up next: \(next)" }
         return music.album
     }
 
     private func lyric(at date: Date) -> String? {
         guard enableLyrics, music.isPlaying else { return nil }
         return music.lyricLine(at: music.estimatedPlaybackPosition(at: date))
+    }
+}
+
+/// The queue is a list only where the music app can be asked for one. Nothing renders when
+/// it cannot: a section that is permanently empty teaches the reader to stop looking at it.
+struct MusicQueuePanel: View {
+    @ObservedObject private var music = MusicManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if !music.upNext.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(music.upNext.enumerated()), id: \.offset) { index, title in
+                        HStack(spacing: 8) {
+                            Image(systemName: index == 0 ? "text.line.first.and.arrowtriangle.forward" : "music.note")
+                                .font(.panelMeta)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 16)
+                                .accessibilityHidden(true)
+
+                            Text(title)
+                                .font(.caption)
+                                .foregroundStyle(index == 0 ? .primary : .secondary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+
+                            Spacer(minLength: 0)
+                        }
+                        .frame(height: PanelRow.controls)
+                        .padding(.horizontal, 8)
+                        .panelRowBackground()
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(index == 0 ? "Up next, \(title)" : "Then, \(title)")
+                    }
+                }
+                .transition(.materialize(reduceMotion: reduceMotion))
+            }
+        }
+        .animation(.content, value: music.upNext)
     }
 }
 

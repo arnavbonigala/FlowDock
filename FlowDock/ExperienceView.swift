@@ -369,6 +369,8 @@ struct ExperienceView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         MusicPanel()
 
+                        MusicQueuePanel()
+
                         ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
                             activity.expanded?()
                         }
