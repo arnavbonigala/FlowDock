@@ -144,6 +144,9 @@ struct MusicSettings: View {
             }
 
             Section {
+                Defaults.Toggle(key: .showMusicActivity) {
+                    Text("Show music activity")
+                }
                 Stepper(value: $waitInterval, in: 0...10, step: 1) {
                     LabeledContent("Inactivity timeout") {
                         Text("\(waitInterval, specifier: "%.0f") seconds")
