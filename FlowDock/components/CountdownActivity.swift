@@ -117,9 +117,6 @@ private struct CountdownActivityBinder: ViewModifier {
                     store.end(Activity.meetingID)
                 }
             }
-            .onChange(of: meetingsEnabled) { _, enabled in
-                if !enabled { store.end(Activity.meetingID) }
-            }
             .onChange(of: timer.endsAt, initial: true) { _, endsAt in
                 if let endsAt {
                     store.begin(.timer(endsAt: endsAt))

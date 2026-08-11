@@ -7,6 +7,7 @@
 //
 
 import AppKit
+import Combine
 import Defaults
 import Foundation
 
@@ -20,8 +21,15 @@ final class ActivityStore: ObservableObject {
     @Published private(set) var activities: [Activity] = []
 
     private var expiry: [String: Task<Void, Never>] = [:]
+    private var pruning: AnyCancellable?
 
     init() {
+        pruning = NotificationCenter.default
+            .publisher(for: UserDefaults.didChangeNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.prune() }
+            }
+
         #if DEBUG
         Activity.selfCheck()
         PowerReading.selfCheck()
@@ -60,6 +68,12 @@ final class ActivityStore: ObservableObject {
             activities.append(activity)
         }
         scheduleExpiry(for: activity)
+    }
+
+    func prune() {
+        for activity in activities where !ActivityCatalog.isEnabled(activity.id) {
+            end(activity.id)
+        }
     }
 
     func end(_ id: String) {
