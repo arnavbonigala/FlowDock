@@ -25,6 +25,7 @@ final class CalendarManager: ObservableObject {
 
     private let service = CalendarService()
     private var observers: [NSObjectProtocol] = []
+    private var coalescedRefresh: Task<Void, Never>?
 
     private init() {
         #if DEBUG
@@ -36,7 +37,7 @@ final class CalendarManager: ObservableObject {
 
         observers = [.EKEventStoreChanged, .NSCalendarDayChanged, .NSSystemTimeZoneDidChange].map { name in
             NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in await self?.refresh() }
+                Task { @MainActor in self?.refreshSoon() }
             }
         }
 
@@ -45,6 +46,16 @@ final class CalendarManager: ObservableObject {
 
     deinit {
         observers.forEach(NotificationCenter.default.removeObserver)
+        coalescedRefresh?.cancel()
+    }
+
+    private func refreshSoon() {
+        coalescedRefresh?.cancel()
+        coalescedRefresh = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await self?.refresh()
+        }
     }
 
     var hasAccess: Bool {

@@ -13,17 +13,41 @@ class AudioSpectrum: NSView {
     private var barScales: [CGFloat] = []
     private var isPlaying: Bool = true
     private var animationTimer: Timer?
-    
+    private var screensAreAsleep = false
+    private var screenSleepObservers: [NSObjectProtocol] = []
+
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true
         setupBars()
+        observeScreenSleep()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         wantsLayer = true
         setupBars()
+        observeScreenSleep()
+    }
+
+    deinit {
+        animationTimer?.invalidate()
+        screenSleepObservers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
+    }
+
+    private func observeScreenSleep() {
+        let center = NSWorkspace.shared.notificationCenter
+        screenSleepObservers = [
+            center.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+                self?.screensAreAsleep = true
+                self?.stopAnimating()
+            },
+            center.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                guard let self else { return }
+                self.screensAreAsleep = false
+                if self.isPlaying { self.startAnimating() }
+            },
+        ]
     }
 
     private func setupBars() {
@@ -55,7 +79,7 @@ class AudioSpectrum: NSView {
     }
     
     private func startAnimating() {
-        guard animationTimer == nil else { return }
+        guard animationTimer == nil, !screensAreAsleep else { return }
         animationTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             self?.updateBars()
         }

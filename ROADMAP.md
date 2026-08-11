@@ -61,7 +61,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
 - [x] Keep calendar dates, reminders, scrolling, and long content correct
 - [x] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
-- [ ] Minimize idle CPU use, memory, wakeups, and battery impact
+- [x] Minimize idle CPU use, memory, wakeups, and battery impact
 - [ ] Make installation, updates, permission recovery, and uninstallation dependable
 - [ ] Validate the experience across supported hardware, display arrangements, and accessibility settings
 - [ ] Run a focused preview program and resolve release-blocking feedback

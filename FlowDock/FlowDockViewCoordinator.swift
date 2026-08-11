@@ -38,6 +38,7 @@ class FlowDockViewCoordinator: ObservableObject {
 
     @Published var optionKeyPressed: Bool = true
     private var accessibilityObserver: Any?
+    private var activationObserver: Any?
     private var hudReplacementCancellable: AnyCancellable?
 
     private init() {
@@ -99,6 +100,14 @@ class FlowDockViewCoordinator: ObservableObject {
                     }
                 }
             }
+
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { _ = await XPCHelperClient.shared.isAccessibilityAuthorized() }
+        }
 
         XPCHelperClient.shared.startMonitoringAccessibilityAuthorization()
 
