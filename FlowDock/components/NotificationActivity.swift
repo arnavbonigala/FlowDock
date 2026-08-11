@@ -103,7 +103,7 @@ struct NotificationPanel: View {
                     }
                 }
                 .scrollIndicators(.never)
-                .frame(maxHeight: 68)
+                .frame(maxHeight: 64)
                 .transition(.materialize(reduceMotion: reduceMotion))
             }
         }
