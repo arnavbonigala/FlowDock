@@ -599,6 +599,7 @@ struct CustomSlider: View {
     var onDragChange: ((Double) -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         GeometryReader { geometry in
@@ -608,7 +609,7 @@ struct CustomSlider: View {
             let progress = span == .zero ? 0 : (value - range.lowerBound) / span
 
             ZStack(alignment: .leading) {
-                Rectangle().fill(.quaternary)
+                Rectangle().fill(.raised(contrast))
                 Rectangle()
                     .fill(color)
                     .frame(width: min(max(progress, 0), 1) * width)

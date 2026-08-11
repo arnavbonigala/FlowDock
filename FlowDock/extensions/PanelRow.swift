@@ -11,6 +11,14 @@ extension View {
     }
 }
 
+extension ShapeStyle where Self == AnyShapeStyle {
+    /// A region with no border of its own, whose edge is the fill. Increase Contrast steps
+    /// it up a tier so it does not disappear into the panel. See DESIGN.md §3.
+    static func raised(_ contrast: ColorSchemeContrast) -> AnyShapeStyle {
+        contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary)
+    }
+}
+
 private struct PanelRowBackground: ViewModifier {
     let cornerRadius: CGFloat
 

@@ -104,6 +104,7 @@ struct ProgressRing: View {
 
     @State private var spin = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         Group {
@@ -128,7 +129,7 @@ struct ProgressRing: View {
                     .onAppear { spin = true }
             }
         }
-        .background(Circle().stroke(.quaternary, lineWidth: 2.5))
+        .background(Circle().stroke(.raised(contrast), lineWidth: 2.5))
         .frame(width: 15, height: 15)
         .accessibilityHidden(true)
     }
