@@ -61,6 +61,36 @@ inside those bands they are ordered by the same user ranking as everything else.
 parties: nothing but the user opens the panel. An extension cannot expand, cannot demand
 focus, cannot present a window, and cannot show an alert.
 
+## What FlowDock builds and what it hosts
+
+The same question the drop experience answered in [WORKFLOWS.md](WORKFLOWS.md), asked of
+activities. An activity stays built in when it reports on the machine the user is sitting
+at, using something every Mac already has, for everyone rather than for an audience.
+
+| Built in | Because |
+|---|---|
+| Music: the system's Now Playing, and Apple Music | The machine is playing it; no account of ours |
+| System feedback: volume, brightness, backlight, microphone | The user just caused it, and only the host can see it |
+| Power, Bluetooth devices, and their batteries | The hardware the user is holding |
+| Notifications | The system's own delivery, relayed, never re-sent |
+| Downloads and file progress | The machine is doing the work |
+| Calendar, meetings, and timers | Time the user is inside, from the account macOS already has |
+| The shelf | The drop experience itself |
+
+| An extension | Which part disqualifies it |
+|---|---|
+| Spotify, Tidal, and other services beyond Now Playing | A specific product's app and account. Where the system reports them, FlowDock already shows them |
+| Weather | A network service and a location, for a thing the machine is not doing |
+| Pomodoro and habit tracking beyond a plain timer | A method, and people disagree about the method |
+| Clipboard history | A store of the user's content with a lifetime and a privacy model of its own |
+| Build, deploy, CI, and other developer status | An audience, not a default |
+| Assistant and summarizing panels | An account, a network, and a running cost |
+| A company's internal status | The company should ship it, and only they can |
+
+The consequence is the same as the drop experience's: this list is closed, and a new
+built-in activity requires the table above to change first. Everything else has a
+supported way in, which is the point of this document.
+
 ## Resource and behavior limits
 
 An extension that erases the product's value is not extensible, it is a regression. The

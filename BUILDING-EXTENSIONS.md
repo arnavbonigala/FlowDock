@@ -99,12 +99,14 @@ Copy this into your target. It is the entire interface between us:
 
 ## Examples
 
-Two, both of which type-check against the macOS 14 SDK:
+Three, all of which type-check against the macOS 14 SDK:
 
 - [`examples/Smallest`](examples/Smallest) — the least an extension can be: a contextual
   ambient activity, two chin views, no panel.
 - [`examples/FocusTimer`](examples/FocusTimer) — a persistent progress activity with a
   countdown in the chin and a panel row with a control.
+- [`examples/Weather`](examples/Weather) — the networked case: a public API, no key, and a
+  declaration that arrives only once there is something to say.
 
 Each is a single file. Drop it into a Generic Extension target, set the extension point
 identifier, and it runs.

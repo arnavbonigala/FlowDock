@@ -92,7 +92,7 @@ The verdict on which drop workflows FlowDock ships and which belong to extension
 - [x] Provide a stable way for extensions to supply compact and expanded experiences
 - [x] Let extensions participate in activity priority and lifecycle rules
 - [x] Publish developer documentation and a small set of example extensions
-- [ ] Use extensions for specialized music services, productivity tools, developer activities, weather, and other non-core integrations
+- [x] Use extensions for specialized music services, productivity tools, developer activities, weather, and other non-core integrations
 - [ ] Create a trustworthy discovery and distribution path for community extensions
 
 The boundary and safety model third-party activities live behind is in [EXTENSIONS.md](EXTENSIONS.md), and the developer guide is [BUILDING-EXTENSIONS.md](BUILDING-EXTENSIONS.md).
