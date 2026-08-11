@@ -210,7 +210,8 @@ private struct ShelfActionRow: View {
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
-                .frame(width: 22)
+                .frame(width: 28, height: 28)
+                .contentShape(Rectangle())
                 .iconLabel("More actions")
 
                 Spacer(minLength: 0)
