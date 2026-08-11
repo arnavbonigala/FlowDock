@@ -9,6 +9,7 @@ final class XPCHelperClient: NSObject {
     
     private var remoteService: RemoteXPCService<FlowDockXPCHelperProtocol>?
     private var connection: NSXPCConnection?
+    fileprivate let relayReceiver = NotificationRelayReceiver()
     private var lastKnownAuthorization: Bool?
     private var monitoringTask: Task<Void, Never>?
     
@@ -41,8 +42,11 @@ final class XPCHelperClient: NSObject {
             }
         }
         
+        conn.exportedInterface = NSXPCInterface(with: (any FlowDockXPCHelperClientProtocol).self)
+        conn.exportedObject = relayReceiver
+
         conn.resume()
-        
+
         let service = RemoteXPCService<FlowDockXPCHelperProtocol>(
             connection: conn,
             remoteInterface: FlowDockXPCHelperProtocol.self
@@ -240,6 +244,49 @@ final class XPCHelperClient: NSObject {
         } catch {
             return false
         }
+    }
+}
+
+extension XPCHelperClient {
+    nonisolated func startNotificationRelay(sink: @escaping (String) -> Void) {
+        Task {
+            let service = await MainActor.run {
+                relayReceiver.sink = sink
+                return ensureRemoteService()
+            }
+            try? await service.withService { service in
+                service.startNotificationRelay()
+            }
+        }
+    }
+
+    nonisolated func stopNotificationRelay() {
+        Task {
+            let service = await MainActor.run {
+                relayReceiver.sink = nil
+                return ensureRemoteService()
+            }
+            try? await service.withService { service in
+                service.stopNotificationRelay()
+            }
+        }
+    }
+
+    nonisolated func performNotificationAction(_ action: String, token: String) {
+        Task {
+            let service = await MainActor.run { ensureRemoteService() }
+            try? await service.withService { service in
+                service.performNotificationAction(action, token: token)
+            }
+        }
+    }
+}
+
+final class NotificationRelayReceiver: NSObject, FlowDockXPCHelperClientProtocol {
+    var sink: ((String) -> Void)?
+
+    func notificationsChanged(_ json: String) {
+        sink?(json)
     }
 }
 

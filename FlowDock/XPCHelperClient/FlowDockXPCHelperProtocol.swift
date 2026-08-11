@@ -20,5 +20,11 @@ import Foundation
     func isScreenBrightnessAvailable(forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void)
     func currentScreenBrightness(forDisplay displayID: UInt32, with reply: @escaping (NSNumber?) -> Void)
     func setScreenBrightness(_ value: Float, forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void)
+    func startNotificationRelay()
+    func stopNotificationRelay()
+    func performNotificationAction(_ action: String, token: String)
 }
 
+@objc protocol FlowDockXPCHelperClientProtocol {
+    func notificationsChanged(_ json: String)
+}

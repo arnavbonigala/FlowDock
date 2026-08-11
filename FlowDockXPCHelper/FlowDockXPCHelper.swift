@@ -11,7 +11,24 @@ import IOKit
 import CoreGraphics
 
 class FlowDockXPCHelper: NSObject, FlowDockXPCHelperProtocol {
-    
+
+    weak var connection: NSXPCConnection?
+
+    @objc func startNotificationRelay() {
+        NotificationRelay.shared.start { [weak self] json in
+            let client = self?.connection?.remoteObjectProxy as? FlowDockXPCHelperClientProtocol
+            client?.notificationsChanged(json)
+        }
+    }
+
+    @objc func stopNotificationRelay() {
+        NotificationRelay.shared.stop()
+    }
+
+    @objc func performNotificationAction(_ action: String, token: String) {
+        NotificationRelay.shared.perform(action, token: token)
+    }
+
     @objc func isAccessibilityAuthorized(with reply: @escaping (Bool) -> Void) {
         reply(AXIsProcessTrusted())
     }

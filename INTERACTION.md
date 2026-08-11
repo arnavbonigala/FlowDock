@@ -141,7 +141,7 @@ Every activity declares three things. Anything that cannot is not an activity ye
 |---|---|---|
 | 1 | A drag in progress, or the shelf receiving content | Persistent |
 | 2 | System feedback the user just caused: volume, brightness, backlight, microphone | Contextual |
-| 3 | Power state changes: connected, disconnected, low power | Contextual |
+| 3 | System events the user did not cause: power connected, disconnected, low power, an incoming notification | Contextual |
 | 4 | Progress with a known end: downloads, transfers, timers | Persistent |
 | 5 | Ongoing media | Persistent |
 | 6 | Ambient decoration | Persistent |

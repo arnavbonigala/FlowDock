@@ -22,12 +22,13 @@ struct SettingsView: View {
     }
 
     enum Pane: String, Hashable, CaseIterable {
-        case music, systemFeedback, battery, calendar, shelf
+        case music, notifications, systemFeedback, battery, calendar, shelf
         case general, appearance, shortcuts, about
 
         var title: String {
             switch self {
             case .music: "Music"
+            case .notifications: "Notifications"
             case .systemFeedback: "System feedback"
             case .battery: "Battery"
             case .calendar: "Calendar"
@@ -42,6 +43,7 @@ struct SettingsView: View {
         var symbol: String {
             switch self {
             case .music: "play.laptopcomputer"
+            case .notifications: "bell.badge"
             case .systemFeedback: "dial.medium.fill"
             case .battery: "battery.100.bolt"
             case .calendar: "calendar"
@@ -58,7 +60,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedPane) {
                 Section("Activities") {
-                    ForEach([Pane.music, .systemFeedback, .battery, .calendar, .shelf], id: \.self) { pane in
+                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .calendar, .shelf], id: \.self) { pane in
                         NavigationLink(value: pane) {
                             Label(pane.title, systemImage: pane.symbol)
                         }
@@ -80,6 +82,7 @@ struct SettingsView: View {
             Group {
                 switch selectedPane {
                 case .music: MusicSettings()
+                case .notifications: NotificationSettings()
                 case .systemFeedback: SystemFeedbackSettings()
                 case .battery: BatterySettings()
                 case .calendar: CalendarSettings()
@@ -191,6 +194,42 @@ struct MusicSettings: View {
         MusicManager.shared.isNowPlayingDeprecated
             ? MediaControllerType.allCases.filter { $0 != .nowPlaying }
             : MediaControllerType.allCases
+    }
+}
+
+struct NotificationSettings: View {
+    @State private var accessibilityAuthorized = false
+
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle(key: .showNotifications) {
+                    Text("Show incoming notifications")
+                }
+                .disabled(!accessibilityAuthorized)
+
+                if !accessibilityAuthorized {
+                    LabeledContent("Accessibility access is required") {
+                        Button("Grant accessibility access") {
+                            XPCHelperClient.shared.requestAccessibilityAuthorization()
+                        }
+                    }
+                }
+            } footer: {
+                Text("Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility and shows nothing without that access.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accentColor(.effectiveAccent)
+        .task {
+            accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .accessibilityAuthorizationChanged)) { notification in
+            if let granted = notification.userInfo?["granted"] as? Bool {
+                accessibilityAuthorized = granted
+            }
+        }
     }
 }
 

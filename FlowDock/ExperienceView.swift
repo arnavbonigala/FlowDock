@@ -165,6 +165,7 @@ struct ExperienceView: View {
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
         .powerActivity(in: store, suppressed: isExpanded)
         .shelfActivity(in: store, receiving: isDropTargeted)
+        .notificationActivity(in: store)
     }
 
     // MARK: - Surfaces
@@ -222,6 +223,8 @@ struct ExperienceView: View {
                     ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
                         activity.expanded?()
                     }
+
+                    NotificationPanel()
 
                     if shelfEnabled {
                         ShelfPanel(targeted: isDropTargeted)

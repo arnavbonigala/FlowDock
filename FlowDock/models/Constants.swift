@@ -107,6 +107,9 @@ extension Defaults.Keys {
     // Option key modifier behaviour for media keys
     static let optionKeyAction = Key<OptionKeyAction>("optionKeyAction", default: OptionKeyAction.openSettings)
     
+    // MARK: Notifications
+    static let showNotifications = Key<Bool>("showNotifications", default: false)
+
     // MARK: Shelf
     static let shelfEnabled = Key<Bool>("shelfEnabled", default: true)
     static let quickShareProvider = Key<String>("quickShareProvider", default: QuickShareProvider.defaultProvider.id)
