@@ -261,7 +261,12 @@ Specified in [DESIGN.md](DESIGN.md) and listed here so the requirements read in 
 
 ### Current implementation
 
-None of this exists yet. The app contains one `accessibilityLabel`, one `accessibilityHidden`, no reference to `accessibilityReduceMotion` or `accessibilityReduceTransparency`, no focusable controls, and no VoiceOver labels on any notch surface. Marquee text and the visualizer animate unconditionally.
+This section is met except for one thing, and the exception is named rather than
+hidden: nothing in the panel takes keyboard focus, because the panel is a
+non-activating window and taking focus from the frontmost app is forbidden above.
+VoiceOver reaches every control through the accessibility tree instead. The
+remaining gaps, and the reasoning for each, are listed under Known gaps in
+[VALIDATION.md](VALIDATION.md).
 
 ## Timing
 
@@ -269,7 +274,7 @@ Current values, in one place so they stay consistent:
 
 | Interval | Value | Source |
 |---|---|---|
-| Contextual dwell | 1.5 s | `ActivityStore.contextualDwell` |
+| Contextual dwell | 1.5 s, 4 s under VoiceOver | `ActivityStore.contextualDwell` |
 | Hover intent | 0.3 s, configurable | `minimumHoverDuration` |
 | Close grace after pointer exit | 100 ms | `ExperienceView.hover(_:)` |
 | Drop settle before collapse | 500 ms | `ExperienceView.settle()` |

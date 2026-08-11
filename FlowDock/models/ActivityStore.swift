@@ -14,7 +14,11 @@ import Foundation
 @MainActor
 final class ActivityStore: ObservableObject {
     /// One duration for the whole contextual class. An activity does not get its own.
-    static let contextualDwell: Duration = .seconds(1.5)
+    /// 1.5 s is enough to glance at a HUD and not enough to hear one, so VoiceOver gets
+    /// long enough for the announcement to finish. See INTERACTION.md §Timing.
+    static var contextualDwell: Duration {
+        NSWorkspace.shared.isVoiceOverEnabled ? .seconds(4) : .seconds(1.5)
+    }
 
     /// ponytail: one store per display, created by that display's view. Routing activities
     /// from the managers to the right store lands with the first activity in section 3.
