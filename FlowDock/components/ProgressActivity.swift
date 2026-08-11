@@ -26,7 +26,7 @@ extension Activity {
                 Text(count > 1 ? "\(count)" : report.detail)
                     .font(.chinValue)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .frame(width: progressChinSide, alignment: .trailing)
             }
@@ -52,7 +52,7 @@ extension Activity {
                 Text(report.detail)
                     .font(.chinValue)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .frame(width: progressChinSide, alignment: .trailing)
             }

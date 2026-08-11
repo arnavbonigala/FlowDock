@@ -54,13 +54,13 @@ extension Activity {
             leading: {
                 Image(systemName: "cup.and.saucer.fill")
                     .font(.chinGlyph)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: 34, alignment: .leading)
             },
             trailing: {
                 Text("Awake")
                     .font(.chinValue)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: 34, alignment: .trailing)
             }
         )

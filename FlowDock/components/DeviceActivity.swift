@@ -30,11 +30,11 @@ extension Activity {
                         Text("\(percent)%")
                             .font(.chinValue)
                             .monospacedDigit()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                     } else {
                         Image(systemName: device.isConnected ? "checkmark" : "xmark")
                             .font(.chinValue)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .bounceOnAppear()
                     }
                 }

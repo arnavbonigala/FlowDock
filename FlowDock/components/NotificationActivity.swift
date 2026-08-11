@@ -26,7 +26,7 @@ extension Activity {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: notificationChinSide, alignment: .trailing)
             }
         )
@@ -81,7 +81,7 @@ private struct NotificationGlyph: View {
             } else {
                 Image(systemName: "bell.fill")
                     .font(.chinGlyph)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
             }
         }
         .frame(width: 18, height: 18)

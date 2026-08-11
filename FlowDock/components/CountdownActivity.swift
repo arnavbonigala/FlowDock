@@ -22,7 +22,7 @@ extension Activity {
             leading: {
                 Image(systemName: event.meetingURL == nil ? "calendar" : "video.fill")
                     .font(.chinGlyph)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: countdownChinSide, alignment: .leading)
             },
             trailing: {
@@ -43,7 +43,7 @@ extension Activity {
             leading: {
                 Image(systemName: "timer")
                     .font(.chinGlyph)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: countdownChinSide, alignment: .leading)
             },
             trailing: {
@@ -63,14 +63,14 @@ extension Activity {
             leading: {
                 Image(systemName: "timer")
                     .font(.chinGlyph)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .bounceOnAppear()
                     .frame(width: countdownChinSide, alignment: .leading)
             },
             trailing: {
                 Text("Done")
                     .font(.chinValue)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: countdownChinSide, alignment: .trailing)
             }
         )
@@ -90,7 +90,7 @@ struct CountdownText: View {
         }
         .font(.chinValue)
         .monospacedDigit()
-        .foregroundStyle(.white)
+        .foregroundStyle(.primary)
         .lineLimit(1)
     }
 }

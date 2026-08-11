@@ -24,14 +24,14 @@ extension Activity {
                 Image(systemName: "tray.and.arrow.down.fill")
                     .font(.chinGlyph)
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: shelfChinSide, alignment: .leading)
             },
             trailing: {
                 Text(count > 0 ? "\(count)" : "")
                     .font(.chinValue)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: shelfChinSide, alignment: .trailing)
             }
         )

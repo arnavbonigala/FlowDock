@@ -100,7 +100,7 @@ extension Activity {
                 Text("\(Int(reading.level))%")
                     .font(.chinValue)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: powerChinSide, alignment: .trailing)
             }
         )
@@ -160,7 +160,7 @@ struct BatteryGauge: View {
                     if let symbol = reading.symbol {
                         Image(systemName: symbol)
                             .font(.system(size: 7, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .shadow(color: .black.opacity(0.6), radius: 1)
                     }
                 }
