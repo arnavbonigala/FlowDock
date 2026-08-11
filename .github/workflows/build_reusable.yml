@@ -17,7 +17,7 @@ on:
         required: false
       DEVELOPER_ID_CERTIFICATE_PASSWORD:
         required: false
-      # Apple Development certificate. The fallback: builds, but is not releasable.
+      # Apple Development certificate. FlowDock ships ad-hoc signed; see RELEASING.md.
       BUILD_CERTIFICATE_BASE64:
         required: false
       P12_PASSWORD:
@@ -86,10 +86,10 @@ jobs:
             echo "Developer ID signing."
           elif [[ -n "$BUILD_CERTIFICATE_BASE64" ]]; then
             mode=development
-            echo "::warning::DEVELOPER_ID_CERTIFICATE_BASE64 is not set, so this build is signed with an Apple Development certificate. It cannot be notarized, macOS will quarantine it after download, and its accessibility grant will not survive an update. This artifact is NOT releasable."
+            echo "::notice::Signed with an Apple Development certificate. It is not notarized, so macOS quarantines it after download and users follow the first-launch steps in RELEASING.md."
           else
             mode=adhoc
-            echo "::warning::No signing certificate secrets are set, so this build is ad-hoc signed. macOS will refuse to open it after download. This artifact is NOT releasable and exists only for local verification."
+            echo "::notice::Ad-hoc signed, which is how FlowDock ships. macOS quarantines it after download and users follow the first-launch steps in RELEASING.md."
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION_INPUT:-0.1.0}" >> "$GITHUB_OUTPUT"
@@ -223,7 +223,7 @@ jobs:
           NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
         run: |
           if [[ -z "$NOTARY_APPLE_ID" || -z "$NOTARY_PASSWORD" ]]; then
-            echo "::warning::NOTARY_APPLE_ID and NOTARY_PASSWORD are not set. The app is Developer ID signed but NOT notarized, so macOS will still block it after download. This artifact is not releasable."
+            echo "::notice::NOTARY_APPLE_ID and NOTARY_PASSWORD are not set, so the Developer ID signed app is not notarized. macOS quarantines it after download."
             exit 0
           fi
           codesign --force --sign "Developer ID Application" --timestamp "Release/$PROJECT_NAME.dmg"
