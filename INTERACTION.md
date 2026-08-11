@@ -199,6 +199,16 @@ Connecting or disconnecting a display, changing resolution or scale, rotating, r
 - If the chosen display disappears, fall back to the built-in display, then to the main one, and return to the chosen display when it comes back.
 - Mirrored displays are one display.
 
+### Full screen, Spaces, and Stage Manager
+
+A full-screen app has asked for the whole display. FlowDock stays out of it, but does not disappear from the machine: it remains available above the full-screen window and never takes focus, because it is an accessory app that is never the active application.
+
+- **Idle gets out of the way.** On a display with no cutout, idle collapses to nothing while a full-screen app owns that display — an idle strip hanging over a full-screen video is FlowDock advertising itself. On a notched display the cutout is physical and stays exactly as it is.
+- **What counts as "in the way" is the user's call**, and it is one setting: hide for every full-screen app, hide only for the app currently playing media (the default, since that is the one case where the chin would duplicate what the screen already shows), or never hide.
+- **That setting takes effect immediately**, including while a full-screen app is already frontmost, and including when the playing app changes underneath it. Full screen is not a state you have to leave and re-enter for a preference to be believed.
+- **Only the display in full screen is affected.** A second monitor keeps its own ladder.
+- **Nothing else changes.** Activities keep running, the panel still opens, a drop still lands, and Mission Control and Stage Manager are ordinary space changes — FlowDock joins every space rather than being pinned to one.
+
 ### Hit regions
 
 Every display's interactive region matches what that display is currently drawing — including drag detection. A display in idle state has no hit region larger than its anchor, and a display showing nothing has none at all.
