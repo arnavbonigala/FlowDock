@@ -19,16 +19,20 @@ struct OnboardingView: View {
     let onFinish: () -> Void
     let onOpenSettings: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         Group {
             switch step {
             case .welcome:
                 WelcomeView { step = .setup }
+                    .transition(.opacity)
             case .setup:
                 SetupView(onFinish: onFinish, onOpenSettings: onOpenSettings)
+                    .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: step)
+        .animation(.value(reduceMotion: reduceMotion), value: step)
         .frame(width: 460, height: 520)
         .background(.regularMaterial)
     }

@@ -102,6 +102,7 @@ struct ProgressRing: View {
     let fraction: Double?
 
     @State private var spin = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -110,6 +111,7 @@ struct ProgressRing: View {
                     .trim(from: 0, to: max(0.02, fraction))
                     .stroke(.white, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
+                    .animation(.value(reduceMotion: reduceMotion), value: fraction)
             } else {
                 Circle()
                     .trim(from: 0, to: 0.25)
@@ -166,8 +168,10 @@ struct ProgressPanel: View {
                     )
                     .accessibilityElement(children: .contain)
                     .accessibilityLabel(report.label)
+                    .transition(.opacity)
                 }
             }
+            .animation(.value, value: center.reports.map(\.id))
         }
     }
 }
