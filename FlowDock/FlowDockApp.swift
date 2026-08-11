@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var quickShareService = QuickShareService.shared
     private var onboardingWindowController: NSWindowController?
     private var distributedObservers: [Any] = []
+    private var localObservers: [Any] = []
     private var workspaceObservers: [Any] = []
     private var isScreenLocked: Bool = false
     private var recoveryTask: Task<Void, Never>?
@@ -74,7 +75,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        /// removeObserver(self) unregisters the selector-based observations only. A block
+        /// observer is owned by the token the centre handed back, so every one of those
+        /// has to be kept and returned or the block outlives the delegate.
         NotificationCenter.default.removeObserver(self)
+        localObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        localObservers.removeAll()
         distributedObservers.forEach { DistributedNotificationCenter.default().removeObserver($0) }
         distributedObservers.removeAll()
         workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
@@ -276,39 +282,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
 
-        NotificationCenter.default.addObserver(
-            forName: Notification.Name.selectedScreenChanged, object: nil, queue: nil
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.adjustWindowPosition(changeAlpha: true)
-            }
+        let repositioning: [(Notification.Name, Bool)] = [
+            (.selectedScreenChanged, true),
+            (.notchHeightChanged, false),
+            (.automaticallySwitchDisplayChanged, true),
+        ]
+        for (name, changeAlpha) in repositioning {
+            localObservers.append(
+                NotificationCenter.default.addObserver(
+                    forName: name, object: nil, queue: nil
+                ) { [weak self] _ in
+                    Task { @MainActor in
+                        self?.adjustWindowPosition(changeAlpha: changeAlpha)
+                    }
+                })
         }
 
-        NotificationCenter.default.addObserver(
-            forName: Notification.Name.notchHeightChanged, object: nil, queue: nil
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.adjustWindowPosition()
-            }
-        }
-
-        NotificationCenter.default.addObserver(
-            forName: Notification.Name.automaticallySwitchDisplayChanged, object: nil, queue: nil
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.adjustWindowPosition(changeAlpha: true)
-            }
-        }
-
-        NotificationCenter.default.addObserver(
-            forName: Notification.Name.showOnAllDisplaysChanged, object: nil, queue: nil
-        ) { [weak self] _ in
-            Task { @MainActor in
-                guard let self = self else { return }
-                self.cleanupWindows(shouldInvert: true)
-                self.adjustWindowPosition(changeAlpha: true)
-            }
-        }
+        localObservers.append(
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name.showOnAllDisplaysChanged, object: nil, queue: nil
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    guard let self = self else { return }
+                    self.cleanupWindows(shouldInvert: true)
+                    self.adjustWindowPosition(changeAlpha: true)
+                }
+            })
 
         observeLifecycle()
 
