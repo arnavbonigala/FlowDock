@@ -164,6 +164,11 @@ private struct SetupView: View {
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
 
+            Text("Rest the pointer on the notch to open FlowDock, or click it. Right-click it at any time to reach settings or quit.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
             HStack {
                 Button("Open settings", action: onOpenSettings)
                 Spacer()
