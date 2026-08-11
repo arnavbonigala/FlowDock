@@ -62,13 +62,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var quickShareService = QuickShareService.shared
     var timer: Timer?
     var closeNotchTask: Task<Void, Never>?
-    private var previousScreens: [NSScreen]?
     private var onboardingWindowController: NSWindowController?
     private var distributedObservers: [Any] = []
     private var workspaceObservers: [Any] = []
     private var isScreenLocked: Bool = false
     private var recoveryTask: Task<Void, Never>?
-    private var windowScreenDidChangeObserver: Any?
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
@@ -121,6 +119,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     forName: name, object: nil, queue: .main
                 ) { [weak self] _ in
                     Task { @MainActor in self?.scheduleRecovery() }
+                })
+        }
+
+        let activeDisplayNames: [Notification.Name] = [
+            NSWorkspace.didActivateApplicationNotification,
+            NSWorkspace.activeSpaceDidChangeNotification,
+        ]
+        for name in activeDisplayNames {
+            workspaceObservers.append(
+                NSWorkspace.shared.notificationCenter.addObserver(
+                    forName: name, object: nil, queue: .main
+                ) { [weak self] _ in
+                    Task { @MainActor in self?.followActiveDisplay() }
                 })
         }
     }
@@ -199,10 +210,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else if let window = window {
             window.close()
             NotchSpaceManager.shared.notchSpace.windows.remove(window)
-            if let obs = windowScreenDidChangeObserver {
-                NotificationCenter.default.removeObserver(obs)
-                windowScreenDidChangeObserver = nil
-            }
             self.window = nil
         }
     }
@@ -280,9 +287,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(
             forName: Notification.Name.automaticallySwitchDisplayChanged, object: nil, queue: nil
         ) { [weak self] _ in
-            guard let self = self, let window = self.window else { return }
             Task { @MainActor in
-                window.alphaValue = self.coordinator.selectedScreenUUID == self.coordinator.preferredScreenUUID ? 1 : 0
+                self?.adjustWindowPosition(changeAlpha: true)
             }
         }
 
@@ -365,8 +371,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.showOnboardingWindow(step: .setup)
             }
         }
-
-        previousScreens = NSScreen.screens
     }
 
     func playWelcomeSound() {
@@ -386,22 +390,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func screenConfigurationDidChange() {
-        let currentScreens = NSScreen.screens
-
-        let screensChanged =
-            currentScreens.count != previousScreens?.count
-            || Set(currentScreens.compactMap { $0.displayUUID })
-                != Set(previousScreens?.compactMap { $0.displayUUID } ?? [])
-            || Set(currentScreens.map { $0.frame }) != Set(previousScreens?.map { $0.frame } ?? [])
-
-        previousScreens = currentScreens
-
-        if screensChanged {
-            DispatchQueue.main.async { [weak self] in
-                self?.cleanupWindows()
-                self?.adjustWindowPosition()
-            }
+        DispatchQueue.main.async { [weak self] in
+            self?.adjustWindowPosition()
+            self?.allWindows.forEach { $0.orderFrontRegardless() }
         }
+    }
+
+    @MainActor
+    private func followActiveDisplay() {
+        allWindows.forEach { $0.orderFrontRegardless() }
+        guard !Defaults[.showOnAllDisplays], Defaults[.automaticallySwitchDisplay],
+              let activeScreenUUID = NSScreen.main?.displayUUID,
+              activeScreenUUID != vm.screenUUID
+        else { return }
+        adjustWindowPosition(changeAlpha: true)
     }
 
     @objc func adjustWindowPosition(changeAlpha: Bool = false) {
@@ -439,21 +441,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         } else {
-            let selectedScreen: NSScreen
+            let preferredScreen = NSScreen.screen(withUUID: coordinator.preferredScreenUUID ?? "")
+            let activeScreen = Defaults[.automaticallySwitchDisplay] ? NSScreen.main : nil
 
-            if let preferredScreen = NSScreen.screen(withUUID: coordinator.preferredScreenUUID ?? "") {
-                coordinator.selectedScreenUUID = coordinator.preferredScreenUUID ?? ""
-                selectedScreen = preferredScreen
-            } else if Defaults[.automaticallySwitchDisplay], let mainScreen = NSScreen.main,
-                      let mainUUID = mainScreen.displayUUID {
-                coordinator.selectedScreenUUID = mainUUID
-                selectedScreen = mainScreen
-            } else {
+            guard let selectedScreen = activeScreen ?? preferredScreen ?? NSScreen.main else {
                 if let window = window {
                     window.alphaValue = 0
                 }
                 return
             }
+
+            coordinator.selectedScreenUUID = selectedScreen.displayUUID ?? ""
 
             vm.screenUUID = selectedScreen.displayUUID
             vm.notchSize = getClosedNotchSize(screenUUID: selectedScreen.displayUUID)
