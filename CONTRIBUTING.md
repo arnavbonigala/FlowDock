@@ -38,3 +38,20 @@ Changes must meet the applicable release gates in [QUALITY.md](QUALITY.md). Inte
 5. Include screenshots or a recording for visible interface changes.
 
 Bug reports should include reproduction steps, expected and actual behavior, the FlowDock version, macOS version, and relevant logs. Feature requests should describe the problem before proposing a solution.
+
+## What happens to what you file
+
+Three intake paths, and one place each ends up:
+
+| You file | It lands as | What happens next |
+|---|---|---|
+| Bug report | `unconfirmed` | Someone reproduces it. Reproduced, it loses `unconfirmed` and gains the area it lives in; not reproduced, it stays open with a question rather than being closed. |
+| Feature request | `Feature` | Weighed against [EXTENSIONS.md](EXTENSIONS.md): things FlowDock builds become roadmap items, everything else becomes an extension proposal. |
+| Extension proposal | `extension` | An idea gets a yes or no against the same criteria; a listing request is reviewed against [DIRECTORY.md](DIRECTORY.md) and either listed or told what is missing. |
+
+A request that is declined is answered with which line it fell on, not closed silently. A
+report with no reproduction steps is asked for them once and closed if they never arrive —
+that is a limit on time, not a judgement about the bug.
+
+Security vulnerabilities never go through issues. [SECURITY.md](SECURITY.md) is the only
+path, and it is private.

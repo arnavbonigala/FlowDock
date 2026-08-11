@@ -1,0 +1,59 @@
+name: Extension Proposal
+description: Propose an activity that should be an extension, or ask for a directory listing
+title: '[Extension] '
+labels:
+  - extension
+body:
+  - type: markdown
+    attributes:
+      value: |
+        FlowDock builds the activities in [EXTENSIONS.md](https://github.com/arnavbonigala/FlowDock/blob/main/EXTENSIONS.md#what-flowdock-builds-and-what-it-hosts)
+        and hosts everything else. Use this form either to propose an activity you think
+        belongs in an extension, or to ask for one you have built to be listed in
+        [DIRECTORY.md](https://github.com/arnavbonigala/FlowDock/blob/main/DIRECTORY.md).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this?
+      options:
+        - An idea for an extension somebody should build
+        - An extension I have built, asking to be listed
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What does it show, and when?
+      description: >-
+        Which band it belongs in, whether it is contextual or persistent, and what the
+        chin shows. See INTERACTION.md for what those words mean.
+    validations:
+      required: true
+  - type: textarea
+    id: why-not-built-in
+    attributes:
+      label: Why is this an extension rather than something FlowDock builds?
+      description: >-
+        EXTENSIONS.md draws that line. A proposal that argues for crossing it should say
+        which of those criteria it meets.
+    validations:
+      required: true
+  - type: input
+    id: repository
+    attributes:
+      label: Repository
+      description: Required for a listing request, optional for an idea.
+  - type: textarea
+    id: network
+    attributes:
+      label: What leaves the user's Mac?
+      description: >-
+        Required for a listing request. DIRECTORY.md requires every listed extension to
+        state this in plain words, including "nothing".
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I have read EXTENSIONS.md and this is not something FlowDock already builds.
+          required: true
