@@ -130,6 +130,7 @@ struct ExperienceView: View {
                     radius: 12,
                     y: 4
                 )
+                .overlay(alignment: .topTrailing) { secondaryMark(for: state) }
                 .contentShape(Rectangle())
                 .sensoryFeedback(.alignment, trigger: haptics)
                 .task {
@@ -191,6 +192,7 @@ struct ExperienceView: View {
         .frame(maxWidth: windowSize.width, maxHeight: windowSize.height, alignment: .top)
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .animation(.value(reduceMotion: reduceMotion), value: store.owner?.id)
+        .animation(.content, value: store.secondary?.id)
         .preferredColorScheme(.dark)
         .symbolRenderingMode(.hierarchical)
         .environment(\.shellNamespace, reduceMotion ? nil : shell)
@@ -241,7 +243,7 @@ struct ExperienceView: View {
             chin
                 .frame(height: chinHeight(for: state))
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(store.owner?.label ?? "")
+                .accessibilityLabel(chinLabel)
                 .transition(.fromNotch(reduceMotion: reduceMotion))
 
         case .expanded:
@@ -284,6 +286,40 @@ struct ExperienceView: View {
                 .overlay(Color.black.opacity(0.3))
                 .overlay(tint?.opacity(0.2) ?? .clear)
         }
+    }
+
+    /// A second persistent activity keeps a mark beside the chin so it does not vanish when
+    /// something else takes the chin — music is still playing while a call rings. It says
+    /// only that, one glyph and no value: an activity with more to say is asking to be the
+    /// owner. It takes no clicks, because anything drawn beside the notch is over the menu
+    /// bar and a mark that swallowed a menu extra's click would be a permanent one.
+    @ViewBuilder
+    private func secondaryMark(for state: ActivityState) -> some View {
+        if state != .expanded,
+           let secondary = store.secondary,
+           let symbol = ActivityCatalog.entry(secondary.id)?.symbol {
+            Image(systemName: symbol)
+                .font(.markGlyph)
+                .foregroundStyle(.white)
+                .frame(width: Self.markDiameter, height: Self.markDiameter)
+                .background(Color.black, in: Circle())
+                .offset(x: Self.markDiameter + 6, y: (chinHeight(for: state) - Self.markDiameter) / 2)
+                .transition(.scale.combined(with: .opacity))
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private static let markDiameter: CGFloat = 18
+
+    /// The mark beside the chin is not its own element — a circle a pointer cannot click
+    /// is not one a cursor should stop on either. What it reports joins the chin's own line.
+    private var chinLabel: String {
+        guard let owner = store.owner else { return "" }
+        guard let secondary = store.secondary,
+              let name = ActivityCatalog.entry(secondary.id)?.name
+        else { return owner.label }
+        return "\(owner.label), \(name) also running"
     }
 
     private var chin: some View {

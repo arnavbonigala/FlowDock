@@ -56,6 +56,15 @@ final class ActivityStore: ObservableObject {
 
     var owner: Activity? { Activity.owner(of: activities, priority: Defaults[.activityPriority]) }
 
+    /// The one activity that keeps a mark beside the chin while another holds it. Two marks
+    /// over the menu bar is the cap — a third is a menu bar. A contextual owner is momentary
+    /// and the activity it interrupted is coming straight back, so it shows none at all.
+    var secondary: Activity? {
+        guard let owner, owner.activityClass == .persistent else { return nil }
+        let others = activities.filter { $0.id != owner.id && $0.activityClass == .persistent }
+        return Activity.owner(of: others, priority: Defaults[.activityPriority])
+    }
+
     var chinState: ActivityState {
         guard let owner else { return .idle }
         return owner.activityClass == .contextual ? .contextual : .persistent
