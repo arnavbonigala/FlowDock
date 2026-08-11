@@ -304,6 +304,11 @@ final class ShelfItemViewModel: ObservableObject {
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 
+    func perform(_ action: String, in view: NSView) {
+        let target = MenuActionTarget(item: item, view: view, viewModel: self)
+        target.handle(NSMenuItem(title: action, action: nil, keyEquivalent: ""))
+    }
+
     private func isDirectory(_ url: URL) -> Bool {
         return url.accessSecurityScopedResource { scoped in
             (try? scoped.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false

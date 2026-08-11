@@ -91,17 +91,21 @@ struct ShelfPanel: View {
     static let rowHeight: CGFloat = 28
 
     var body: some View {
-        HStack(spacing: 8) {
-            QuickShareButton()
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                QuickShareButton()
 
-            strip
+                strip
 
-            if !shelf.items.isEmpty {
-                HoverButton(icon: "xmark.bin", scale: .medium) { ShelfActionService.clearShelf() }
-                    .accessibilityLabel("Clear the shelf")
+                if !shelf.items.isEmpty {
+                    HoverButton(icon: "xmark.bin", scale: .medium) { ShelfActionService.clearShelf() }
+                        .accessibilityLabel("Clear the shelf")
+                }
             }
+            .frame(height: Self.rowHeight)
+
+            ShelfActionRow(quickLook: quickLook)
         }
-        .frame(height: Self.rowHeight)
         .overlay {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .strokeBorder(Color.accentColor, lineWidth: 2)
@@ -145,6 +149,63 @@ struct ShelfPanel: View {
         if let fileURL = item.fileURL { return fileURL }
         if case .link(let url) = item.kind { return url }
         return nil
+    }
+}
+
+private struct ShelfActionRow: View {
+    let quickLook: QuickLookService
+
+    @ObservedObject private var shelf = ShelfStateViewModel.shared
+    @ObservedObject private var selection = ShelfSelectionModel.shared
+
+    @State private var anchor: NSView?
+    @State private var runner: ShelfItemViewModel?
+
+    private var items: [ShelfItem] { selection.selectedItems(in: shelf.items) }
+    private var files: [URL] { items.compactMap(\.fileURL) }
+    private var images: [URL] { files.filter { ImageProcessingService.shared.isImageFile($0) } }
+    private var previews: [URL] { items.compactMap(ShelfPanel.previewURL) }
+
+    var body: some View {
+        if !items.isEmpty {
+            HStack(spacing: 4) {
+                if !previews.isEmpty {
+                    HoverButton(icon: "eye", scale: .small) { quickLook.show(urls: previews) }
+                        .accessibilityLabel("Quick Look")
+                }
+
+                HoverButton(icon: "doc.on.doc", scale: .small) { ShelfActionService.copySelection() }
+                    .accessibilityLabel("Copy")
+
+                if !files.isEmpty {
+                    HoverButton(icon: "doc.zipper", scale: .small) { run("Compress") }
+                        .accessibilityLabel("Compress")
+                }
+
+                if !images.isEmpty {
+                    HoverButton(icon: "wand.and.stars", scale: .small) {
+                        run(images.count == 1 ? "Remove Background" : "Create PDF")
+                    }
+                    .accessibilityLabel(images.count == 1 ? "Remove the background" : "Create a PDF")
+                }
+
+
+                Spacer(minLength: 0)
+
+                Text(items.count == 1 ? "1 selected" : "\(items.count) selected")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(height: 22)
+            .background(ShareAnchor(view: $anchor))
+        }
+    }
+
+    private func run(_ action: String) {
+        guard let item = items.first, let anchor else { return }
+        let runner = ShelfItemViewModel(item: item)
+        self.runner = runner
+        runner.perform(action, in: anchor)
     }
 }
 
