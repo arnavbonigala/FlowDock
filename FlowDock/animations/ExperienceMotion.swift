@@ -59,3 +59,23 @@ extension Animation {
             : .spring(response: 0.42, dampingFraction: 0.8)
     }
 }
+
+private struct BounceOnAppear: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var fired = false
+
+    func body(content: Content) -> some View {
+        content
+            .symbolEffect(.bounce, options: .nonRepeating, value: fired)
+            .onAppear {
+                guard !reduceMotion else { return }
+                fired = true
+            }
+    }
+}
+
+extension View {
+    func bounceOnAppear() -> some View {
+        modifier(BounceOnAppear())
+    }
+}

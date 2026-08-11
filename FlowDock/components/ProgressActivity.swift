@@ -45,6 +45,7 @@ extension Activity {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.green)
+                    .bounceOnAppear()
                     .frame(width: progressChinSide, alignment: .leading)
             },
             trailing: {

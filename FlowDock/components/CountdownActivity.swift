@@ -64,6 +64,7 @@ extension Activity {
                 Image(systemName: "timer")
                     .font(.chinGlyph)
                     .foregroundStyle(.white)
+                    .bounceOnAppear()
                     .frame(width: countdownChinSide, alignment: .leading)
             },
             trailing: {

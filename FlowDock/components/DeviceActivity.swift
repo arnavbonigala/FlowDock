@@ -35,6 +35,7 @@ extension Activity {
                         Image(systemName: device.isConnected ? "checkmark" : "xmark")
                             .font(.chinValue)
                             .foregroundStyle(.white)
+                            .bounceOnAppear()
                     }
                 }
                 .frame(width: deviceChinSide, alignment: .trailing)
