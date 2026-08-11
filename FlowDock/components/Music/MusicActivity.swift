@@ -86,6 +86,8 @@ private struct MusicChinArtwork: View {
             .aspectRatio(contentMode: .fill)
             .frame(width: side, height: side)
             .clipShape(RoundedRectangle(cornerRadius: MusicPlayerImageSizes.cornerRadiusInset.closed))
+            .id(music.albumArt)
+            .transition(.opacity)
     }
 }
 
@@ -173,6 +175,8 @@ private struct MusicArtwork: View {
                     .frame(width: MusicPlayerImageSizes.size.opened.width,
                            height: MusicPlayerImageSizes.size.opened.height)
                     .clipShape(RoundedRectangle(cornerRadius: radius))
+                    .id(music.albumArt)
+                    .transition(.opacity)
             }
         }
         .accessibilityLabel(idle ? "Open music app" : "Open \(music.songTitle) in its app")
@@ -186,6 +190,8 @@ private struct MusicArtwork: View {
                     .blur(radius: 32)
                     .opacity(music.isPlaying ? 0.5 : 0)
                     .allowsHitTesting(false)
+                    .id(music.albumArt)
+                    .transition(.opacity)
             }
         }
         .overlay(alignment: .bottomTrailing) {
