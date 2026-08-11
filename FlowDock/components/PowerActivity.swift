@@ -186,7 +186,7 @@ struct PowerPanelIndicator: View {
                     Text(timeToFull)
                         .font(.panelMeta)
                         .monospacedDigit()
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
 
                 if showPercentage {

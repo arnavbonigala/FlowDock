@@ -170,7 +170,7 @@ private struct MusicArtwork: View {
                     .overlay {
                         Image(systemName: "music.note")
                             .font(.system(size: 26))
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                     }
             } else {
                 Color.clear

@@ -227,7 +227,7 @@ private struct ShelfActionRow: View {
         } else if !shelf.items.isEmpty {
             Text("Select an item for actions")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .frame(height: PanelRow.controls)
         }
     }
