@@ -8,11 +8,6 @@
 import Foundation
 import Combine
 
-private let _shelfTypeAnchor: Bool = {
-    _ = String(describing: ShelfItem.self)
-    return true
-}()
-
 @MainActor
 final class ShelfSelectionModel: ObservableObject {
     static let shared = ShelfSelectionModel()

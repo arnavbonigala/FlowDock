@@ -135,15 +135,6 @@ class TemporaryFileStorageService {
         }
     }
     
-    private func createFile(at url: URL, data: Data) -> URL? {
-        do {
-            try data.write(to: url)
-            return url
-        } catch {
-            print("Failed to create a temporary file: \(error.localizedDescription)")
-            return nil
-        }
-    }
     func createZip(from urls: [URL], suggestedName: String? = nil) async -> URL? {
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         let uuid = UUID().uuidString
