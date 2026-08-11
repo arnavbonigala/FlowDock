@@ -60,11 +60,17 @@ The closed and contextual surfaces must be indistinguishable from the display be
 | Between columns and unrelated groups | 16 |
 | Between major sections of the expanded state | 24 |
 
-**Two row heights, not one per panel.** Panels stack in the same column, so a row that
-carries content is **30 pt** — an agenda entry, a notification, a download, a meeting —
-and a strip that only carries controls is **22 pt**. Both are inset 8 pt horizontally and
-sit on an 8 pt continuous rounded rectangle. The two stacked lines of text inside a
-content row are separated by 1 pt, which is optical, not a spacing step.
+**Two row heights, not one per panel** — `PanelRow.content` and `PanelRow.controls`.
+Panels stack in the same column, so a row that carries content is **30 pt** — an agenda
+entry, a notification, a download, a meeting — and a strip that only carries controls is
+**22 pt**. The two stacked lines of text inside a content row are separated by 1 pt, which
+is optical, not a spacing step.
+
+A row that is itself one surface is inset 8 pt horizontally and sits on an 8 pt continuous
+rounded rectangle (`panelRowBackground`). A row that is a line of separate targets — the
+shelf's chips, its action strip — is not a surface, so it keeps the height and skips the
+card; the things inside it carry their own. Two cards deep is elevation the panel does not
+have.
 
 **The agenda column is a list, not a stack of rows.** An event's title wraps, so its
 height cannot be fixed, and a card behind every entry would make a dense day unreadable.
