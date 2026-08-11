@@ -4,7 +4,8 @@ An extension is a third-party activity: someone else's code occupying FlowDock's
 and panel under FlowDock's rules. This document defines the boundary it lives behind and
 the safety model that makes hosting it defensible. The interaction rules it inherits are
 in [INTERACTION.md](INTERACTION.md), its visual rules in [DESIGN.md](DESIGN.md), and the
-gates it must pass in [QUALITY.md](QUALITY.md).
+gates it must pass in [QUALITY.md](QUALITY.md). How to actually build one is in
+[BUILDING-EXTENSIONS.md](BUILDING-EXTENSIONS.md).
 
 The premise is narrow on purpose. FlowDock does not need a widget market. It needs a way
 for the activities it will never build — a Pomodoro, a build monitor, a specialized music
