@@ -163,15 +163,12 @@ private struct MusicArtwork: View {
             music.openMusicApp()
         } label: {
             if idle {
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(.quaternary)
+                Image(systemName: "music.note")
+                    .font(.system(size: 26))
+                    .foregroundStyle(.secondary)
                     .frame(width: MusicPlayerImageSizes.size.opened.width,
                            height: MusicPlayerImageSizes.size.opened.height)
-                    .overlay {
-                        Image(systemName: "music.note")
-                            .font(.system(size: 26))
-                            .foregroundStyle(.secondary)
-                    }
+                    .raisedSurface(RoundedRectangle(cornerRadius: radius, style: .continuous))
             } else {
                 Color.clear
                     .frame(width: MusicPlayerImageSizes.size.opened.width,

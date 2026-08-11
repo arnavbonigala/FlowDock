@@ -210,7 +210,7 @@ struct TimerPanel: View {
                             .monospacedDigit()
                             .padding(.horizontal, 8)
                             .frame(minWidth: 28, maxHeight: .infinity)
-                            .background(Capsule().fill(.tertiary))
+                            .raisedSurface(Capsule())
                             .contentShape(Capsule().inset(by: -3))
                     }
                     .buttonStyle(PressableButtonStyle())
