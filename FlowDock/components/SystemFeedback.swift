@@ -138,7 +138,6 @@ struct SystemFeedbackView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(reading.title)
                 .font(.system(size: 11, weight: .semibold))
-                .tracking(0.2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
