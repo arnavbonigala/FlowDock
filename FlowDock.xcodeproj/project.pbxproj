@@ -1139,8 +1139,10 @@
 				INFOPLIST_KEY_LSBackgroundOnly = NO;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "This app uses AppleEvents to control music";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app uses the calendar to display your calendar events";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024–2026 respective contributors";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "This app uses Reminders to display your scheduled reminder in the calendar";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1191,8 +1193,10 @@
 				INFOPLIST_KEY_LSBackgroundOnly = NO;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "This app uses AppleEvents to control music";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app uses the calendar to display your calendar events";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024–2026 respective contributors";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "This app uses Reminders to display your scheduled reminder in the calendar";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
