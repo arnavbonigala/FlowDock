@@ -88,12 +88,14 @@ struct AgendaPanel: View {
     private var list: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(agenda) { event in
-                        row(event).id(event.id)
+                TimelineView(.periodic(from: .now, by: 60)) { timeline in
+                    LazyVStack(alignment: .leading, spacing: 2) {
+                        ForEach(agenda) { event in
+                            row(event, now: timeline.date).id(event.id)
+                        }
                     }
+                    .measuring($agendaHeight, along: .vertical)
                 }
-                .measuring($agendaHeight, along: .vertical)
             }
             .scrollIndicators(.never)
             .fadesPastEdge(.vertical, contentLength: agendaHeight)
@@ -102,7 +104,9 @@ struct AgendaPanel: View {
         }
     }
 
-    private func row(_ event: EventModel) -> some View {
+    /// An event stops being ahead of you while the panel is open, so the row asks the clock
+    /// once a minute rather than only when the store changes.
+    private func row(_ event: EventModel, now: Date) -> some View {
         HStack(alignment: .top, spacing: 8) {
             if case .reminder(let completed) = event.type {
                 ReminderCheck(completed: completed, color: Color(event.calendar.color)) {
@@ -144,7 +148,7 @@ struct AgendaPanel: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Self.label(event, now: .now))
+            .accessibilityLabel(Self.label(event, now: now))
 
             if let meeting = event.meetingURL {
                 HoverButton(icon: "video.fill", scale: .small) { openURL(meeting) }
@@ -152,7 +156,7 @@ struct AgendaPanel: View {
             }
         }
         .padding(.vertical, 4)
-        .opacity(Self.isSpent(event, now: .now) ? 0.5 : 1)
+        .opacity(Self.isSpent(event, now: now) ? 0.5 : 1)
     }
 
     @ViewBuilder
