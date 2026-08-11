@@ -198,7 +198,7 @@ struct TimerPanel: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HoverButton(icon: "stop.fill", scale: .small) { timer.cancel() }
-                    .accessibilityLabel("Stop timer")
+                    .iconLabel("Stop timer")
             } else {
                 ForEach(TimerCenter.durations, id: \.self) { minutes in
                     Button {

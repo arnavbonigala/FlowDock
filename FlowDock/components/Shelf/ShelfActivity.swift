@@ -98,7 +98,7 @@ struct ShelfPanel: View {
 
                 if !shelf.items.isEmpty {
                     HoverButton(icon: "xmark.bin", scale: .medium) { ShelfActionService.clearShelf() }
-                        .accessibilityLabel("Clear the shelf")
+                        .iconLabel("Clear the shelf")
                 }
             }
             .frame(height: Self.rowHeight)
@@ -170,25 +170,25 @@ private struct ShelfActionRow: View {
             HStack(spacing: 4) {
                 if !previews.isEmpty {
                     HoverButton(icon: "eye", scale: .small) { quickLook.show(urls: previews) }
-                        .accessibilityLabel("Quick Look")
+                        .iconLabel("Quick Look")
                 }
 
                 HoverButton(icon: "doc.on.doc", scale: .small) { ShelfActionService.copySelection() }
-                    .accessibilityLabel("Copy")
+                    .iconLabel("Copy")
 
                 if !files.isEmpty {
                     HoverButton(icon: "doc.zipper", scale: .small) { run(.compress) }
-                        .accessibilityLabel("Compress")
+                        .iconLabel("Compress")
                 }
 
                 if images.count == 1 {
                     HoverButton(icon: "wand.and.stars", scale: .small) { run(.removeBackground) }
-                        .accessibilityLabel("Remove the background")
+                        .iconLabel("Remove the background")
                 }
 
                 if !images.isEmpty {
                     HoverButton(icon: "doc.richtext", scale: .small) { run(.createPDF) }
-                        .accessibilityLabel("Create a PDF")
+                        .iconLabel("Create a PDF")
                 }
 
                 Menu {

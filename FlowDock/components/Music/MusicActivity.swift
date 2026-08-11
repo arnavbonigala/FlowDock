@@ -393,19 +393,19 @@ private struct MusicControls: View {
             HoverButton(icon: "shuffle", iconColor: music.isShuffled ? .effectiveAccent : .primary) {
                 music.toggleShuffle()
             }
-            .accessibilityLabel("Shuffle")
+            .iconLabel("Shuffle")
             .accessibilityValue(music.isShuffled ? "On" : "Off")
         case .previous:
             HoverButton(icon: "backward.fill") { music.previousTrack() }
-                .accessibilityLabel("Previous track")
+                .iconLabel("Previous track")
         case .playPause:
             HoverButton(icon: music.isPlaying ? "pause.fill" : "play.fill", scale: .large) {
                 music.togglePlay()
             }
-            .accessibilityLabel(music.isPlaying ? "Pause" : "Play")
+            .iconLabel(music.isPlaying ? "Pause" : "Play")
         case .next:
             HoverButton(icon: "forward.fill") { music.nextTrack() }
-                .accessibilityLabel("Next track")
+                .iconLabel("Next track")
         case .repeatMode:
             HoverButton(
                 icon: music.repeatMode == .one ? "repeat.1" : "repeat",
@@ -426,10 +426,10 @@ private struct MusicControls: View {
                 .accessibilityValue(music.isFavoriteTrack ? "On" : "Off")
         case .goBackward:
             HoverButton(icon: "gobackward.15") { music.skip(seconds: -15) }
-                .accessibilityLabel("Back 15 seconds")
+                .iconLabel("Back 15 seconds")
         case .goForward:
             HoverButton(icon: "goforward.15") { music.skip(seconds: 15) }
-                .accessibilityLabel("Forward 15 seconds")
+                .iconLabel("Forward 15 seconds")
         case .none:
             Color.clear.frame(width: 30, height: 1)
         }

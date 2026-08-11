@@ -144,7 +144,7 @@ struct AgendaPanel: View {
 
             if let meeting = event.meetingURL {
                 HoverButton(icon: "video.fill", scale: .small) { openURL(meeting) }
-                    .accessibilityLabel("Join \(event.title)")
+                    .iconLabel("Join \(event.title)")
             }
         }
         .padding(.vertical, 4)

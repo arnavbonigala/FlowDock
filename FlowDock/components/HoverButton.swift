@@ -50,6 +50,12 @@ struct HoverButton: View {
     }
 }
 
+extension View {
+    func iconLabel(_ text: String) -> some View {
+        accessibilityLabel(text).help(text)
+    }
+}
+
 struct PressableButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 

@@ -165,7 +165,7 @@ struct ProgressPanel: View {
                         HoverButton(icon: "folder", scale: .small) {
                             center.reveal(report)
                         }
-                        .accessibilityLabel("Show in Finder")
+                        .iconLabel("Show in Finder")
                     }
                     .frame(height: 30)
                     .padding(.horizontal, 8)

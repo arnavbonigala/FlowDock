@@ -139,12 +139,12 @@ private struct NotificationRow: View {
                 HoverButton(icon: "arrow.up.forward.app", scale: .small) {
                     NotificationFeed.shared.activate(notification)
                 }
-                .accessibilityLabel("Open in \(group.app)")
+                .iconLabel("Open in \(group.app)")
 
                 HoverButton(icon: "xmark", scale: .small) {
                     NotificationFeed.shared.dismiss(notification)
                 }
-                .accessibilityLabel("Dismiss")
+                .iconLabel("Dismiss")
             }
         }
         .frame(height: 30)

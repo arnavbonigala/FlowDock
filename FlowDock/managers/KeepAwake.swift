@@ -100,7 +100,6 @@ struct KeepAwakeButton: View {
         ) {
             keepAwake.toggle()
         }
-        .accessibilityLabel(keepAwake.isOn ? "Let the display sleep" : "Keep the display awake")
-        .help(keepAwake.isOn ? "Let the display sleep" : "Keep the display awake")
+        .iconLabel(keepAwake.isOn ? "Let the display sleep" : "Keep the display awake")
     }
 }
