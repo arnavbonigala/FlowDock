@@ -20,6 +20,7 @@ struct MediaCapabilities: OptionSet {
     static let queue = MediaCapabilities(rawValue: 1 << 5)
 }
 
+@MainActor
 protocol MediaControllerProtocol: ObservableObject {
     var playbackStatePublisher: AnyPublisher<PlaybackState, Never> { get }
     var capabilities: MediaCapabilities { get }

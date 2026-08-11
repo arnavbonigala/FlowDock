@@ -311,10 +311,9 @@ private struct MusicScrubber: View {
                     range: 0...max(music.songDuration, 0.001),
                     color: trackColor,
                     dragging: $dragging,
-                    lastDragged: $lastDragged
-                ) { newValue in
-                    music.seek(to: newValue)
-                }
+                    lastDragged: $lastDragged,
+                    onValueChange: { newValue in music.seek(to: newValue) }
+                )
                 .frame(height: 10)
                 .disabled(!music.canSeek)
                 .allowsHitTesting(music.canSeek)
