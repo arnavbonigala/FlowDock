@@ -23,14 +23,19 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         $playbackState.eraseToAnyPublisher()
     }
 
-    var supportsVolumeControl: Bool {
-        let bundleID = playbackState.bundleIdentifier
-        return bundleID == "com.apple.Music" || bundleID == "com.spotify.client"
-    }
+    private var reportedModes: MediaCapabilities = []
 
-    var supportsFavorite: Bool {
+    var capabilities: MediaCapabilities {
         let bundleID = playbackState.bundleIdentifier
-        return bundleID == "com.apple.Music"
+        var capabilities: MediaCapabilities = [.seek]
+        capabilities.formUnion(reportedModes)
+        if bundleID == "com.apple.Music" || bundleID == "com.spotify.client" {
+            capabilities.insert(.volume)
+        }
+        if bundleID == "com.apple.Music" {
+            capabilities.insert(.favorite)
+        }
+        return capabilities
     }
 
     func setFavorite(_ favorite: Bool) async {
@@ -264,6 +269,17 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         }
 
         
+        if payload.shuffleMode != nil {
+            reportedModes.insert(.shuffle)
+        } else if !diff {
+            reportedModes.remove(.shuffle)
+        }
+        if payload.repeatMode != nil {
+            reportedModes.insert(.repeatMode)
+        } else if !diff {
+            reportedModes.remove(.repeatMode)
+        }
+
         if let shuffleMode = payload.shuffleMode {
             newPlaybackState.isShuffled = shuffleMode != 1
         } else if !diff {
@@ -319,7 +335,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     }
     
      private func fetchFavoriteStateIfSupported() async {
-         guard supportsFavorite else {
+         guard capabilities.contains(.favorite) else {
              if playbackState.isFavorite {
                  playbackState.isFavorite = false
              }

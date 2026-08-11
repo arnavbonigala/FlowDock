@@ -97,4 +97,15 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
     var prefersLargeScale: Bool {
         self == .playPause
     }
+
+    var requires: MediaCapabilities {
+        switch self {
+        case .shuffle: [.shuffle]
+        case .repeatMode: [.repeatMode]
+        case .volume: [.volume]
+        case .favorite: [.favorite]
+        case .goBackward, .goForward: [.seek]
+        case .previous, .playPause, .next, .none: []
+        }
+    }
 }

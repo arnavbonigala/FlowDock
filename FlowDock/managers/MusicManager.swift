@@ -45,14 +45,18 @@ class MusicManager: ObservableObject {
     @Published var isShuffled: Bool = false
     @Published var repeatMode: RepeatMode = .off
     @Published var volume: Double = 0.5
-    @Published var volumeControlSupported: Bool = true
+    @Published var capabilities: MediaCapabilities = []
+    @Published var upNext: [String] = []
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     @Published var usingAppIconForArtwork: Bool = false
     @Published var currentLyrics: String = ""
     @Published var isFetchingLyrics: Bool = false
     @Published var syncedLyrics: [(time: Double, text: String)] = []
-    @Published var canFavoriteTrack: Bool = false
     @Published var isFavoriteTrack: Bool = false
+
+    var volumeControlSupported: Bool { capabilities.contains(.volume) }
+    var canFavoriteTrack: Bool { capabilities.contains(.favorite) }
+    var canSeek: Bool { capabilities.contains(.seek) }
 
     private var artworkData: Data? = nil
 
@@ -181,8 +185,7 @@ class MusicManager: ObservableObject {
         // Set new active controller
         activeController = controller
 
-        self.canFavoriteTrack = controller.supportsFavorite
-        self.volumeControlSupported = controller.supportsVolumeControl
+        self.capabilities = controller.capabilities
 
         if !controller.isActive() {
             clearPlaybackState()
@@ -208,6 +211,7 @@ class MusicManager: ObservableObject {
         isFavoriteTrack = false
         currentLyrics = ""
         syncedLyrics = []
+        upNext = []
         isFetchingLyrics = false
         usingAppIconForArtwork = false
         albumArt = defaultImage
@@ -271,6 +275,7 @@ class MusicManager: ObservableObject {
 
             // Fetch lyrics on content change
             self.fetchLyricsIfAvailable(bundleIdentifier: state.bundleIdentifier, title: state.title, artist: state.artist)
+            self.refreshUpNext()
         }
 
         let timeChanged = state.currentTime != self.elapsedTime
@@ -310,9 +315,10 @@ class MusicManager: ObservableObject {
 
         if state.bundleIdentifier != self.bundleIdentifier {
             self.bundleIdentifier = state.bundleIdentifier
-            // Update volume control support from active controller
-            self.volumeControlSupported = activeController?.supportsVolumeControl ?? false
-            self.canFavoriteTrack = activeController?.supportsFavorite ?? false
+        }
+
+        if let capabilities = activeController?.capabilities, capabilities != self.capabilities {
+            self.capabilities = capabilities
         }
 
         if repeatModeChanged {
@@ -327,6 +333,20 @@ class MusicManager: ObservableObject {
         }
         
         self.timestampDate = state.lastUpdated
+    }
+
+    @MainActor
+    private func refreshUpNext() {
+        guard capabilities.contains(.queue), let controller = activeController else {
+            if !upNext.isEmpty { upNext = [] }
+            return
+        }
+
+        Task { @MainActor [weak self] in
+            let next = await controller.upNext()
+            guard let self, self.activeController === controller else { return }
+            self.upNext = next
+        }
     }
 
     func toggleFavoriteTrack() {

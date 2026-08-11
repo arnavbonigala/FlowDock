@@ -9,11 +9,21 @@ import Foundation
 import AppKit
 import Combine
 
+struct MediaCapabilities: OptionSet {
+    let rawValue: Int
+
+    static let seek = MediaCapabilities(rawValue: 1 << 0)
+    static let shuffle = MediaCapabilities(rawValue: 1 << 1)
+    static let repeatMode = MediaCapabilities(rawValue: 1 << 2)
+    static let volume = MediaCapabilities(rawValue: 1 << 3)
+    static let favorite = MediaCapabilities(rawValue: 1 << 4)
+    static let queue = MediaCapabilities(rawValue: 1 << 5)
+}
+
 protocol MediaControllerProtocol: ObservableObject {
     var playbackStatePublisher: AnyPublisher<PlaybackState, Never> { get }
-    var supportsVolumeControl: Bool { get }
-    var supportsFavorite: Bool { get }
-    
+    var capabilities: MediaCapabilities { get }
+
     func setFavorite(_ favorite: Bool) async
     func play() async
     func pause() async
@@ -26,4 +36,9 @@ protocol MediaControllerProtocol: ObservableObject {
     func setVolume(_ level: Double) async
     func isActive() -> Bool
     func updatePlaybackInfo() async
+    func upNext() async -> [String]
+}
+
+extension MediaControllerProtocol {
+    func upNext() async -> [String] { [] }
 }

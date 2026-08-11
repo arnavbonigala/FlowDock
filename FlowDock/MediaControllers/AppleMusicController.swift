@@ -20,12 +20,30 @@ class AppleMusicController: MediaControllerProtocol {
         $playbackState.eraseToAnyPublisher()
     }
 
-    var supportsVolumeControl: Bool {
-        return true
+    var capabilities: MediaCapabilities {
+        [.seek, .shuffle, .repeatMode, .volume, .favorite, .queue]
     }
 
-    var supportsFavorite: Bool {
-        return true
+    func upNext() async -> [String] {
+        let script = """
+        tell application "Music"
+            try
+                set upcoming to {}
+                set list to current playlist
+                set here to index of current track
+                repeat with n from (here + 1) to (here + 3)
+                    if n ≤ (count of tracks of list) then
+                        set end of upcoming to name of track n of list
+                    end if
+                end repeat
+                return upcoming
+            on error
+                return {}
+            end try
+        end tell
+        """
+        guard let result = try? await AppleScriptHelper.execute(script), result.numberOfItems > 0 else { return [] }
+        return (1...result.numberOfItems).compactMap { result.atIndex($0)?.stringValue }
     }
 
     private var notificationTask: Task<Void, Never>?

@@ -232,7 +232,6 @@ private struct MusicSourceMenu: View {
 
 private struct MusicDetails: View {
     @ObservedObject private var music = MusicManager.shared
-    @Default(.enableLyrics) private var enableLyrics
 
     var body: some View {
         GeometryReader { geo in
@@ -240,9 +239,7 @@ private struct MusicDetails: View {
                 ScrollingText(music.songTitle, style: .body, weight: .semibold, color: .primary, width: geo.size.width)
                 ScrollingText(music.artistName, style: .subheadline, color: .secondary, width: geo.size.width)
 
-                if enableLyrics {
-                    MusicLyricsLine(width: geo.size.width)
-                }
+                MusicContextLine(width: geo.size.width)
 
                 MusicScrubber()
 
@@ -254,26 +251,33 @@ private struct MusicDetails: View {
     }
 }
 
-private struct MusicLyricsLine: View {
+private struct MusicContextLine: View {
     let width: CGFloat
 
     @ObservedObject private var music = MusicManager.shared
+    @Default(.enableLyrics) private var enableLyrics
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
             ScrollingText(line(at: timeline.date), style: .subheadline, color: .secondary, width: width)
-                .opacity(music.isPlaying ? 1 : 0)
         }
         .frame(height: 16)
     }
 
     private func line(at date: Date) -> String {
+        if let lyric = lyric(at: date) { return lyric }
+        if let next = music.upNext.first { return "Up next: \(next)" }
+        return music.album
+    }
+
+    private func lyric(at date: Date) -> String? {
+        guard enableLyrics, music.isPlaying else { return nil }
         if music.isFetchingLyrics { return "Loading lyrics…" }
         if !music.syncedLyrics.isEmpty {
             return music.lyricLine(at: music.estimatedPlaybackPosition(at: date))
         }
         let plain = music.currentLyrics.trimmingCharacters(in: .whitespacesAndNewlines)
-        return plain.isEmpty ? "No lyrics found" : plain.replacingOccurrences(of: "\n", with: " ")
+        return plain.isEmpty ? nil : plain.replacingOccurrences(of: "\n", with: " ")
     }
 }
 
@@ -306,6 +310,8 @@ private struct MusicScrubber: View {
                     music.seek(to: newValue)
                 }
                 .frame(height: 10)
+                .disabled(!music.canSeek)
+                .allowsHitTesting(music.canSeek)
                 .accessibilityLabel("Playback position")
                 .accessibilityValue(timeString(position))
 
@@ -344,7 +350,7 @@ private struct MusicControls: View {
     private var activeSlots: [MusicControlButton] {
         let limit = min(max(slotLimit, MusicControlButton.minSlotCount), MusicControlButton.maxSlotCount)
         let padded = slots + Array(repeating: .none, count: max(0, limit - slots.count))
-        return Array(padded.prefix(limit))
+        return padded.prefix(limit).map { music.capabilities.contains($0.requires) ? $0 : .none }
     }
 
     var body: some View {

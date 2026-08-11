@@ -68,7 +68,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 
 ## 5. Deepen the flagship activities
 
-- [ ] Expand music with reliable generic playback, richer context, queues, lyrics, and capability-aware controls
+- [x] Expand music with reliable generic playback, richer context, queues, lyrics, and capability-aware controls
 - [ ] Add a first-class notification experience with useful grouping and actions where macOS permits
 - [ ] Add Bluetooth and headphone connection, battery, and device-status activities
 - [ ] Add dependable download and progress activities

@@ -22,11 +22,9 @@ final class YouTubeMusicController: MediaControllerProtocol {
         $playbackState.eraseToAnyPublisher()
     }
 
-    var supportsVolumeControl: Bool {
-        return true
+    var capabilities: MediaCapabilities {
+        [.seek, .shuffle, .repeatMode, .volume, .favorite]
     }
-
-    var supportsFavorite: Bool { true }
 
     func setFavorite(_ favorite: Bool) async {
         do {
