@@ -93,7 +93,11 @@ struct ExperienceView: View {
 
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                Color.black
+                if displayHasNotch || state != .idle {
+                    Color.black
+                } else {
+                    Color.clear
+                }
                 content(for: state)
             }
                 .frame(
