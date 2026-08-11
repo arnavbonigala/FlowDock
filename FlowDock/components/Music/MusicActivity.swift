@@ -284,8 +284,12 @@ private struct MusicContextLine: View {
     @ObservedObject private var music = MusicManager.shared
     @Default(.enableLyrics) private var enableLyrics
 
+    private var tick: TimeInterval {
+        enableLyrics && music.isPlaying && !music.syncedLyrics.isEmpty ? 0.25 : 10
+    }
+
     var body: some View {
-        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.25 : 10)) { timeline in
+        TimelineView(.periodic(from: .now, by: tick)) { timeline in
             ScrollingText(
                 line(at: timeline.date),
                 style: .subheadline,
@@ -326,7 +330,7 @@ private struct MusicScrubber: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.1 : 10)) { timeline in
+        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.25 : 10)) { timeline in
             VStack(spacing: 4) {
                 CustomSlider(
                     value: $position,
