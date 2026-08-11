@@ -112,6 +112,12 @@ extension:
   not is released along with the rest of that extension: the chin shows the next activity
   down and the extension's activity ends. A scene that fails after it has drawn ends the
   same way.
+- **A runtime failure is not an uninstall.** Releasing an extension ends its activity and
+  drops its process; it does not take the extension off the list. The next poll asks it
+  again, so an extension the user turned on comes back within fifteen seconds of working
+  again, and a permanently broken one costs a launch every fifteen seconds until the user
+  turns it off. Losing the chin for two slow seconds must not cost an extension the rest
+  of the session. Discovery alone decides who is on the list.
 - **Failure is silent to the user and loud to the developer.** A misbehaving extension
   loses the chin; the user is not shown a diagnostic they did not ask for and cannot act
   on. The reason is available in the extension's own log.

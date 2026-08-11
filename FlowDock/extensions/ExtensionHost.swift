@@ -182,10 +182,12 @@ final class ExtensionHost: NSObject, ObservableObject {
         return connection
     }
 
+    /// Ends the activity and drops the process. Membership of `available` belongs to
+    /// discovery, so an extension that failed at runtime is asked again by the next poll
+    /// rather than being silently uninstalled for the rest of the session.
     func release(_ bundleIdentifier: String) {
         connections.removeValue(forKey: bundleIdentifier)?.invalidate()
         processes.removeValue(forKey: bundleIdentifier)?.invalidate()
-        available.removeAll { $0.identity.bundleIdentifier == bundleIdentifier }
         live.removeAll { $0.identity.bundleIdentifier == bundleIdentifier }
     }
 }
