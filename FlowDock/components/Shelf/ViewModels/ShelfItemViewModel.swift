@@ -682,17 +682,18 @@ final class ShelfItemViewModel: ObservableObject {
                     savePanel.directoryURL = fileURL.deletingLastPathComponent()
                     savePanel.begin { response in
                         if response == .OK, let newURL = savePanel.url {
-                            Task {
+                            Task { @MainActor in
                                 do {
-                                    NSLog("🔐 Rename: moving from \(fileURL.path) to \(newURL.path) (securityScope=\(didStart))")
-
                                     try FileManager.default.moveItem(at: fileURL, to: newURL)
 
                                     if let newBookmark = try? Bookmark(url: newURL) {
                                         ShelfStateViewModel.shared.updateBookmark(for: item, bookmark: newBookmark.data)
                                     }
                                 } catch {
-                                    print("❌ Failed to rename file: \(error.localizedDescription)")
+                                    self.showErrorAlert(
+                                        title: "Rename Failed",
+                                        message: error.localizedDescription
+                                    )
                                 }
                                 if didStart { fileURL.stopAccessingSecurityScopedResource() }
                             }
@@ -717,18 +718,18 @@ final class ShelfItemViewModel: ObservableObject {
                         try await ImageProcessingService.shared.removeBackground(from: url)
                     }
                     
-                    if let resultURL = resultURL {
-                        // Create bookmark and add to shelf as temporary item
-                        if let bookmark = try? Bookmark(url: resultURL) {
-                            let newItem = ShelfItem(
-                                kind: .file(bookmark: bookmark.data),
-                                isTemporary: true
-                            )
-                            ShelfStateViewModel.shared.add([newItem])
-                        }
+                    guard let resultURL, let bookmark = try? Bookmark(url: resultURL) else {
+                        showErrorAlert(
+                            title: "Background Removal Failed",
+                            message: "FlowDock could not produce an image without its background."
+                        )
+                        return
                     }
+
+                    ShelfStateViewModel.shared.add([
+                        ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
+                    ])
                 } catch {
-                    print("❌ Failed to remove background: \(error.localizedDescription)")
                     showErrorAlert(title: "Background Removal Failed", message: error.localizedDescription)
                 }
             }
@@ -747,18 +748,18 @@ final class ShelfItemViewModel: ObservableObject {
                         try await ImageProcessingService.shared.createPDF(from: urls)
                     }
                     
-                    if let resultURL = resultURL {
-                        // Create bookmark and add to shelf as temporary item
-                        if let bookmark = try? Bookmark(url: resultURL) {
-                            let newItem = ShelfItem(
-                                kind: .file(bookmark: bookmark.data),
-                                isTemporary: true
-                            )
-                            ShelfStateViewModel.shared.add([newItem])
-                        }
+                    guard let resultURL, let bookmark = try? Bookmark(url: resultURL) else {
+                        showErrorAlert(
+                            title: "PDF Creation Failed",
+                            message: "FlowDock could not build a PDF from the selected images."
+                        )
+                        return
                     }
+
+                    ShelfStateViewModel.shared.add([
+                        ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
+                    ])
                 } catch {
-                    print("❌ Failed to create PDF: \(error.localizedDescription)")
                     showErrorAlert(title: "PDF Creation Failed", message: error.localizedDescription)
                 }
             }
