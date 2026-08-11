@@ -71,16 +71,12 @@ private struct MusicActivityBinder: ViewModifier {
 
 // MARK: - Chin
 
-private func chinItemSide(_ vm: FlowDockViewModel) -> CGFloat {
-    max(0, vm.effectiveClosedNotchHeight - 12)
-}
-
 private struct MusicChinArtwork: View {
     @EnvironmentObject private var vm: FlowDockViewModel
     @ObservedObject private var music = MusicManager.shared
 
     var body: some View {
-        let side = chinItemSide(vm)
+        let side = vm.chinItemSide
         Image(nsImage: music.albumArt)
             .resizable()
             .aspectRatio(contentMode: .fill)
@@ -98,7 +94,7 @@ private struct MusicChinIndicator: View {
     @Default(.coloredSpectrogram) private var coloredSpectrogram
 
     var body: some View {
-        let side = chinItemSide(vm)
+        let side = vm.chinItemSide
         Group {
             if reduceMotion {
                 Image(systemName: music.isPlaying ? "waveform" : "pause.fill")

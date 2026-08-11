@@ -95,6 +95,10 @@ class FlowDockViewModel: NSObject, ObservableObject {
         return noNotchAndFullscreen ? 0 : closedNotchSize.height
     }
 
+    var chinItemSide: CGFloat {
+        max(0, effectiveClosedNotchHeight - 12)
+    }
+
     func open() {
         self.notchSize = openNotchSize
         self.notchState = .open

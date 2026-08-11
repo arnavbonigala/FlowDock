@@ -67,7 +67,7 @@ struct ExperienceView: View {
     }
 
     private var chinSide: CGFloat {
-        store.owner?.chinSideWidth ?? max(0, vm.effectiveClosedNotchHeight - 12)
+        store.owner?.chinSideWidth ?? vm.chinItemSide
     }
 
     private var chinInset: CGFloat {
