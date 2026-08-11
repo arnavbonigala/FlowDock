@@ -366,8 +366,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func playWelcomeSound() {
-        let audioPlayer = AudioPlayer()
-        audioPlayer.play(fileName: "FlowDock", fileExtension: "m4a")
+        AudioPlayer.playInterfaceSound(fileName: "FlowDock", fileExtension: "m4a")
     }
 
     func deviceHasNotch() -> Bool {
