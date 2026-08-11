@@ -146,7 +146,7 @@ struct MusicSlotConfigurationView: View {
                                     .contentShape(RoundedRectangle(cornerRadius: 8))
                                 }
                                 .buttonStyle(.plain)
-                                .accessibilityLabel("Add \(control.label) to the next free slot")
+                                .iconLabel("Add \(control.label) to the next free slot")
                                 .onDrag {
                                     return NSItemProvider(object: NSString(string: "control:\(control.rawValue)"))
                                 }

@@ -211,7 +211,7 @@ private struct ShelfActionRow: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .frame(width: 22)
-                .accessibilityLabel("More actions")
+                .iconLabel("More actions")
 
                 Spacer(minLength: 0)
 
@@ -260,7 +260,7 @@ private struct QuickShareButton: View {
         }
         .buttonStyle(.plain)
         .disabled(quickShare.isPickerOpen)
-        .accessibilityLabel("Share with \(provider.id)")
+        .iconLabel("Share with \(provider.id)")
         .background(ShareAnchor(view: $anchor))
     }
 

@@ -247,7 +247,7 @@ private struct ReminderCheck: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(completed ? "Mark as incomplete" : "Mark as complete")
+        .iconLabel(completed ? "Mark as incomplete" : "Mark as complete")
     }
 }
 

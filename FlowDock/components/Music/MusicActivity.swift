@@ -175,7 +175,7 @@ private struct MusicArtwork: View {
                     .transition(.opacity)
             }
         }
-        .accessibilityLabel(idle ? "Open music app" : "Open \(music.songTitle) in its app")
+        .iconLabel(idle ? "Open music app" : "Open \(music.songTitle) in its app")
         .background {
             if lightingEffect {
                 Image(nsImage: music.albumArt)
@@ -225,7 +225,7 @@ private struct MusicSourceMenu: View {
         .menuIndicator(.hidden)
         .frame(width: 28, height: 28)
         .contentShape(Rectangle())
-        .accessibilityLabel("Music source, \(source.rawValue)")
+        .iconLabel("Music source, \(source.rawValue)")
         .onChange(of: source) {
             NotificationCenter.default.post(name: Notification.Name.mediaControllerChanged, object: nil)
         }
@@ -421,7 +421,7 @@ private struct MusicControls: View {
                 icon: music.repeatMode == .one ? "repeat.1" : "repeat",
                 iconColor: music.repeatMode == .off ? .primary : .effectiveAccent
             ) { music.toggleRepeat() }
-                .accessibilityLabel("Repeat")
+                .iconLabel("Repeat")
                 .accessibilityValue(String(describing: music.repeatMode))
         case .volume:
             MusicVolumeControl()
@@ -432,7 +432,7 @@ private struct MusicControls: View {
             ) { music.toggleFavoriteTrack() }
                 .disabled(!music.canFavoriteTrack)
                 .opacity(music.canFavoriteTrack ? 1 : 0.35)
-                .accessibilityLabel("Favorite")
+                .iconLabel("Favorite")
                 .accessibilityValue(music.isFavoriteTrack ? "On" : "Off")
         case .goBackward:
             HoverButton(icon: "gobackward.15") { music.skip(seconds: -15) }
@@ -477,7 +477,7 @@ private struct MusicVolumeControl: View {
             .buttonStyle(.plain)
             .disabled(!music.volumeControlSupported)
             .foregroundStyle(music.volumeControlSupported ? Color.primary : .secondary)
-            .accessibilityLabel("Volume")
+            .iconLabel("Volume")
             .accessibilityValue("\(Int(level * 100)) percent")
 
             if expanded && music.volumeControlSupported {
