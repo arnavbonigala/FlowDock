@@ -79,6 +79,7 @@ private struct SetupView: View {
     @ObservedObject private var calendarManager = CalendarManager.shared
     @Default(.mediaController) private var mediaController
     @State private var accessibilityAuthorized = false
+    @State private var accessibilityRequested = false
 
     private var calendarGranted: Bool {
         calendarManager.calendarAuthorizationStatus == .fullAccess
@@ -114,12 +115,13 @@ private struct SetupView: View {
                         detail: "Shows notifications at the notch, and replaces the volume, brightness, and backlight HUDs.",
                         granted: accessibilityAuthorized
                     ) {
+                        accessibilityRequested = true
                         XPCHelperClient.shared.requestAccessibilityAuthorization()
                     }
                 } header: {
                     Text("Permissions")
                 } footer: {
-                    if !accessibilityAuthorized {
+                    if accessibilityRequested && !accessibilityAuthorized {
                         HStack(alignment: .firstTextBaseline) {
                             Text("macOS drops accessibility access when FlowDock is moved or updated, and then ignores the request because a stale entry already exists. Remove FlowDock there and add it again.")
                                 .font(.caption)
