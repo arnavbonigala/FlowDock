@@ -24,6 +24,35 @@ extension AnyTransition {
     }
 }
 
+enum ShellContinuity {
+    static let musicArtwork = "music.artwork"
+}
+
+private struct ShellNamespaceKey: EnvironmentKey {
+    static let defaultValue: Namespace.ID? = nil
+}
+
+extension EnvironmentValues {
+    var shellNamespace: Namespace.ID? {
+        get { self[ShellNamespaceKey.self] }
+        set { self[ShellNamespaceKey.self] = newValue }
+    }
+}
+
+extension View {
+    /// An element that exists in both the chin and the panel moves between them rather than
+    /// one copy fading out while another fades in. The namespace is nil under Reduce Motion,
+    /// which is what turns the flight back into a cross-fade. See INTERACTION.md §Anchoring.
+    @ViewBuilder
+    func continuous(_ id: String, in namespace: Namespace.ID?) -> some View {
+        if let namespace {
+            matchedGeometryEffect(id: id, in: namespace)
+        } else {
+            self
+        }
+    }
+}
+
 private struct Materialize: ViewModifier {
     let hidden: Bool
 

@@ -23,6 +23,7 @@ struct ExperienceView: View {
     @State private var isOverAgenda = false
     @State private var isOverColumn = false
     @State private var haptics = false
+    @Namespace private var shell
 
     @ObservedObject private var calendar = CalendarManager.shared
     @ObservedObject private var drag = DragWatch.shared
@@ -182,6 +183,7 @@ struct ExperienceView: View {
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .animation(.value(reduceMotion: reduceMotion), value: store.owner?.id)
         .preferredColorScheme(.dark)
+        .environment(\.shellNamespace, reduceMotion ? nil : shell)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
         .powerActivity(in: store, suppressed: isExpanded)
         .shelfActivity(in: store, receiving: isDropTargeted)

@@ -74,16 +74,21 @@ private struct MusicActivityBinder: ViewModifier {
 private struct MusicChinArtwork: View {
     @EnvironmentObject private var vm: FlowDockViewModel
     @ObservedObject private var music = MusicManager.shared
+    @Environment(\.shellNamespace) private var shellNamespace
 
     var body: some View {
         let side = vm.chinItemSide
-        Image(nsImage: music.albumArt)
-            .resizable()
-            .aspectRatio(contentMode: .fill)
+        Color.clear
             .frame(width: side, height: side)
+            .overlay {
+                Image(nsImage: music.albumArt)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .id(music.albumArt)
+                    .transition(.opacity)
+            }
             .clipShape(RoundedRectangle(cornerRadius: MusicPlayerImageSizes.cornerRadiusInset.closed))
-            .id(music.albumArt)
-            .transition(.opacity)
+            .continuous(ShellContinuity.musicArtwork, in: shellNamespace)
     }
 }
 
@@ -147,6 +152,7 @@ private struct MusicArtwork: View {
 
     @ObservedObject private var music = MusicManager.shared
     @Default(.lightingEffect) private var lightingEffect
+    @Environment(\.shellNamespace) private var shellNamespace
 
     private var radius: CGFloat { MusicPlayerImageSizes.cornerRadiusInset.opened }
 
@@ -165,14 +171,18 @@ private struct MusicArtwork: View {
                             .foregroundStyle(.tertiary)
                     }
             } else {
-                Image(nsImage: music.albumArt)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                Color.clear
                     .frame(width: MusicPlayerImageSizes.size.opened.width,
                            height: MusicPlayerImageSizes.size.opened.height)
+                    .overlay {
+                        Image(nsImage: music.albumArt)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .id(music.albumArt)
+                            .transition(.opacity)
+                    }
                     .clipShape(RoundedRectangle(cornerRadius: radius))
-                    .id(music.albumArt)
-                    .transition(.opacity)
+                    .continuous(ShellContinuity.musicArtwork, in: shellNamespace)
             }
         }
         .iconLabel(idle ? "Open music app" : "Open \(music.songTitle) in its app")

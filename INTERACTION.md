@@ -222,10 +222,11 @@ Every display's interactive region matches what that display is currently drawin
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
 
-- **One transition, defined once.** Every insertion and removal uses a single shared transition — a scale toward the top edge, `AnyTransition.scale(scale: 0.9, anchor: .top)` — declared in `FlowDock/animations/ExperienceMotion.swift`. Nothing fades: opacity is not part of it. A bare `.opacity`, a center-anchored `.scale`, or a `.move(edge:)` is a bug.
+- **One transition, defined once.** A surface that arrives or leaves uses a single shared transition — a scale toward the top edge combined with opacity, declared in `FlowDock/animations/ExperienceMotion.swift`. The scale is what carries the meaning; the fade only keeps the first frame from popping. A center-anchored `.scale`, a `.move(edge:)`, or a bare `.opacity` on a surface that is genuinely arriving is a bug.
+- **Content replacing itself in place cross-fades**, and that is the one correct use of a bare `.opacity`: album artwork on a track change, a row leaving a list inside the already-open panel. Nothing arrived from the notch, so nothing should look like it did.
 - **Call sites choose timing, never the anchor.** Attaching `.animation(…)` where a surface needs its own pacing is fine. Redefining the scale or the anchor is not.
 - **Scale and offset anchor to `.top`** wherever they animate, including gesture tracking.
-- **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` — album artwork and the spectrum already do — instead of one copy fading out while another fades in.
+- **Continuity beats transition.** An element that exists in both the collapsed and expanded state moves with `matchedGeometryEffect` instead of one copy fading out while another fades in. Album artwork does; the shell publishes the namespace and drops it under Reduce Motion, which is what turns the flight back into a cross-fade without every call site having to know.
 - **Growth is a shape change.** The panel's top edge and horizontal center are fixed by construction (`windowSize` with `.top` alignment); animate width and height, never position.
 - Reduce Motion is honored inside the shared transition itself, so there is one place to change. See [Accessibility](#accessibility).
 
