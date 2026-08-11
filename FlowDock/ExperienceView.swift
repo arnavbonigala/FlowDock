@@ -167,6 +167,7 @@ struct ExperienceView: View {
         .background(alignment: .top) { catcher }
         .frame(maxWidth: windowSize.width, maxHeight: windowSize.height, alignment: .top)
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
+        .animation(.value(reduceMotion: reduceMotion), value: store.owner?.id)
         .preferredColorScheme(.dark)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
         .powerActivity(in: store, suppressed: isExpanded)
