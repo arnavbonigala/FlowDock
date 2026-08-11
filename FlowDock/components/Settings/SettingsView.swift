@@ -325,6 +325,14 @@ struct NotificationSettings: View {
                     ? "Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility."
                     : "Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility and shows nothing without that access. macOS drops that access when FlowDock is moved or updated, and it then ignores the request above because a stale entry already exists. Open Accessibility settings, remove FlowDock, and add it again.")
             }
+
+            Section {
+                Defaults.Toggle(key: .showCallerPhotos) {
+                    Text("Show the caller's photo")
+                }
+            } footer: {
+                Text("An incoming call names whoever is ringing. Finding their photo means asking your address book for that name, which macOS asks your permission for the first time a call arrives. Declining costs nothing: the call shows their initials instead. Nothing leaves your Mac.")
+            }
         }
         .task {
             accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()

@@ -61,6 +61,39 @@ private struct CallActivityBinder: ViewModifier {
     }
 }
 
+private struct CallerAvatar: View {
+    let name: String
+
+    @State private var photo: NSImage?
+
+    private static let diameter: CGFloat = 32
+
+    var body: some View {
+        Group {
+            if let photo {
+                Image(nsImage: photo)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else if !ContactPhotos.initials(of: name).isEmpty {
+                Text(ContactPhotos.initials(of: name))
+                    .font(.panelMeta)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.quaternary)
+            } else {
+                Image(systemName: "phone.fill")
+                    .font(.panelPrimary)
+                    .foregroundStyle(.green)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(width: Self.diameter, height: Self.diameter)
+        .clipShape(Circle())
+        .accessibilityHidden(true)
+        .task(id: name) { photo = await ContactPhotos.photo(named: name) }
+    }
+}
+
 struct CallPanel: View {
     let notification: FlowDockNotification
 
@@ -70,10 +103,7 @@ struct CallPanel: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "phone.fill")
-                .font(.panelPrimary)
-                .foregroundStyle(.green)
-                .accessibilityHidden(true)
+            CallerAvatar(name: notification.title)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(notification.title)
@@ -130,6 +160,11 @@ extension CallPanel {
                "an alert with its own buttons that outlasts a banner is ringing")
         assert(NotificationFeed.ringing(among: [missed], firstSeen: seen, now: ringing) == nil,
                "one button is a missed call, not a ringing one")
+
+        assert(ContactPhotos.initials(of: "Ada Lovelace") == "AL")
+        assert(ContactPhotos.initials(of: "Ada") == "A")
+        assert(ContactPhotos.initials(of: "+1 555 0100").isEmpty,
+               "a number nobody has saved has no letters to shorten")
     }
 }
 #endif

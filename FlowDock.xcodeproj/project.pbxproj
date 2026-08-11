@@ -127,6 +127,7 @@
 		11FD2EC1000000000000001F /* KeepAwake.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000020 /* KeepAwake.swift */; };
 		11FD2EC10000000000000021 /* MicrophoneMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000022 /* MicrophoneMonitor.swift */; };
 		11FD2EC10000000000000023 /* CallActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000024 /* CallActivity.swift */; };
+		11FD2EC10000000000000025 /* ContactPhotos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000026 /* ContactPhotos.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -279,6 +280,7 @@
 		11FD2EC10000000000000020 /* KeepAwake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAwake.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000022 /* MicrophoneMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneMonitor.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000024 /* CallActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActivity.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000026 /* ContactPhotos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPhotos.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -474,6 +476,7 @@
 		147163B52C5D804B0068B555 /* managers */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000026 /* ContactPhotos.swift */,
 				11FD2EC10000000000000022 /* MicrophoneMonitor.swift */,
 				11FD2EC10000000000000020 /* KeepAwake.swift */,
 				11FD2EC10000000000000014 /* DragWatch.swift */,
@@ -851,6 +854,7 @@
 				11FD2EC1000000000000001F /* KeepAwake.swift in Sources */,
 				11FD2EC10000000000000021 /* MicrophoneMonitor.swift in Sources */,
 				11FD2EC10000000000000023 /* CallActivity.swift in Sources */,
+				11FD2EC10000000000000025 /* ContactPhotos.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,
@@ -1156,6 +1160,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "FlowDock reads the names and battery levels of devices already paired with this Mac, to show them at the notch. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "FlowDock looks up the name a call is ringing from, to show that person's photo while it rings. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024–2026 respective contributors";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";
@@ -1211,6 +1216,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "FlowDock reads the names and battery levels of devices already paired with this Mac, to show them at the notch. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "FlowDock reads your events to show what is next in the panel. Nothing leaves your Mac.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "FlowDock looks up the name a call is ringing from, to show that person's photo while it rings. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024–2026 respective contributors";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "FlowDock reads your reminders to show them beside your events. Nothing leaves your Mac.";

@@ -122,6 +122,7 @@ extension Defaults.Keys {
     
     // MARK: Notifications
     static let showNotifications = Key<Bool>("showNotifications", default: false)
+    static let showCallerPhotos = Key<Bool>("showCallerPhotos", default: false)
 
     // MARK: Shelf
     static let shelfEnabled = Key<Bool>("shelfEnabled", default: true)
