@@ -52,6 +52,12 @@ extension ActivityCatalog {
         assert(entry("nothing") == nil)
         assert(entry(Activity.progressDoneID)?.id == Activity.progressID, "a completion follows its activity's switch")
         assert(entry(Activity.timerDoneID)?.id == Activity.timerID)
+        for entry in all {
+            assert(
+                all.filter { entry.id.hasPrefix($0.id) }.count == 1,
+                "one catalog id prefixes another, so which switch a completion follows depends on list order"
+            )
+        }
         assert(isEnabled("nothing"), "an activity outside the catalog is never suppressed")
         assert(isEnabled(Activity.timerID), "an activity with no setting is always on")
         assert(ordered([]).map(\.id) == all.map(\.id))
