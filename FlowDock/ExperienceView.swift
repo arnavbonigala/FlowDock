@@ -174,6 +174,7 @@ struct ExperienceView: View {
         .deviceActivity(in: store)
         .progressActivity(in: store)
         .countdownActivity(in: store)
+        .extensionActivities(in: store)
     }
 
     /// Aiming at the cutout mid-drag is slow, so the whole top of the screen accepts the

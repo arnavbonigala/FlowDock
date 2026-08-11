@@ -15,6 +15,16 @@
 	<string>https://arnavbonigala.github.io/FlowDock/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>B1Y47t8C/v8ImurYA+9arEsuCrpxwJSviekiflMElbI=</string>
+	<key>EXAppExtensionPointDefinitions</key>
+	<dict>
+		<key>com.arnavbonigala.flowdock.activity</key>
+		<dict>
+			<key>EXAppExtensionPointName</key>
+			<string>FlowDock Activity</string>
+			<key>EXAppExtensionPointVersion</key>
+			<string>1.0</string>
+		</dict>
+	</dict>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict/>

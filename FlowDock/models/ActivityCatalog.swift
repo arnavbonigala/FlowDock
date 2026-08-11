@@ -36,7 +36,6 @@ struct ActivityCatalog {
         return Defaults[key]
     }
 
-    /// The catalog order, with whatever the user has reordered moved to the front.
     static func ordered(_ priority: [String]) -> [Entry] {
         let known = priority.compactMap(entry)
         return known + all.filter { entry in !known.contains(entry) }

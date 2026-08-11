@@ -120,6 +120,9 @@
 		11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000010 /* CountdownActivity.swift */; };
 		11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000012 /* ActivityCatalog.swift */; };
 		11FD2EC10000000000000013 /* DragWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000014 /* DragWatch.swift */; };
+		11FD2EC10000000000000015 /* ActivityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000016 /* ActivityExtension.swift */; };
+		11FD2EC10000000000000017 /* ExtensionHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000018 /* ExtensionHost.swift */; };
+		11FD2EC10000000000000019 /* ExtensionActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000001A /* ExtensionActivity.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +267,9 @@
 		11FD2EC10000000000000010 /* CountdownActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownActivity.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000012 /* ActivityCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCatalog.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000014 /* DragWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragWatch.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000016 /* ActivityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityExtension.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000018 /* ExtensionHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionHost.swift; sourceTree = "<group>"; };
+		11FD2EC1000000000000001A /* ExtensionActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionActivity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -446,6 +452,16 @@
 			path = components;
 			sourceTree = "<group>";
 		};
+		11FD2EC1000000000000FF01 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				11FD2EC1000000000000001A /* ExtensionActivity.swift */,
+				11FD2EC10000000000000018 /* ExtensionHost.swift */,
+				11FD2EC10000000000000016 /* ActivityExtension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		147163B52C5D804B0068B555 /* managers */ = {
 			isa = PBXGroup;
 			children = (
@@ -506,6 +522,7 @@
 				14D570BA2C5E98E30011E668 /* enums */,
 				14D570B72C5E98960011E668 /* animations */,
 				147163B52C5D804B0068B555 /* managers */,
+				11FD2EC1000000000000FF01 /* Extensions */,
 				1153BD8E2D986B1F00979FB0 /* MediaControllers */,
 				B15063502C63D3F600EBB0E3 /* extensions */,
 				1471639B2C5D362F0068B555 /* components */,
@@ -813,6 +830,9 @@
 				11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */,
 				11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */,
 				11FD2EC10000000000000013 /* DragWatch.swift in Sources */,
+				11FD2EC10000000000000015 /* ActivityExtension.swift in Sources */,
+				11FD2EC10000000000000017 /* ExtensionHost.swift in Sources */,
+				11FD2EC10000000000000019 /* ExtensionActivity.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,

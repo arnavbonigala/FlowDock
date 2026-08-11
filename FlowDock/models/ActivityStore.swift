@@ -31,6 +31,7 @@ final class ActivityStore: ObservableObject {
         ProgressPanel.selfCheck()
         MeetingPanel.selfCheck()
         ActivityCatalog.selfCheck()
+        ExtensionContract.selfCheck()
         #endif
     }
 
