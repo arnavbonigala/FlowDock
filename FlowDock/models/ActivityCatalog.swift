@@ -12,6 +12,7 @@ struct ActivityCatalog {
         let name: String
         let symbol: String
         let key: Defaults.Key<Bool>?
+        var hosted = false
 
         static func == (lhs: Entry, rhs: Entry) -> Bool { lhs.id == rhs.id }
     }
@@ -36,9 +37,10 @@ struct ActivityCatalog {
         return Defaults[key]
     }
 
-    static func ordered(_ priority: [String]) -> [Entry] {
-        let known = priority.compactMap(entry)
-        return known + all.filter { entry in !known.contains(entry) }
+    static func ordered(_ priority: [String], including extra: [Entry] = []) -> [Entry] {
+        let pool = all + extra
+        let known = priority.compactMap { id in pool.first { $0.id == id } }
+        return known + pool.filter { entry in !known.contains(entry) }
     }
 }
 
@@ -53,6 +55,11 @@ extension ActivityCatalog {
         assert(ordered([Activity.shelfID]).first?.id == Activity.shelfID)
         assert(ordered([Activity.shelfID]).count == all.count)
         assert(ordered(["nothing"]).map(\.id) == all.map(\.id))
+
+        let hosted = Entry(id: "com.acme.ext.timer", name: "Timer", symbol: "timer", key: nil, hosted: true)
+        assert(ordered([], including: [hosted]).last == hosted, "a discovered extension joins the bottom")
+        assert(ordered([hosted.id], including: [hosted]).first == hosted, "and can be ranked like anything else")
+        assert(isEnabled(hosted.id), "the host decides whether an extension runs, not the catalog")
     }
 }
 #endif

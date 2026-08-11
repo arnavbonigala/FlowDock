@@ -208,8 +208,14 @@ struct MusicSettings: View {
 
 struct ActivitySettings: View {
     @Default(.activityPriority) private var priority
+    @Default(.enabledExtensions) private var enabledExtensions
+    @ObservedObject private var host = ExtensionHost.shared
 
-    private var entries: [ActivityCatalog.Entry] { ActivityCatalog.ordered(priority) }
+    private var entries: [ActivityCatalog.Entry] {
+        ActivityCatalog.ordered(priority, including: host.available.map {
+            ActivityCatalog.Entry(id: $0.id, name: $0.name, symbol: "puzzlepiece.extension", key: nil, hosted: true)
+        })
+    }
 
     var body: some View {
         Form {
@@ -222,6 +228,18 @@ struct ActivitySettings: View {
                             if let key = entry.key {
                                 Defaults.Toggle(key: key) { Text("") }
                                     .labelsHidden()
+                            } else if entry.hosted {
+                                Toggle("", isOn: Binding(
+                                    get: { enabledExtensions.contains(entry.id) },
+                                    set: { on in
+                                        if on {
+                                            enabledExtensions.insert(entry.id)
+                                        } else {
+                                            enabledExtensions.remove(entry.id)
+                                        }
+                                    }
+                                ))
+                                .labelsHidden()
                             } else {
                                 Text("Always on")
                                     .font(.caption)

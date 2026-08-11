@@ -28,6 +28,7 @@ final class ExtensionHost: NSObject, ObservableObject {
     @Published private(set) var live: [HostedExtension] = []
 
     private var discovery: Task<Void, Never>?
+    private var ranking: AnyCancellable?
     private var processes: [String: AppExtensionProcess] = [:]
     private var connections: [String: NSXPCConnection] = [:]
 
@@ -37,6 +38,9 @@ final class ExtensionHost: NSObject, ObservableObject {
 
     func start() {
         guard discovery == nil else { return }
+        ranking = Defaults.publisher(.enabledExtensions).sink { _ in
+            Task { @MainActor [weak self] in self?.settle() }
+        }
         discovery = Task { [weak self] in
             guard let identities = try? AppExtensionIdentity.matching(
                 appExtensionPointIDs: ActivityExtension.pointID
@@ -52,6 +56,8 @@ final class ExtensionHost: NSObject, ObservableObject {
     func stop() {
         discovery?.cancel()
         discovery = nil
+        ranking?.cancel()
+        ranking = nil
         connections.values.forEach { $0.invalidate() }
         connections.removeAll()
         processes.values.forEach { $0.invalidate() }
@@ -76,12 +82,23 @@ final class ExtensionHost: NSObject, ObservableObject {
         }
 
         let names = Set(identities.map(\.bundleIdentifier))
-        for stale in connections.keys where !names.contains(stale) {
+        for stale in Array(connections.keys) where !names.contains(stale) {
             release(stale)
         }
 
         available = hosted
-        live = hosted.filter { $0.declaration.live && Defaults[.enabledExtensions].contains($0.id) }
+        settle()
+    }
+
+    private func settle() {
+        let enabled = Defaults[.enabledExtensions]
+        live = available.filter { $0.declaration.live && enabled.contains($0.id) }
+
+        let running = Set(live.map(\.identity.bundleIdentifier))
+        for idle in Array(connections.keys) where !running.contains(idle) {
+            connections.removeValue(forKey: idle)?.invalidate()
+            processes.removeValue(forKey: idle)?.invalidate()
+        }
     }
 
     private func declaration(from identity: AppExtensionIdentity) async -> ActivityExtension.Declaration? {
