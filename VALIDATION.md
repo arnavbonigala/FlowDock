@@ -158,7 +158,18 @@ Set these in System Settings → Accessibility. Toggle them **while FlowDock is 
 | Turn it on, then quit FlowDock. | The assertion dies with the process; the Mac sleeps normally without a relaunch. |
 | Turn it on, then close the lid on a MacBook with no external display. | Clamshell sleep still happens — this assertion prevents idle sleep, not lid sleep, and must not be sold as more than that. |
 
-### 4.9 Resource use
+### 4.9 Microphone
+
+| Do | Correct |
+|---|---|
+| Join a call, or start any recording. | The chin says Live within a moment of the input device starting. |
+| Press Mute on the panel. | Every application goes silent, not only the one in front. The chin says Muted and the glyph turns red. |
+| Mute in the conferencing app instead. | FlowDock keeps saying Live: the app muted itself, and the device is still running. This is honest, not a bug. |
+| Leave the call. | The activity ends on its own. |
+| Mute, then switch input device. | The activity follows the new device and reports that device's own state. |
+| Mute, then quit FlowDock. | A device with a real mute switch stays muted, and Sound settings says so. A device FlowDock had to turn down instead is put back, because nothing on screen would have explained a microphone stuck at zero. |
+
+### 4.10 Resource use
 
 Measure with the panel idle and the Mac otherwise quiet. See QUALITY.md for the numbers.
 

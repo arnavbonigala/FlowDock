@@ -86,6 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
         workspaceObservers.removeAll()
         recoveryTask?.cancel()
+        MicrophoneMonitor.shared.stop()
         MusicManager.shared.destroy()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
