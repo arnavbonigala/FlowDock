@@ -13,7 +13,8 @@ import Sparkle
 class SettingsWindowController: NSWindowController {
     static let shared = SettingsWindowController()
     private var updaterController: SPUStandardUpdaterController?
-    
+    private let frameName = NSWindow.FrameAutosaveName("FlowDockSettingsWindow")
+
     private init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 700, height: 600),
@@ -56,6 +57,7 @@ class SettingsWindowController: NSWindowController {
         // Configure window to be a standard document-style window
         window.isRestorable = true
         window.identifier = NSUserInterfaceItemIdentifier("FlowDockSettingsWindow")
+        window.setFrameAutosaveName(frameName)
         
         // Create the SwiftUI content
         let settingsView = SettingsView(updaterController: updaterController)
@@ -78,10 +80,12 @@ class SettingsWindowController: NSWindowController {
             return
         }
         
-        // Show the window with proper ordering
+        if window?.setFrameUsingName(frameName) != true {
+            window?.center()
+        }
+
         window?.orderFrontRegardless()
         window?.makeKeyAndOrderFront(nil)
-        window?.center()
         
         // Activate the app and ensure window gets focus
         NSApp.activate(ignoringOtherApps: true)
