@@ -145,6 +145,7 @@ struct ShelfPanel: View {
 private struct QuickShareButton: View {
     @ObservedObject private var quickShare = QuickShareService.shared
     @Default(.quickShareProvider) private var providerID
+    @Environment(\.colorSchemeContrast) private var contrast
 
     @State private var anchor: NSView?
 
@@ -162,7 +163,11 @@ private struct QuickShareButton: View {
                 .frame(width: ShelfPanel.rowHeight, height: ShelfPanel.rowHeight)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(.quaternary)
+                        .fill(contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(.primary, lineWidth: contrast == .increased ? 1 : 0)
+                        )
                 )
                 .contentShape(Rectangle())
         }
@@ -206,6 +211,7 @@ private struct ShelfChip: View {
 
     @StateObject private var viewModel: ShelfItemViewModel
     @ObservedObject private var selection = ShelfSelectionModel.shared
+    @Environment(\.colorSchemeContrast) private var contrast
 
     init(item: ShelfItem, quickLook: QuickLookService) {
         self.item = item
@@ -233,7 +239,11 @@ private struct ShelfChip: View {
         .frame(maxWidth: 140)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary)
+                .fill(contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(.primary, lineWidth: contrast == .increased ? 1 : 0)
+                )
         )
         .overlay {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -245,7 +255,18 @@ private struct ShelfChip: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(item.displayName)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : [.isButton])
+        .accessibilityAction {
+            ShelfSelectionModel.shared.selectSingle(item)
+            ShelfActionService.open(item)
+        }
+        .accessibilityAction(named: "Quick Look") {
+            guard let url = ShelfPanel.previewURL(item) else { return }
+            quickLook.show(urls: [url])
+        }
+        .accessibilityAction(named: "Remove") {
+            ShelfStateViewModel.shared.remove(item, deletingStoredData: false)
+        }
         .task {
             viewModel.onQuickLookRequest = { quickLook.show(urls: $0) }
             await viewModel.loadThumbnail()

@@ -527,6 +527,8 @@ struct CustomSlider: View {
     var onValueChange: ((Double) -> Void)?
     var onDragChange: ((Double) -> Void)?
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
@@ -558,7 +560,10 @@ struct CustomSlider: View {
                         lastDragged = Date()
                     }
             )
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: dragging)
+            .animation(
+                reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.35, dampingFraction: 0.7),
+                value: dragging
+            )
         }
     }
 }

@@ -110,6 +110,7 @@ struct SystemFeedbackView: View {
     @ObservedObject private var coordinator = FlowDockViewCoordinator.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
 
     static let pillSize = CGSize(width: 236, height: 58)
 
@@ -159,11 +160,13 @@ struct SystemFeedbackView: View {
         .overlay(
             feedbackShape.strokeBorder(
                 LinearGradient(
-                    colors: [.white.opacity(0.28), .white.opacity(0.06)],
+                    colors: contrast == .increased
+                        ? [.white, .white]
+                        : [.white.opacity(0.28), .white.opacity(0.06)],
                     startPoint: .top,
                     endPoint: .bottom
                 ),
-                lineWidth: 0.5
+                lineWidth: contrast == .increased ? 1 : 0.5
             )
         )
         .shadow(color: .black.opacity(0.32), radius: 16, y: 6)
@@ -176,7 +179,7 @@ struct SystemFeedbackView: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(.primary.opacity(0.18))
+                    .fill(.primary.opacity(contrast == .increased ? 0.4 : 0.18))
 
                 Capsule()
                     .fill(.primary)

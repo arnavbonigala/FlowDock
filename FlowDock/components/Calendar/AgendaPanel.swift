@@ -42,11 +42,11 @@ struct AgendaPanel: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Text("Today")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.headline)
                 .foregroundStyle(.primary)
 
             Text(manager.day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                .font(.system(size: 11))
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
@@ -55,11 +55,11 @@ struct AgendaPanel: View {
     private var prompt: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Your day, here")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.headline)
                 .foregroundStyle(.primary)
 
             Text("FlowDock needs access to Calendar and Reminders.")
-                .font(.system(size: 11))
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -71,14 +71,14 @@ struct AgendaPanel: View {
                 }
             }
             .buttonStyle(.link)
-            .font(.system(size: 11, weight: .medium))
+            .font(.subheadline.weight(.medium))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var empty: some View {
         Text("Nothing today")
-            .font(.system(size: 12))
+            .font(.callout)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -119,7 +119,7 @@ struct AgendaPanel: View {
                 HStack(alignment: .top, spacing: 6) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(event.title)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.callout.weight(.medium))
                             .foregroundStyle(.primary)
                             .lineLimit(showFullTitles ? nil : 2)
                             .multilineTextAlignment(.leading)
@@ -127,7 +127,7 @@ struct AgendaPanel: View {
 
                         if let location = event.location, !location.isEmpty {
                             Text(location)
-                                .font(.system(size: 11))
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         }
@@ -151,16 +151,16 @@ struct AgendaPanel: View {
         VStack(alignment: .trailing, spacing: 1) {
             if event.isAllDay {
                 Text("All-day")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.primary)
             } else {
                 Text(event.start, style: .time)
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundStyle(.primary)
 
                 if !event.type.isReminder {
                     Text(event.end, style: .time)
-                        .font(.system(size: 11))
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
             }

@@ -68,6 +68,9 @@ struct MusicSlotConfigurationView: View {
                                 }
                         }
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Slot \(index + 1), \(slot == .none ? "empty" : slot.label)")
+                    .accessibilityAction(named: "Clear slot") { updateSlot(.none, at: index) }
                 }
             }
             .padding(12)
@@ -124,29 +127,28 @@ struct MusicSlotConfigurationView: View {
                     HStack(spacing: 12) {
                         ForEach(MusicControlButton.pickerOptions, id: \.self) { control in
                             VStack(spacing: 6) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(NSColor.controlBackgroundColor))
-                                        .frame(width: 44, height: 44)
+                                Button {
+                                    assign(control)
+                                } label: {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(Color(NSColor.controlBackgroundColor))
+                                            .frame(width: 44, height: 44)
 
-                                    if control != .none {
-                                        Image(systemName: control.iconName)
-                                            .font(.system(size: control.prefersLargeScale ? 18 : 15, weight: .medium))
-                                            .foregroundStyle(control == .none ? Color.secondary : Color.primary)
-                                            .frame(width: 28, height: 28)
+                                        if control != .none {
+                                            Image(systemName: control.iconName)
+                                                .font(.system(size: control.prefersLargeScale ? 18 : 15, weight: .medium))
+                                                .foregroundStyle(control == .none ? Color.secondary : Color.primary)
+                                                .frame(width: 28, height: 28)
+                                        }
                                     }
+                                    .cornerRadius(8)
+                                    .contentShape(RoundedRectangle(cornerRadius: 8))
                                 }
-                                .cornerRadius(8)
-                                .contentShape(RoundedRectangle(cornerRadius: 8))
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Add \(control.label) to the next free slot")
                                 .onDrag {
                                     return NSItemProvider(object: NSString(string: "control:\(control.rawValue)"))
-                                }
-                                .onTapGesture {
-                                    if let idx = musicControlSlots.firstIndex(of: .none) {
-                                        updateSlot(control, at: idx)
-                                    } else {
-                                        withAnimation { updateSlot(control, at: 0) }
-                                    }
                                 }
 
                                 Text(control.label)
@@ -343,6 +345,14 @@ struct MusicSlotConfigurationView: View {
 
                 updateSlot(control, at: toIndex)
             }
+        }
+    }
+
+    private func assign(_ control: MusicControlButton) {
+        if let index = musicControlSlots.firstIndex(of: .none) {
+            updateSlot(control, at: index)
+        } else {
+            withAnimation { updateSlot(control, at: 0) }
         }
     }
 
