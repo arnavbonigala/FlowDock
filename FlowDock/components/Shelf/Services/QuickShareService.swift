@@ -131,6 +131,7 @@ class QuickShareService: ObservableObject {
             }
         }
 
+        NSApp.activate()
         let response = panel.runModal()
         completion(response)
     }

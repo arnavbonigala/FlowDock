@@ -650,6 +650,7 @@ final class ShelfItemViewModel: ObservableObject {
             popup.target = binder
             popup.action = #selector(PopupBinder.changed(_:))
 
+            NSApp.activate()
             panel.begin { response in
                 if response == .OK, let appURL = panel.url {
                     Task {
@@ -697,6 +698,7 @@ final class ShelfItemViewModel: ObservableObject {
                     savePanel.prompt = "Rename"
                     savePanel.nameFieldStringValue = fileURL.lastPathComponent
                     savePanel.directoryURL = fileURL.deletingLastPathComponent()
+                    NSApp.activate()
                     savePanel.begin { response in
                         if response == .OK, let newURL = savePanel.url {
                             Task { @MainActor in
@@ -935,6 +937,7 @@ final class ShelfItemViewModel: ObservableObject {
             
             alert.accessoryView = accessoryView
             
+            NSApp.activate()
             let response = alert.runModal()
             
             if response == .alertFirstButtonReturn {
@@ -1015,6 +1018,7 @@ final class ShelfItemViewModel: ObservableObject {
             alert.informativeText = message
             alert.alertStyle = .warning
             alert.addButton(withTitle: "OK")
+            NSApp.activate()
             alert.runModal()
         }
     }
