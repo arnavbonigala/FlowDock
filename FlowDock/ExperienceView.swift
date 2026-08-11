@@ -160,6 +160,9 @@ struct ExperienceView: View {
                 .contextMenu {
                     Button("Settings") { SettingsWindowController.shared.showWindow() }
                         .keyboardShortcut(",", modifiers: .command)
+                    Divider()
+                    Button("Quit FlowDock") { NSApplication.shared.terminate(nil) }
+                        .keyboardShortcut("q", modifiers: .command)
                 }
 
             Spacer(minLength: 0)

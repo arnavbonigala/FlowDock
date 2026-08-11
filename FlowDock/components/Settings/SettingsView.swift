@@ -545,6 +545,8 @@ struct GeneralSettings: View {
                 Defaults.Toggle(key: .menubarIcon) {
                     Text("Show the menu bar icon")
                 }
+            } footer: {
+                Text("Without it, right-click the notch to reach settings or quit.")
             }
 
             Section {
