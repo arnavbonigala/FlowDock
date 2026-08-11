@@ -44,12 +44,13 @@ struct FocusScenes: AppExtensionScene {
     @AppExtensionSceneBuilder var body: some AppExtensionScene {
         PrimitiveAppExtensionScene(id: "chin.leading", content: {
             Image(systemName: "timer")
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white)
         }, onConnection: accept)
 
         PrimitiveAppExtensionScene(id: "chin.trailing", content: {
             Text(timerInterval: Date()...FocusSession.shared.endsAt, countsDown: true)
-                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(.white)
         }, onConnection: accept)
@@ -70,13 +71,13 @@ struct FocusPanel: View {
                 .tint(.white)
 
             Text(timerInterval: Date()...session.endsAt, countsDown: true)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .font(.system(size: 11, weight: .medium))
                 .monospacedDigit()
                 .foregroundStyle(.white)
 
             Button("Restart") { session.endsAt = Date().addingTimeInterval(25 * 60) }
                 .buttonStyle(.plain)
-                .font(.system(size: 12))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.white.opacity(0.7))
         }
         .padding(.horizontal, 12)

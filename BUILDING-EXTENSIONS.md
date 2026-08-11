@@ -68,6 +68,12 @@ window. The chin scenes are drawn at 34 × 22 points on a black background; the
 panel is one full-width row of 30 points. FlowDock chooses those sizes, and a view
 that wants more is clipped rather than obeyed.
 
+Your view is composited into a surface that is meant to read as hardware, so match its
+type: 13 pt medium for a chin glyph, 12 pt semibold for a chin value, 15 pt medium for a
+panel control, 11 pt medium for secondary text in the panel — and no rounded or serif
+design, which reads as a different app sitting inside the bezel. Numbers that count get
+`.monospacedDigit()` so the chin does not twitch.
+
 ```swift
 struct Scenes: AppExtensionScene {
     @AppExtensionSceneBuilder var body: some AppExtensionScene {

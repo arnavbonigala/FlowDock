@@ -31,12 +31,13 @@ struct Scenes: AppExtensionScene {
     @AppExtensionSceneBuilder var body: some AppExtensionScene {
         PrimitiveAppExtensionScene(id: "chin.leading", content: {
             Image(systemName: "hand.wave")
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white)
         }, onConnection: accept)
 
         PrimitiveAppExtensionScene(id: "chin.trailing", content: {
             Text("Hello")
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
         }, onConnection: accept)
     }
