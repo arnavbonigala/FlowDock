@@ -231,7 +231,7 @@ struct ActivitySettings: View {
                                 ))
                                 .labelsHidden()
                             } else {
-                                Text("Always on")
+                                Text("When active")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
