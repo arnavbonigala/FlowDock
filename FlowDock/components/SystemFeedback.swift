@@ -187,7 +187,7 @@ struct SystemFeedbackView: View {
                         Rectangle().frame(width: geo.size.width * value)
                     }
             }
-            .animation(.spring(response: 0.28, dampingFraction: 1.0), value: value)
+            .animation(.value(reduceMotion: reduceMotion), value: value)
         }
         .frame(height: 10)
     }

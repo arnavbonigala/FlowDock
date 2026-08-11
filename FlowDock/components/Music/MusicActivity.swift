@@ -566,10 +566,7 @@ struct CustomSlider: View {
                         lastDragged = Date()
                     }
             )
-            .animation(
-                reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.35, dampingFraction: 0.7),
-                value: dragging
-            )
+            .animation(.value(reduceMotion: reduceMotion), value: dragging)
         }
     }
 }

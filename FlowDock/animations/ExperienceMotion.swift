@@ -5,6 +5,7 @@
 //  The one transition, and the one place Reduce Motion is honored. See INTERACTION.md.
 //
 
+import AppKit
 import SwiftUI
 
 extension AnyTransition {
@@ -42,6 +43,14 @@ extension AnyTransition {
 }
 
 extension Animation {
+    static func value(reduceMotion: Bool) -> Animation {
+        reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.28, dampingFraction: 1.0)
+    }
+
+    static var value: Animation {
+        value(reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+    }
+
     /// Reduce Motion keeps the size change — size is the information — and drops the overshoot.
     static func experience(reduceMotion: Bool, collapsing: Bool = false) -> Animation {
         if reduceMotion { return .easeOut(duration: 0.3) }

@@ -45,14 +45,16 @@ struct MarqueeText: View {
         self.frameWidth = frameWidth
     }
     
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var needsScrolling: Bool {
-        textSize.width > frameWidth
+        textSize.width > frameWidth && !reduceMotion
     }
     
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                HStack(spacing: 20) {
+                HStack(spacing: 24) {
                     Text(text)
                     Text(text)
                         .opacity(needsScrolling ? 1 : 0)

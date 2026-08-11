@@ -228,7 +228,7 @@ class MusicManager: ObservableObject {
         // Check for playback state changes (playing/paused)
         if state.isPlaying != self.isPlaying {
             NSLog("Playback state changed: \(state.isPlaying ? "Playing" : "Paused")")
-            withAnimation(.smooth) {
+            withAnimation(.value) {
                 self.isPlaying = state.isPlaying
                 self.updateIdleState(state: state.isPlaying)
             }
@@ -628,7 +628,7 @@ class MusicManager: ObservableObject {
 
     func updateAlbumArt(newAlbumArt: NSImage) {
         workItem?.cancel()
-        withAnimation(.smooth) {
+        withAnimation(.value) {
             self.albumArt = newAlbumArt
             if Defaults[.coloredSpectrogram] {
                 self.calculateAverageColor()
@@ -648,7 +648,7 @@ class MusicManager: ObservableObject {
     func calculateAverageColor() {
         albumArt.averageColor { [weak self] color in
             DispatchQueue.main.async {
-                withAnimation(.smooth) {
+                withAnimation(.value) {
                     self?.avgColor = color ?? .white
                 }
             }
