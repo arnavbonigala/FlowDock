@@ -29,7 +29,7 @@ struct ActivityCatalog {
     ]
 
     static func entry(_ id: String) -> Entry? {
-        all.first { $0.id == id }
+        all.first { $0.id == id } ?? all.first { id.hasPrefix($0.id) }
     }
 
     static func isEnabled(_ id: String) -> Bool {
@@ -49,6 +49,8 @@ extension ActivityCatalog {
     static func selfCheck() {
         assert(entry(Activity.musicID) != nil)
         assert(entry("nothing") == nil)
+        assert(entry(Activity.progressDoneID)?.id == Activity.progressID, "a completion follows its activity's switch")
+        assert(entry(Activity.timerDoneID)?.id == Activity.timerID)
         assert(isEnabled("nothing"), "an activity outside the catalog is never suppressed")
         assert(isEnabled(Activity.timerID), "an activity with no setting is always on")
         assert(ordered([]).map(\.id) == all.map(\.id))

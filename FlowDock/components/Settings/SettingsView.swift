@@ -12,7 +12,7 @@ import Sparkle
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var selectedPane: Pane = .music
+    @State private var selectedPane: Pane = .activities
     @State private var accentColorUpdateTrigger = UUID()
 
     let updaterController: SPUStandardUpdaterController?
@@ -48,7 +48,7 @@ struct SettingsView: View {
             case .activities: "square.stack.3d.up"
             case .music: "play.laptopcomputer"
             case .notifications: "bell.badge"
-            case .systemFeedback: "dial.medium.fill"
+            case .systemFeedback: "dial.medium"
             case .battery: "battery.100.bolt"
             case .devices: "airpods"
             case .downloads: "arrow.down.circle"
