@@ -528,6 +528,11 @@ extension ShelfPanel {
         assert(!NSItemProvider.isFileContentType(UTType.utf8PlainText.identifier), "dragged text stays text")
         assert(!NSItemProvider.isFileContentType(UTType.fileURL.identifier), "file references resolve to the original file")
         assert(!NSItemProvider.isFileContentType(UTType.url.identifier), "web links stay links")
+        assert(TemporaryFileStorageService.isOwnFolder(UUID().uuidString))
+        assert(TemporaryFileStorageService.isOwnFolder("zip_\(UUID().uuidString)"))
+        assert(!TemporaryFileStorageService.isOwnFolder("com.apple.WebKit"), "the sweep never leaves FlowDock's own folders")
+        assert(!TemporaryFileStorageService.isOwnFolder("zip_archive"))
+        assert(!TemporaryFileStorageService.isOwnFolder("TemporaryItems"))
     }
 }
 

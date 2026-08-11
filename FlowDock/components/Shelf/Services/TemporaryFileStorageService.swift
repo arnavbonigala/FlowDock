@@ -55,8 +55,29 @@ class TemporaryFileStorageService {
         }
     }
     
+    func sweepUnreferenced(keeping urls: [URL]) {
+        let kept = urls.map(\.path)
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: root, includingPropertiesForKeys: nil
+        ) else { return }
+
+        for entry in entries where Self.isOwnFolder(entry.lastPathComponent) {
+            let prefix = entry.path + "/"
+            guard !kept.contains(where: { $0.hasPrefix(prefix) }) else { continue }
+            try? FileManager.default.removeItem(at: entry)
+        }
+    }
+
+    static func isOwnFolder(_ name: String) -> Bool {
+        if UUID(uuidString: name) != nil { return true }
+        guard name.hasPrefix("zip_") else { return false }
+        return UUID(uuidString: String(name.dropFirst(4))) != nil
+    }
+
     // MARK: - Private Implementation
-    
+
     private func createTempFile(for type: TempFileType) -> URL? {
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         let uuid = UUID().uuidString

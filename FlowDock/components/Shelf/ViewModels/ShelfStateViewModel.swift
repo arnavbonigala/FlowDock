@@ -20,13 +20,19 @@ final class ShelfStateViewModel: ObservableObject {
     var isEmpty: Bool { items.isEmpty }
 
     private init() {
+        var live: [URL] = []
+
         items = ShelfPersistenceService.shared.load().filter { item in
             guard case let .file(bookmarkData) = item.kind else { return true }
             guard let url = Bookmark(data: bookmarkData).resolveURL() else { return false }
             let started = url.startAccessingSecurityScopedResource()
             defer { if started { url.stopAccessingSecurityScopedResource() } }
-            return FileManager.default.fileExists(atPath: url.path)
+            guard FileManager.default.fileExists(atPath: url.path) else { return false }
+            live.append(url)
+            return true
         }
+
+        TemporaryFileStorageService.shared.sweepUnreferenced(keeping: live)
     }
 
 
