@@ -155,13 +155,15 @@ struct ShelfItem: Identifiable, Codable, Equatable, Sendable {
 }
 
 private extension ShelfItem {
-   static func thumbnailSymbolImage(
-        systemName: String,
-    size: CGSize = CGSize(width: 64, height: 80), 
-    symbolPointSize: CGFloat = 38,
-    backgroundColor: NSColor = NSColor.white,
-    symbolColor: NSColor = NSColor.labelColor
-    ) -> NSImage? {
+    static var symbolImages: [String: NSImage] = [:]
+
+    /// The drawing depends on nothing but the symbol name, and a row asks for it on every
+    /// render, so it is drawn once per name rather than once per frame.
+    static func thumbnailSymbolImage(systemName: String) -> NSImage? {
+        if let cached = symbolImages[systemName] { return cached }
+        let size = CGSize(width: 64, height: 80)
+        let symbolPointSize: CGFloat = 38
+        let backgroundColor = NSColor.white
         let image = NSImage(size: size)
         image.lockFocus()
         defer { image.unlockFocus() }
@@ -182,6 +184,7 @@ private extension ShelfItem {
             symbol.draw(in: symbolRect)
         }
 
+        symbolImages[systemName] = image
         return image
     }
 }
@@ -219,10 +222,8 @@ private extension ShelfItemKind {
 
 private extension ShelfItem {
     func resolvedContext(for bookmarkData: Data) -> (url: URL, bookmark: Data)? {
-        let bookmark = Bookmark(data: bookmarkData)
-        if let url = bookmark.resolveURL() {
-            return (url, bookmark.refreshedData ?? bookmarkData)
-        }
-        return nil
+        let resolved = Bookmark(data: bookmarkData).resolve()
+        guard let url = resolved.url else { return nil }
+        return (url, resolved.refreshedData ?? bookmarkData)
     }
 }
