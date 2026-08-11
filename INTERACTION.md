@@ -155,6 +155,14 @@ Ties inside a band go to whichever activity the user ranked higher in Settings, 
 - **In expanded state, coexistence is allowed**, because there is room. Contextual feedback appears in the header without displacing or resizing content, and every live persistent activity is listed.
 - Ambient decoration yields to everything and appears only when nothing else is true.
 
+### Holding
+
+The user may **hold** whichever activity owns the chin, for 5, 15, or 30 minutes. A held activity keeps the chin against everything the priority list would otherwise hand it to — the timer stays up while music plays, because the user said so and the ranking in Settings is a standing preference, not an answer to this afternoon.
+
+- **A hold outranks the ranking, not the two bands above it.** A drag and system feedback the user just caused still take the chin and give it straight back. The user pressing a volume key is also the user saying what they want to see.
+- **Every hold ends.** The longest is half an hour, the remaining time is shown beside the control, and one control both extends and releases it. A hold that never expired would make the top edge a pin board, and the top edge reports what is happening now.
+- **A held activity that ends releases its own hold.** Holding does not keep something on screen after it has stopped being true.
+
 ### Interruption
 
 - A higher-priority activity **interrupts immediately**. It does not wait for the current owner to expire.

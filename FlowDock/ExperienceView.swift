@@ -356,6 +356,8 @@ struct ExperienceView: View {
 
                 Spacer(minLength: 0)
 
+                HoldButton(store: store)
+
                 KeepAwakeButton()
 
                 DevicePanel()
