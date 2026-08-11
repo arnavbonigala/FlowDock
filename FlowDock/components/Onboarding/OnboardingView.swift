@@ -104,9 +104,16 @@ private struct SetupView: View {
                         symbol: "calendar",
                         title: "Calendar and Reminders",
                         detail: "Shows today's events and reminders in the expanded panel.",
-                        granted: calendarGranted
+                        granted: calendarGranted,
+                        actionTitle: calendarManager.canRequestAccess ? "Grant" : "Open Settings"
                     ) {
-                        Task { await calendarManager.requestAccess() }
+                        if calendarManager.canRequestAccess {
+                            Task { await calendarManager.requestAccess() }
+                        } else if let url = URL(
+                            string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars"
+                        ) {
+                            NSWorkspace.shared.open(url)
+                        }
                     }
 
                     PermissionRow(
@@ -190,6 +197,7 @@ private struct PermissionRow: View {
     let title: String
     let detail: String
     let granted: Bool
+    var actionTitle: String = "Grant"
     let request: () -> Void
 
     var body: some View {
@@ -199,7 +207,7 @@ private struct PermissionRow: View {
                     .foregroundStyle(.secondary)
                     .labelStyle(.titleAndIcon)
             } else {
-                Button("Grant", action: request)
+                Button(actionTitle, action: request)
             }
         } label: {
             Label {
