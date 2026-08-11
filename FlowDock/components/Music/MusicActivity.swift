@@ -305,12 +305,7 @@ private struct MusicContextLine: View {
 
     private func lyric(at date: Date) -> String? {
         guard enableLyrics, music.isPlaying else { return nil }
-        if music.isFetchingLyrics { return "Loading lyrics…" }
-        if !music.syncedLyrics.isEmpty {
-            return music.lyricLine(at: music.estimatedPlaybackPosition(at: date))
-        }
-        let plain = music.currentLyrics.trimmingCharacters(in: .whitespacesAndNewlines)
-        return plain.isEmpty ? nil : plain.replacingOccurrences(of: "\n", with: " ")
+        return music.lyricLine(at: music.estimatedPlaybackPosition(at: date))
     }
 }
 

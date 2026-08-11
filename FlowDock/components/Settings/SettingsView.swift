@@ -163,7 +163,7 @@ struct MusicSettings: View {
             Section {
                 MusicSlotConfigurationView()
                 Defaults.Toggle(key: .enableLyrics) {
-                    Text("Show lyrics below the artist")
+                    Text("Show the line playing, below the artist")
                 }
             } header: {
                 Text("Controls")
