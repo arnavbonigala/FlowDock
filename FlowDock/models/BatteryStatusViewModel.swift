@@ -73,45 +73,37 @@ class BatteryStatusViewModel: ObservableObject {
     private func handleBatteryEvent(_ event: BatteryActivityManager.BatteryEvent) {
         switch event {
         case .powerSourceChanged(let isPluggedIn):
-            print("🔌 Power source: \(isPluggedIn ? "Connected" : "Disconnected")")
             withAnimation {
                 self.isPluggedIn = isPluggedIn
             }
 
         case .batteryLevelChanged(let level):
-            print("🔋 Battery level: \(Int(level))%")
             withAnimation {
                 self.levelBattery = level
             }
 
         case .lowPowerModeChanged(let isEnabled):
-            print("⚡ Low power mode: \(isEnabled ? "Enabled" : "Disabled")")
             withAnimation {
                 self.isInLowPowerMode = isEnabled
             }
 
         case .isChargingChanged(let isCharging):
-            print("🔌 Charging: \(isCharging ? "Yes" : "No")")
-            print("maxCapacity: \(self.maxCapacity)")
-            print("levelBattery: \(self.levelBattery)")
             withAnimation {
                 self.isCharging = isCharging
             }
 
         case .timeToFullChargeChanged(let time):
-            print("🕒 Time to full charge: \(time) minutes")
             withAnimation {
                 self.timeToFullCharge = time
             }
 
         case .maxCapacityChanged(let capacity):
-            print("🔋 Max capacity: \(capacity)")
             withAnimation {
                 self.maxCapacity = capacity
             }
 
         case .error(let description):
-            print("⚠️ Error: \(description)")
+            NSLog("Battery monitoring reported an error: \(description)")
         }
     }
 
@@ -130,7 +122,6 @@ class BatteryStatusViewModel: ObservableObject {
 
 
     deinit {
-        print("🔌 Cleaning up battery monitoring...")
         if let managerBatteryId: Int = managerBatteryId {
             managerBattery.removeObserver(byId: managerBatteryId)
         }
