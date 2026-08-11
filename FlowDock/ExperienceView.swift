@@ -24,10 +24,12 @@ struct ExperienceView: View {
     @State private var haptics = false
 
     @ObservedObject private var calendar = CalendarManager.shared
+    @ObservedObject private var drag = DragWatch.shared
     @Default(.showCalendar) private var showCalendar
     @Default(.shelfEnabled) private var shelfEnabled
 
     static let contextColumn: CGFloat = 215
+    static let droppedTypes: [UTType] = [.fileURL, .url, .utf8PlainText, .plainText, .data]
 
     private var showsAgenda: Bool { showCalendar }
 
@@ -135,14 +137,9 @@ struct ExperienceView: View {
                     }
                 }
                 .onDrop(
-                    of: [.fileURL, .url, .utf8PlainText, .plainText, .data],
+                    of: Self.droppedTypes,
                     isTargeted: $isDropTargeted
-                ) { providers in
-                    guard shelfEnabled else { return false }
-                    ShelfStateViewModel.shared.load(providers)
-                    settle()
-                    return true
-                }
+                ) { providers in accept(providers) }
                 .onChange(of: isDropTargeted) { _, targeted in
                     guard shelfEnabled else { return }
                     if targeted {
@@ -159,6 +156,7 @@ struct ExperienceView: View {
 
             Spacer(minLength: 0)
         }
+        .background(alignment: .top) { catcher }
         .frame(maxWidth: windowSize.width, maxHeight: windowSize.height, alignment: .top)
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .preferredColorScheme(.dark)
@@ -169,6 +167,27 @@ struct ExperienceView: View {
         .deviceActivity(in: store)
         .progressActivity(in: store)
         .countdownActivity(in: store)
+    }
+
+    /// Aiming at the cutout mid-drag is slow, so the whole top of the screen accepts the
+    /// drop — but only while something is being dragged, or it would swallow menu bar clicks.
+    @ViewBuilder
+    private var catcher: some View {
+        if shelfEnabled, !isExpanded, drag.dragging {
+            Color.clear
+                .frame(height: max(closedHeight, 24))
+                .contentShape(Rectangle())
+                .onDrop(of: Self.droppedTypes, isTargeted: $isDropTargeted) { providers in
+                    accept(providers)
+                }
+        }
+    }
+
+    private func accept(_ providers: [NSItemProvider]) -> Bool {
+        guard shelfEnabled else { return false }
+        ShelfStateViewModel.shared.load(providers)
+        settle()
+        return true
     }
 
     // MARK: - Surfaces

@@ -119,6 +119,7 @@
 		11FD2EC1000000000000000D /* CountdownCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000000E /* CountdownCenter.swift */; };
 		11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000010 /* CountdownActivity.swift */; };
 		11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000012 /* ActivityCatalog.swift */; };
+		11FD2EC10000000000000013 /* DragWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000014 /* DragWatch.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -262,6 +263,7 @@
 		11FD2EC1000000000000000E /* CountdownCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownCenter.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000010 /* CountdownActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownActivity.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000012 /* ActivityCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCatalog.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000014 /* DragWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragWatch.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -447,6 +449,7 @@
 		147163B52C5D804B0068B555 /* managers */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000014 /* DragWatch.swift */,
 				11FD2EC1000000000000000E /* CountdownCenter.swift */,
 				11FD2EC1000000000000000A /* ProgressCenter.swift */,
 				11FD2EC10000000000000006 /* DeviceMonitor.swift */,
@@ -809,6 +812,7 @@
 				11FD2EC1000000000000000D /* CountdownCenter.swift in Sources */,
 				11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */,
 				11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */,
+				11FD2EC10000000000000013 /* DragWatch.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,
