@@ -19,19 +19,23 @@ extension Activity {
             band: .power,
             label: CallPanel.label(notification),
             chinSideWidth: Activity.chinClockSide,
+            chinDrop: Activity.chinCallDrop,
             leading: {
-                Image(systemName: "phone.fill")
-                    .font(.chinGlyph)
-                    .foregroundStyle(.green)
+                CallerAvatar(name: notification.title, diameter: 34)
                     .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
-                Text(notification.title)
-                    .font(.chinValue)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .foregroundStyle(.primary)
-                    .frame(width: Activity.chinClockSide, alignment: .trailing)
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(notification.title)
+                        .font(.chinValue)
+                        .foregroundStyle(.primary)
+                    Text(notification.callRoute)
+                        .font(.chinValue)
+                        .foregroundStyle(.secondary)
+                }
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
         .withExpanded { CallPanel(notification: notification) }
@@ -63,10 +67,9 @@ private struct CallActivityBinder: ViewModifier {
 
 private struct CallerAvatar: View {
     let name: String
+    var diameter: CGFloat = 32
 
     @State private var photo: NSImage?
-
-    private static let diameter: CGFloat = 32
 
     var body: some View {
         Group {
@@ -76,18 +79,19 @@ private struct CallerAvatar: View {
                     .aspectRatio(contentMode: .fill)
             } else if !ContactPhotos.initials(of: name).isEmpty {
                 Text(ContactPhotos.initials(of: name))
-                    .font(.panelMeta)
+                    .font(.system(size: diameter * 0.4, weight: .medium))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(.quaternary)
             } else {
-                Image(systemName: "phone.fill")
-                    .font(.panelPrimary)
-                    .foregroundStyle(.green)
+                Image(systemName: "person.fill")
+                    .font(.system(size: diameter * 0.5))
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.quaternary)
             }
         }
-        .frame(width: Self.diameter, height: Self.diameter)
+        .frame(width: diameter, height: diameter)
         .clipShape(Circle())
         .accessibilityHidden(true)
         .task(id: name) { photo = await ContactPhotos.photo(named: name) }

@@ -52,6 +52,11 @@ struct Activity: Identifiable {
     /// expanded state instead.
     static let chinSide: CGFloat = 34
     static let chinClockSide: CGFloat = 44
+    /// How far below the closed chin this activity extends. DESIGN.md allows an activity
+    /// with more to say to grow downward, where the whole screen is, rather than sideways
+    /// into the menu bar's own items.
+    var chinDrop: CGFloat = 0
+    static let chinCallDrop: CGFloat = 30
     /// What a chin view is drawn at. An extension renders in its own process, so this is
     /// the size FlowDock hands across that boundary rather than a layout it can negotiate.
     static let chinHeight: CGFloat = 22
@@ -67,6 +72,7 @@ struct Activity: Identifiable {
         band: ActivityBand,
         label: String,
         chinSideWidth: CGFloat? = nil,
+        chinDrop: CGFloat = 0,
         @ViewBuilder leading: @escaping () -> Leading,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) {
@@ -75,6 +81,7 @@ struct Activity: Identifiable {
         self.band = band
         self.label = label
         self.chinSideWidth = chinSideWidth
+        self.chinDrop = chinDrop
         self.leading = { AnyView(leading()) }
         self.trailing = { AnyView(trailing()) }
     }

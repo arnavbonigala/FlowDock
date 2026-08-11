@@ -72,6 +72,12 @@ struct ExperienceView: View {
         store.owner?.chinSideWidth ?? vm.chinItemSide
     }
 
+    /// How tall the surface is while it is not the panel. An activity with more to say than
+    /// a glyph and a value takes it downward rather than sideways — see DESIGN.md.
+    private func chinHeight(for state: ActivityState) -> CGFloat {
+        state == .idle ? closedHeight : closedHeight + (store.owner?.chinDrop ?? 0)
+    }
+
     private var chinInset: CGFloat {
         (displayHasNotch ? cornerRadiusInsets.closed.top : 0) + 8
     }
@@ -104,7 +110,7 @@ struct ExperienceView: View {
             }
                 .frame(
                     width: width(for: state),
-                    height: state == .expanded ? panelSize.height : closedHeight,
+                    height: state == .expanded ? panelSize.height : chinHeight(for: state),
                     alignment: .top
                 )
                 .clipShape(
@@ -231,6 +237,7 @@ struct ExperienceView: View {
 
         case .contextual, .persistent:
             chin
+                .frame(height: chinHeight(for: state))
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(store.owner?.label ?? "")
                 .transition(.fromNotch(reduceMotion: reduceMotion))
