@@ -184,16 +184,16 @@ private struct ShelfActionRow: View {
                 if images.count == 1 {
                     HoverButton(icon: "wand.and.stars", scale: .small) { run("Remove Background") }
                         .accessibilityLabel("Remove the background")
-                } else if !images.isEmpty {
+                }
+
+                if !images.isEmpty {
                     HoverButton(icon: "doc.richtext", scale: .small) { run("Create PDF") }
                         .accessibilityLabel("Create a PDF")
                 }
 
-
                 Menu {
                     if images.count == 1 {
                         Button("Convert Image…") { run("Convert Image…") }
-                        Button("Create PDF") { run("Create PDF") }
                     }
                     if items.count == 1, !files.isEmpty {
                         Button("Rename") { run("Rename") }
