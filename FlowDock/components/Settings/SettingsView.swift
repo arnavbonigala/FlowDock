@@ -668,6 +668,7 @@ struct GeneralSettings: View {
 struct AppearanceSettings: View {
     @Default(.useCustomAccentColor) private var useCustomAccentColor
     @Default(.customAccentColorData) private var customAccentColorData
+    @Default(.surfaceAppearance) private var surfaceAppearance
     @State private var customAccentColor: Color = .accentColor
 
     var body: some View {
@@ -691,8 +692,17 @@ struct AppearanceSettings: View {
                 Defaults.Toggle(key: .enableShadow) {
                     Text("Shadow under the panel")
                 }
+
+                Picker("Surface", selection: $surfaceAppearance) {
+                    ForEach(SurfaceAppearance.allCases) { appearance in
+                        Text(appearance.rawValue).tag(appearance)
+                    }
+                }
+                .pickerStyle(.segmented)
             } header: {
                 Text("Panel")
+            } footer: {
+                Text("A display with a notch is always black, so the surface and the bezel around it are one piece of hardware. A display without one has nothing to match, so it can be glass instead. Reduce Transparency turns it back to black wherever it is on.")
             }
         }
         .onAppear(perform: loadCustomColor)

@@ -16,6 +16,7 @@ struct ExperienceView: View {
     @EnvironmentObject var vm: FlowDockViewModel
     @StateObject private var store = ActivityStore()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @State private var hoverTask: Task<Void, Never>?
     @State private var settleTask: Task<Void, Never>?
@@ -33,6 +34,7 @@ struct ExperienceView: View {
     @Default(.enableGestures) private var enableGestures
     @Default(.closeGestureEnabled) private var closeGestureEnabled
     @Default(.enableShadow) private var enableShadow
+    @Default(.surfaceAppearance) private var surfaceAppearance
 
     static let contextColumn: CGFloat = 215
     static let droppedTypes: [UTType] = [.fileURL, .url, .utf8PlainText, .plainText, .data]
@@ -102,7 +104,7 @@ struct ExperienceView: View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
                 if displayHasNotch || state != .idle {
-                    Color.black
+                    surface
                 } else {
                     Color.clear
                 }
@@ -245,6 +247,20 @@ struct ExperienceView: View {
         case .expanded:
             expandedPanel
                 .transition(.fromNotch(reduceMotion: reduceMotion))
+        }
+    }
+
+    /// Black is the rule wherever there is a bezel to be mistaken for. A display with no
+    /// notch has none, so the surface may instead admit it is software — but only if asked,
+    /// and never when the user has asked the system for less transparency.
+    @ViewBuilder
+    private var surface: some View {
+        if displayHasNotch || surfaceAppearance == .black || reduceTransparency {
+            Color.black
+        } else if #available(macOS 26.0, *) {
+            Color.clear.glassEffect(.regular, in: Rectangle())
+        } else {
+            Rectangle().fill(.ultraThinMaterial)
         }
     }
 

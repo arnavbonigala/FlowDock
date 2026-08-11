@@ -50,6 +50,15 @@ enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable 
     var id: String { self.rawValue }
 }
 
+/// What the surface is made of on a display with no notch. DESIGN.md requires black
+/// wherever there is a bezel to imitate, and offers a choice only where there is not.
+enum SurfaceAppearance: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case black = "Black"
+    case glass = "Liquid Glass"
+
+    var id: String { rawValue }
+}
+
 extension Defaults.Keys {
     // MARK: General
     static let menubarIcon = Key<Bool>("menubarIcon", default: true)
@@ -67,6 +76,7 @@ extension Defaults.Keys {
     // MARK: Appearance
     static let lightingEffect = Key<Bool>("lightingEffect", default: true)
     static let enableShadow = Key<Bool>("enableShadow", default: true)
+    static let surfaceAppearance = Key<SurfaceAppearance>("surfaceAppearance", default: .black)
 
     static let showCalendar = Key<Bool>("showCalendar", default: true)
     static let hideCompletedReminders = Key<Bool>("hideCompletedReminders", default: true)
