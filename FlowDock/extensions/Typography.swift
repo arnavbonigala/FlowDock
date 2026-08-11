@@ -13,4 +13,6 @@ extension Font {
     static let panelControl = Font.system(size: 15, weight: .medium)
     static let panelPrimary = Font.system(size: 18, weight: .medium)
     static let panelMeta = Font.system(size: 11, weight: .medium)
+    /// The clock on the lock screen, which is read across a room rather than at a desk.
+    static let lockClock = Font.system(size: 44, weight: .light)
 }

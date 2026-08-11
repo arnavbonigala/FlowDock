@@ -18,6 +18,9 @@ class FlowDockViewModel: NSObject, ObservableObject {
     var cancellables: Set<AnyCancellable> = []
     
     @Published var hideOnClosed: Bool = true
+    /// Set by the app delegate from the screen-lock notifications. The shell needs it
+    /// because a locked Mac shows a different panel, not the same one behind glass.
+    @Published var isLocked: Bool = false
 
     /// Mirrored off the display's store so window placement can ask what is on screen
     /// without owning it. A HUD that teleports mid-glance is worse than a late move.

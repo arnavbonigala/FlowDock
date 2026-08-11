@@ -128,6 +128,7 @@
 		11FD2EC10000000000000021 /* MicrophoneMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000022 /* MicrophoneMonitor.swift */; };
 		11FD2EC10000000000000023 /* CallActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000024 /* CallActivity.swift */; };
 		11FD2EC10000000000000025 /* ContactPhotos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000026 /* ContactPhotos.swift */; };
+		11FD2EC10000000000000027 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000028 /* LockScreenView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -281,6 +282,7 @@
 		11FD2EC10000000000000022 /* MicrophoneMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneMonitor.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000024 /* CallActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallActivity.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000026 /* ContactPhotos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPhotos.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000028 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -444,6 +446,7 @@
 		1471639B2C5D362F0068B555 /* components */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000028 /* LockScreenView.swift */,
 				11FD2EC10000000000000024 /* CallActivity.swift */,
 				11FD2EC10000000000000010 /* CountdownActivity.swift */,
 				11FD2EC1000000000000000C /* ProgressActivity.swift */,
@@ -855,6 +858,7 @@
 				11FD2EC10000000000000021 /* MicrophoneMonitor.swift in Sources */,
 				11FD2EC10000000000000023 /* CallActivity.swift in Sources */,
 				11FD2EC10000000000000025 /* ContactPhotos.swift in Sources */,
+				11FD2EC10000000000000027 /* LockScreenView.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,

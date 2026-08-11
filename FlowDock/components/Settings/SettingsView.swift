@@ -653,6 +653,8 @@ struct GeneralSettings: View {
                 }
             } header: {
                 Text("Privacy")
+            } footer: {
+                Text("A locked Mac shows the clock, what is playing, and how long until a timer, a meeting, or a full battery. It never shows a notification, a caller, a filename, or the name of the meeting — those belong to whoever can unlock it.")
             }
         }
     }

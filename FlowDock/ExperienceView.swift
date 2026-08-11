@@ -35,6 +35,7 @@ struct ExperienceView: View {
     @Default(.closeGestureEnabled) private var closeGestureEnabled
     @Default(.enableShadow) private var enableShadow
     @Default(.surfaceAppearance) private var surfaceAppearance
+    @Default(.showOnLockScreen) private var showOnLockScreen
 
     static let contextColumn: CGFloat = 215
     static let droppedTypes: [UTType] = [.fileURL, .url, .utf8PlainText, .plainText, .data]
@@ -98,8 +99,12 @@ struct ExperienceView: View {
 
     private var isExpanded: Bool { vm.notchState == .open }
 
+    /// A locked Mac has nobody signed in to open the panel, so it is open already. It is
+    /// also a different panel: see LockScreenView on what a locked screen may say.
+    private var isLockScreen: Bool { vm.isLocked && showOnLockScreen }
+
     var body: some View {
-        let state: ActivityState = isExpanded ? .expanded : store.chinState
+        let state: ActivityState = isExpanded || isLockScreen ? .expanded : store.chinState
 
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
@@ -247,8 +252,14 @@ struct ExperienceView: View {
                 .transition(.fromNotch(reduceMotion: reduceMotion))
 
         case .expanded:
-            expandedPanel
-                .transition(.fromNotch(reduceMotion: reduceMotion))
+            Group {
+                if isLockScreen {
+                    LockScreenView()
+                } else {
+                    expandedPanel
+                }
+            }
+            .transition(.fromNotch(reduceMotion: reduceMotion))
         }
     }
 
