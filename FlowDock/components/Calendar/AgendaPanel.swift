@@ -140,7 +140,7 @@ struct AgendaPanel: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Self.label(event))
+            .accessibilityLabel(Self.label(event, now: .now))
 
             if let meeting = event.meetingURL {
                 HoverButton(icon: "video.fill", scale: .small) { openURL(meeting) }
@@ -212,14 +212,14 @@ struct AgendaPanel: View {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
-    static func label(_ event: EventModel) -> String {
+    static func label(_ event: EventModel, now: Date = .now) -> String {
         let when = event.isAllDay
             ? "all day"
             : event.start.formatted(date: .omitted, time: .shortened)
         if case .reminder(let completed) = event.type {
             return "\(event.title), \(when)\(completed ? ", completed" : "")"
         }
-        return "\(event.title), \(when)"
+        return "\(event.title), \(when)\(isSpent(event, now: now) ? ", ended" : "")"
     }
 }
 
@@ -314,6 +314,11 @@ extension AgendaPanel {
         assert(!isSpent(allDay, now: noon), "an all-day entry is not spent at noon")
         assert(isSpent(done, now: noon))
         assert(!isSpent(todo, now: noon))
+
+        assert(label(morning, now: noon).hasSuffix(", ended"), "dimming is not the only sign an event is over")
+        assert(!label(evening, now: noon).hasSuffix(", ended"))
+        assert(!label(allDay, now: noon).hasSuffix(", ended"))
+        assert(label(done, now: noon).hasSuffix(", completed"), "a finished reminder is completed, not ended")
     }
 }
 
