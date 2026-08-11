@@ -26,15 +26,21 @@ extension Activity {
             },
             trailing: {
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(notification.title)
-                        .font(.chinValue)
-                        .foregroundStyle(.primary)
+                    /// A name too long for the chin scrolls rather than truncating: the chin
+                    /// stays the width DESIGN.md allows and the whole name still gets read.
+                    MarqueeText(
+                        .constant(notification.title),
+                        font: .chinValue,
+                        textColor: .primary,
+                        frameWidth: Activity.chinClockSide,
+                        alignment: .trailing
+                    )
                     Text(notification.callRoute)
                         .font(.chinValue)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
-                .lineLimit(1)
-                .truncationMode(.tail)
                 .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )

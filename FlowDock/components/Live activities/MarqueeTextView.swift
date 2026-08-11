@@ -30,6 +30,9 @@ struct MarqueeText: View {
     let backgroundColor: Color
     let minDuration: Double
     let frameWidth: CGFloat
+    /// Where text that is too short to scroll sits. Text long enough to scroll fills the
+    /// width, so it starts from the leading edge whatever this says.
+    let alignment: Alignment
     
     @State private var animate = false
     @State private var textSize: CGSize = .zero
@@ -37,7 +40,7 @@ struct MarqueeText: View {
 
     private let gap: CGFloat = 24
     
-    init(_ text: Binding<String>, font: Font = .body, nsFont: NSFont.TextStyle = .body, textColor: Color = .primary, backgroundColor: Color = .clear, minDuration: Double = 3.0, frameWidth: CGFloat = 200) {
+    init(_ text: Binding<String>, font: Font = .body, nsFont: NSFont.TextStyle = .body, textColor: Color = .primary, backgroundColor: Color = .clear, minDuration: Double = 3.0, frameWidth: CGFloat = 200, alignment: Alignment = .leading) {
         _text = text
         self.font = font
         self.nsFont = nsFont
@@ -45,6 +48,7 @@ struct MarqueeText: View {
         self.backgroundColor = backgroundColor
         self.minDuration = minDuration
         self.frameWidth = frameWidth
+        self.alignment = alignment
     }
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -55,7 +59,7 @@ struct MarqueeText: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .leading) {
+            ZStack(alignment: needsScrolling ? .leading : alignment) {
                 HStack(spacing: gap) {
                     Text(text)
                     Text(text)
@@ -88,7 +92,7 @@ struct MarqueeText: View {
                     }
                 }
             }
-            .frame(width: frameWidth, alignment: .leading)
+            .frame(width: frameWidth, alignment: needsScrolling ? .leading : alignment)
             .clipped()
         }
         .frame(height: textSize.height * 1.3)
