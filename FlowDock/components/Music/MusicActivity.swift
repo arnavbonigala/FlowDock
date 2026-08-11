@@ -277,7 +277,7 @@ private struct MusicContextLine: View {
     @Default(.enableLyrics) private var enableLyrics
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
+        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.25 : 10)) { timeline in
             ScrollingText(
                 line(at: timeline.date),
                 style: .subheadline,
@@ -323,7 +323,7 @@ private struct MusicScrubber: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.1)) { timeline in
+        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.1 : 10)) { timeline in
             VStack(spacing: 4) {
                 CustomSlider(
                     value: $position,
@@ -351,6 +351,10 @@ private struct MusicScrubber: View {
             .onChange(of: timeline.date) { _, now in
                 guard !dragging, music.timestampDate.timeIntervalSince(lastDragged) > -1 else { return }
                 position = music.estimatedPlaybackPosition(at: now)
+            }
+            .onChange(of: music.elapsedTime) { _, _ in
+                guard !dragging, music.timestampDate.timeIntervalSince(lastDragged) > -1 else { return }
+                position = music.estimatedPlaybackPosition()
             }
         }
     }
