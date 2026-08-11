@@ -80,6 +80,7 @@ app and the only place the two row heights do not apply.
 
 - Prefer `VStack(spacing:)` / `HStack(spacing:)` over per-child padding. A bare `.padding()` is not acceptable in new code — it resolves to a system default that ignores this scale.
 - Content is inset from the panel edge, never from the screen edge.
+- **A region that scrolls says so at its edge**, not with a scrollbar. A scrollbar inside the bezel reads as a window, so indicators stay hidden and the far edge fades instead (`fadesPastEdge`), only while there is something past it. Every scrollable region in the panel uses it; a new one that does not is a region the user cannot tell is longer than it looks.
 - **Hit targets are at least 28 × 28 pt** regardless of glyph size, expanded with `.contentShape(Rectangle())` rather than by growing the visual.
 - Optical over mathematical: a glyph with visual weight below its baseline may be nudged, and the nudge is a 2 pt correction, not a new spacing step.
 
