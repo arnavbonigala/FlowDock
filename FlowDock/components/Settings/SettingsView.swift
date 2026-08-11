@@ -245,10 +245,10 @@ struct ActivitySettings: View {
                 }
                 .frame(height: 240)
             } header: {
-                Text("Drag to choose which activity wins when two want the notch at once")
+                Text("Priority")
             } footer: {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Order only decides between activities that are equally close to what you just did: a drag, a volume change, or anything else you caused still comes first.")
+                    Text("Drag to choose which activity wins when two want the notch at once. Order only decides between activities that are equally close to what you just did: a drag, a volume change, or anything else you caused still comes first.")
 
                     Text("Extensions are apps you install yourself, and each one stays off until you turn it on. [Reviewed extensions](https://github.com/arnavbonigala/FlowDock/blob/main/DIRECTORY.md)")
                 }
