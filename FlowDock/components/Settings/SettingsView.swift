@@ -265,7 +265,7 @@ struct DownloadSettings: View {
                     Text("Show downloads in progress")
                 }
             } footer: {
-                Text("Files arriving in the Downloads folder show their progress at the notch until they finish, then show once more as complete. Safari reports how much is left; other browsers only report how much has arrived.")
+                Text("Files arriving in the Downloads folder show their progress at the notch until they finish, then show once more as complete. Safari reports how much is left; other browsers only report how much has arrived. Shelf actions that take a moment — compressing, converting, building a PDF, removing a background — report here too.")
             }
         }
     }

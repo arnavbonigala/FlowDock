@@ -488,16 +488,20 @@ final class ShelfItemViewModel: ObservableObject {
                 let fileURLs = selected.compactMap { $0.fileURL }
                 guard !fileURLs.isEmpty else { break }
 
+                ProgressCenter.shared.begin("shelf.compress", title: "Compressing")
                 Task {
                     guard let zipTempURL = await fileURLs.accessSecurityScopedResources(accessor: { urls in
                         await TemporaryFileStorageService.shared.createZip(from: urls)
                     }) else {
+                        ProgressCenter.shared.drop("shelf.compress")
                         showErrorAlert(
                             title: "Compress Failed",
                             message: "FlowDock could not create an archive from the selected items."
                         )
                         return
                     }
+
+                    ProgressCenter.shared.finish("shelf.compress", at: zipTempURL)
 
                     if let bookmark = try? Bookmark(url: zipTempURL) {
                         let newItem = ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
@@ -725,6 +729,7 @@ final class ShelfItemViewModel: ObservableObject {
             
             guard let imageURL = imageURLs.first else { return }
             
+            ProgressCenter.shared.begin("shelf.removeBackground", title: "Removing background")
             Task {
                 do {
                     let resultURL = try await imageURL.accessSecurityScopedResource { url in
@@ -732,6 +737,7 @@ final class ShelfItemViewModel: ObservableObject {
                     }
                     
                     guard let resultURL, let bookmark = try? Bookmark(url: resultURL) else {
+                        ProgressCenter.shared.drop("shelf.removeBackground")
                         showErrorAlert(
                             title: "Background Removal Failed",
                             message: "FlowDock could not produce an image without its background."
@@ -739,10 +745,13 @@ final class ShelfItemViewModel: ObservableObject {
                         return
                     }
 
+                    ProgressCenter.shared.finish("shelf.removeBackground", at: resultURL)
+
                     ShelfStateViewModel.shared.add([
                         ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
                     ])
                 } catch {
+                    ProgressCenter.shared.drop("shelf.removeBackground")
                     showErrorAlert(title: "Background Removal Failed", message: error.localizedDescription)
                 }
             }
@@ -755,6 +764,7 @@ final class ShelfItemViewModel: ObservableObject {
             
             guard !imageURLs.isEmpty else { return }
             
+            ProgressCenter.shared.begin("shelf.createPDF", title: "Creating PDF")
             Task {
                 do {
                     let resultURL = try await imageURLs.accessSecurityScopedResources { urls in
@@ -762,6 +772,7 @@ final class ShelfItemViewModel: ObservableObject {
                     }
                     
                     guard let resultURL, let bookmark = try? Bookmark(url: resultURL) else {
+                        ProgressCenter.shared.drop("shelf.createPDF")
                         showErrorAlert(
                             title: "PDF Creation Failed",
                             message: "FlowDock could not build a PDF from the selected images."
@@ -769,10 +780,13 @@ final class ShelfItemViewModel: ObservableObject {
                         return
                     }
 
+                    ProgressCenter.shared.finish("shelf.createPDF", at: resultURL)
+
                     ShelfStateViewModel.shared.add([
                         ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
                     ])
                 } catch {
+                    ProgressCenter.shared.drop("shelf.createPDF")
                     showErrorAlert(title: "PDF Creation Failed", message: error.localizedDescription)
                 }
             }
@@ -963,12 +977,19 @@ final class ShelfItemViewModel: ObservableObject {
                     removeMetadata: removeMetadata
                 )
                 
+                ProgressCenter.shared.begin("shelf.convertImage", title: "Converting image")
                 Task {
                     do {
                         let resultURL = try await imageURL.accessSecurityScopedResource { url in
                             try await ImageProcessingService.shared.convertImage(from: url, options: options)
                         }
-                        
+
+                        if let resultURL {
+                            ProgressCenter.shared.finish("shelf.convertImage", at: resultURL)
+                        } else {
+                            ProgressCenter.shared.drop("shelf.convertImage")
+                        }
+
                         if let resultURL = resultURL {
                             // Create bookmark and add to shelf as temporary item
                             if let bookmark = try? Bookmark(url: resultURL) {
@@ -980,7 +1001,7 @@ final class ShelfItemViewModel: ObservableObject {
                             }
                         }
                     } catch {
-                        print("❌ Failed to convert image: \(error.localizedDescription)")
+                        ProgressCenter.shared.drop("shelf.convertImage")
                         showErrorAlert(title: "Image Conversion Failed", message: error.localizedDescription)
                     }
                 }

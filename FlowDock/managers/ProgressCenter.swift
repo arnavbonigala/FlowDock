@@ -64,6 +64,10 @@ final class ProgressCenter: ObservableObject {
         finished = nil
     }
 
+    func begin(_ id: String, title: String) {
+        report(ProgressReport(id: id, title: title, fraction: nil, detail: "Working", url: nil))
+    }
+
     func reveal(_ report: ProgressReport) {
         guard let url = report.url else { return }
         NSWorkspace.shared.activateFileViewerSelecting([url])
