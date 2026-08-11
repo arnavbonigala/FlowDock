@@ -111,13 +111,13 @@ struct ProgressRing: View {
             if let fraction {
                 Circle()
                     .trim(from: 0, to: max(0.02, fraction))
-                    .stroke(.white, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .stroke(Color.effectiveAccent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.value(reduceMotion: reduceMotion), value: fraction)
             } else {
                 Circle()
                     .trim(from: 0, to: 0.25)
-                    .stroke(.white, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .stroke(Color.effectiveAccent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .rotationEffect(.degrees(reduceMotion ? 0 : (spin ? 360 : 0)))
                     .opacity(reduceMotion && spin ? 0.35 : 1)
                     .animation(
@@ -158,6 +158,7 @@ struct ProgressPanel: View {
                             } else {
                                 Text(report.detail)
                                     .font(.caption)
+                                    .monospacedDigit()
                                     .foregroundStyle(.secondary)
                             }
                         }
