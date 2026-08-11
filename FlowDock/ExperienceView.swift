@@ -206,6 +206,7 @@ struct ExperienceView: View {
         .shelfActivity(in: store, receiving: isDropTargeted)
         .notificationActivity(in: store)
         .callActivity(in: store)
+        .networkActivity(in: store)
         .deviceActivity(in: store)
         .microphoneActivity(in: store)
         .progressActivity(in: store)

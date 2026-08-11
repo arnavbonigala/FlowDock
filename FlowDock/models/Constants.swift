@@ -112,6 +112,7 @@ extension Defaults.Keys {
 
     // MARK: Devices
     static let showDeviceStatus = Key<Bool>("showDeviceStatus", default: true)
+    static let showNetworkStatus = Key<Bool>("showNetworkStatus", default: true)
 
     // MARK: Microphone
     static let showMicrophoneActivity = Key<Bool>("showMicrophoneActivity", default: true)

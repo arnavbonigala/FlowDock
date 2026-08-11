@@ -23,7 +23,7 @@ struct SettingsView: View {
     }
 
     enum Pane: String, Hashable, CaseIterable {
-        case activities, music, notifications, systemFeedback, battery, devices, downloads, calendar, shelf
+        case activities, music, notifications, systemFeedback, battery, devices, network, downloads, calendar, shelf
         case general, appearance, shortcuts, about
 
         var title: String {
@@ -34,6 +34,7 @@ struct SettingsView: View {
             case .systemFeedback: "System feedback"
             case .battery: "Battery"
             case .devices: "Devices"
+            case .network: "Network"
             case .downloads: "Downloads"
             case .calendar: "Calendar"
             case .shelf: "Shelf"
@@ -52,6 +53,7 @@ struct SettingsView: View {
             case .systemFeedback: "dial.medium"
             case .battery: "battery.100.bolt"
             case .devices: "airpods"
+            case .network: "wifi"
             case .downloads: "arrow.down.circle"
             case .calendar: "calendar"
             case .shelf: "tray.full"
@@ -67,7 +69,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedPane) {
                 Section("Activities") {
-                    ForEach([Pane.activities, .music, .notifications, .systemFeedback, .battery, .devices, .downloads, .calendar, .shelf], id: \.self) { pane in
+                    ForEach([Pane.activities, .music, .notifications, .systemFeedback, .battery, .devices, .network, .downloads, .calendar, .shelf], id: \.self) { pane in
                         NavigationLink(value: pane) {
                             Label(pane.title, systemImage: pane.symbol)
                         }
@@ -94,6 +96,7 @@ struct SettingsView: View {
                 case .systemFeedback: SystemFeedbackSettings()
                 case .battery: BatterySettings()
                 case .devices: DeviceSettings()
+                case .network: NetworkSettings()
                 case .downloads: DownloadSettings()
                 case .calendar: CalendarSettings()
                 case .shelf: ShelfSettings()
@@ -291,6 +294,20 @@ struct DeviceSettings: View {
                 }
             } footer: {
                 Text("Bluetooth headphones, keyboards, mice, and other paired devices announce themselves at the notch when they connect or disconnect, and their battery appears in the expanded panel when the device reports it.")
+            }
+        }
+    }
+}
+
+struct NetworkSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle(key: .showNetworkStatus) {
+                    Text("Announce losing and regaining the connection")
+                }
+            } footer: {
+                Text("Only losing the connection and getting it back are announced, a few seconds after the change settles, and never around waking. Switching between Wi-Fi and Ethernet is not: you are holding the cable. The network's name, whether a VPN is up, and whether a portal is waiting are not available to a sandboxed app without asking for a permission FlowDock has no other use for.")
             }
         }
     }

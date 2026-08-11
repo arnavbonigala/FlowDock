@@ -47,6 +47,7 @@ final class ActivityStore: ObservableObject {
         #if DEBUG
         Activity.selfCheck()
         PowerReading.selfCheck()
+        NetworkReachability.selfCheck()
         AgendaPanel.selfCheck()
         ShelfPanel.selfCheck()
         NotificationPanel.selfCheck()

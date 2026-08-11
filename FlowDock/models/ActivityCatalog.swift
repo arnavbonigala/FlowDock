@@ -22,6 +22,7 @@ struct ActivityCatalog {
         Entry(id: Activity.notificationID, name: "Notifications", symbol: "bell.badge", key: .showNotifications),
         Entry(id: Activity.callID, name: "Calls", symbol: "phone", key: nil),
         Entry(id: Activity.powerID, name: "Power", symbol: "battery.100.bolt", key: .showPowerStatusNotifications),
+        Entry(id: Activity.networkID, name: "Network", symbol: "wifi", key: .showNetworkStatus),
         Entry(id: Activity.deviceID, name: "Devices", symbol: "airpods", key: .showDeviceStatus),
         Entry(id: Activity.microphoneID, name: "Microphone", symbol: "mic", key: .showMicrophoneActivity),
         Entry(id: Activity.progressID, name: "Downloads", symbol: "arrow.down.circle", key: .showDownloads),
