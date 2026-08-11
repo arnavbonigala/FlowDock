@@ -339,7 +339,7 @@ private struct ShelfChip: View {
             ShelfChipInput(item: item, viewModel: viewModel)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(item.displayName)
+        .iconLabel(item.isTemporary ? "\(item.displayName), temporary file" : item.displayName)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : [.isButton])
         .accessibilityAction {
             ShelfSelectionModel.shared.selectSingle(item)
