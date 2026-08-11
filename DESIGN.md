@@ -66,6 +66,12 @@ and a strip that only carries controls is **22 pt**. Both are inset 8 pt horizon
 sit on an 8 pt continuous rounded rectangle. The two stacked lines of text inside a
 content row are separated by 1 pt, which is optical, not a spacing step.
 
+**The agenda column is a list, not a stack of rows.** An event's title wraps, so its
+height cannot be fixed, and a card behind every entry would make a dense day unreadable.
+Agenda entries are plain rows separated by 2 pt, marked by a 3 pt calendar colour bar
+instead of a fill, in the manner of the system's own agenda. This is the only list in the
+app and the only place the two row heights do not apply.
+
 - Prefer `VStack(spacing:)` / `HStack(spacing:)` over per-child padding. A bare `.padding()` is not acceptable in new code — it resolves to a system default that ignores this scale.
 - Content is inset from the panel edge, never from the screen edge.
 - **Hit targets are at least 28 × 28 pt** regardless of glyph size, expanded with `.contentShape(Rectangle())` rather than by growing the visual.

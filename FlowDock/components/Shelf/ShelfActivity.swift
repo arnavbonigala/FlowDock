@@ -87,7 +87,7 @@ struct ShelfPanel: View {
     @ObservedObject private var shelf = ShelfStateViewModel.shared
     @ObservedObject private var selection = ShelfSelectionModel.shared
 
-    static let rowHeight: CGFloat = 28
+    static let rowHeight: CGFloat = 30
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
