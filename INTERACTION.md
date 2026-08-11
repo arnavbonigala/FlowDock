@@ -84,7 +84,7 @@ Three rules cut across all six input kinds:
 
 - **Primary click on an anchored state expands.** It never operates the underlying activity — clicking the music chin opens the panel, it does not pause playback. A one-click surface with two possible meanings is how a user learns to distrust it.
 - Primary click in expanded state hits the control under the pointer. Clicking empty panel space does nothing; it does not dismiss.
-- **Secondary click opens the same context menu in every state**, including idle. That menu is the guaranteed route to Settings.
+- **Secondary click opens the same context menu in every state**, including idle. That menu is the guaranteed route to Settings and to quitting, because the menu bar icon is optional and may be off.
 - A click on FlowDock never passes through to the window beneath it.
 - Double-click and click-and-hold are unassigned and stay that way until something needs them.
 
