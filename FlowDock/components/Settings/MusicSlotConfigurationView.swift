@@ -39,7 +39,7 @@ struct MusicSlotConfigurationView: View {
 
     private var previewSection: some View {
         HStack(alignment: .top, spacing: 12) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 ForEach(0..<fixedSlotCount, id: \.self) { index in
                     let slot = slotValue(at: index)
                     Group {
@@ -118,7 +118,7 @@ struct MusicSlotConfigurationView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Drag a control onto a slot")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -126,7 +126,7 @@ struct MusicSlotConfigurationView: View {
                 ScrollView(.horizontal) {
                     HStack(spacing: 12) {
                         ForEach(MusicControlButton.pickerOptions, id: \.self) { control in
-                            VStack(spacing: 6) {
+                            VStack(spacing: 8) {
                                 Button {
                                     assign(control)
                                 } label: {

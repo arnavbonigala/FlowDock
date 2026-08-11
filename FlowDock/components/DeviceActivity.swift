@@ -20,7 +20,7 @@ extension Activity {
             chinSideWidth: deviceChinSide,
             leading: {
                 Image(systemName: device.symbol)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(device.isConnected ? .white : .secondary)
                     .frame(width: deviceChinSide, alignment: .leading)
             },
@@ -28,12 +28,12 @@ extension Activity {
                 Group {
                     if let percent = device.batteryPercent {
                         Text("\(percent)%")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.chinValue)
                             .monospacedDigit()
                             .foregroundStyle(.white)
                     } else {
                         Image(systemName: device.isConnected ? "checkmark" : "xmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.chinValue)
                             .foregroundStyle(.white)
                     }
                 }
@@ -78,15 +78,15 @@ struct DevicePanel: View {
 
     var body: some View {
         if enabled, !monitor.devices.isEmpty {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ForEach(monitor.devices) { device in
                     HStack(spacing: 4) {
                         Image(systemName: device.symbol)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.panelMeta)
                             .foregroundStyle(.secondary)
                         if let percent = device.batteryPercent {
                             Text("\(percent)%")
-                                .font(.system(size: 11, weight: .medium))
+                                .font(.panelMeta)
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
                         }

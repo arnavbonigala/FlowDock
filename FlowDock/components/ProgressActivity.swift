@@ -24,7 +24,7 @@ extension Activity {
             },
             trailing: {
                 Text(count > 1 ? "\(count)" : report.detail)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.white)
                     .lineLimit(1)
@@ -43,13 +43,13 @@ extension Activity {
             chinSideWidth: progressChinSide,
             leading: {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(.green)
                     .frame(width: progressChinSide, alignment: .leading)
             },
             trailing: {
                 Text(report.detail)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.white)
                     .lineLimit(1)
@@ -131,7 +131,7 @@ struct ProgressPanel: View {
         if !center.reports.isEmpty {
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(center.reports) { report in
-                    HStack(spacing: 6) {
+                    HStack(spacing: 8) {
                         ProgressRing(fraction: report.fraction)
 
                         VStack(alignment: .leading, spacing: 1) {
@@ -158,7 +158,7 @@ struct ProgressPanel: View {
                         .accessibilityLabel("Show in Finder")
                     }
                     .frame(height: 30)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(.quaternary)

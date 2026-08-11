@@ -21,7 +21,7 @@ struct AgendaPanel: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             if manager.hasAccess {
                 header
 
@@ -40,7 +40,7 @@ struct AgendaPanel: View {
     // MARK: - Surfaces
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("Today")
                 .font(.headline)
                 .foregroundStyle(.primary)
@@ -99,7 +99,7 @@ struct AgendaPanel: View {
     }
 
     private func row(_ event: EventModel) -> some View {
-        HStack(alignment: .top, spacing: 6) {
+        HStack(alignment: .top, spacing: 8) {
             if case .reminder(let completed) = event.type {
                 ReminderCheck(completed: completed, color: Color(event.calendar.color)) {
                     Task { await manager.setReminderCompleted(id: event.id, completed: !completed) }
@@ -116,7 +116,7 @@ struct AgendaPanel: View {
             Button {
                 if let url = event.calendarAppURL() { openURL(url) }
             } label: {
-                HStack(alignment: .top, spacing: 6) {
+                HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(event.title)
                             .font(.callout.weight(.medium))
@@ -147,7 +147,7 @@ struct AgendaPanel: View {
                     .accessibilityLabel("Join \(event.title)")
             }
         }
-        .padding(.vertical, 3)
+        .padding(.vertical, 4)
         .opacity(Self.isSpent(event, now: .now) ? 0.5 : 1)
     }
 

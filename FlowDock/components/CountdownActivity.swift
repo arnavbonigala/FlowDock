@@ -21,7 +21,7 @@ extension Activity {
             chinSideWidth: countdownChinSide,
             leading: {
                 Image(systemName: event.meetingURL == nil ? "calendar" : "video.fill")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(.white)
                     .frame(width: countdownChinSide, alignment: .leading)
             },
@@ -42,7 +42,7 @@ extension Activity {
             chinSideWidth: countdownChinSide,
             leading: {
                 Image(systemName: "timer")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(.white)
                     .frame(width: countdownChinSide, alignment: .leading)
             },
@@ -62,13 +62,13 @@ extension Activity {
             chinSideWidth: countdownChinSide,
             leading: {
                 Image(systemName: "timer")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(.white)
                     .frame(width: countdownChinSide, alignment: .leading)
             },
             trailing: {
                 Text("Done")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.chinValue)
                     .foregroundStyle(.white)
                     .frame(width: countdownChinSide, alignment: .trailing)
             }
@@ -87,7 +87,7 @@ struct CountdownText: View {
                 Text("Now")
             }
         }
-        .font(.system(size: 12, weight: .semibold))
+        .font(.chinValue)
         .monospacedDigit()
         .foregroundStyle(.white)
         .lineLimit(1)
@@ -166,7 +166,7 @@ struct MeetingPanel: View {
             }
         }
         .frame(height: 34)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(.quaternary)
@@ -192,9 +192,9 @@ struct TimerPanel: View {
     @ObservedObject private var timer = TimerCenter.shared
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: "timer")
-                .font(.system(size: 11, weight: .medium))
+                .font(.panelMeta)
                 .foregroundStyle(.secondary)
 
             if timer.isRunning, let endsAt = timer.endsAt {
@@ -215,7 +215,7 @@ struct TimerPanel: View {
             }
         }
         .frame(height: 22)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(.quaternary)

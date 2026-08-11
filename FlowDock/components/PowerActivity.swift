@@ -98,7 +98,7 @@ extension Activity {
             },
             trailing: {
                 Text("\(Int(reading.level))%")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.white)
                     .frame(width: powerChinSide, alignment: .trailing)
@@ -182,17 +182,17 @@ struct PowerPanelIndicator: View {
         if showIndicator {
             let reading = battery.reading
 
-            HStack(spacing: 5) {
+            HStack(spacing: 4) {
                 if let timeToFull = reading.timeToFull {
                     Text(timeToFull)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.panelMeta)
                         .monospacedDigit()
                         .foregroundStyle(.tertiary)
                 }
 
                 if showPercentage {
                     Text("\(Int(reading.level))%")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.panelMeta)
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                 }

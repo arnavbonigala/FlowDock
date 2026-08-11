@@ -22,7 +22,7 @@ extension Activity {
             chinSideWidth: shelfChinSide,
             leading: {
                 Image(systemName: "tray.and.arrow.down.fill")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.chinGlyph)
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.white)
                     .frame(width: shelfChinSide, alignment: .leading)
@@ -286,7 +286,7 @@ private struct QuickShareButton: View {
                 .aspectRatio(contentMode: .fit)
         } else {
             Image(systemName: "square.and.arrow.up")
-                .font(.system(size: 15, weight: .medium))
+                .font(.panelControl)
                 .foregroundStyle(.secondary)
         }
     }

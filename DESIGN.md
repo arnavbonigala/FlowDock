@@ -81,13 +81,33 @@ The closed and contextual surfaces must be indistinguishable from the display be
 - Pull requests with visible changes include light and dark screenshots at 1× and 2×, plus Reduce Motion and Reduce Transparency where relevant, per [CONTRIBUTING.md](CONTRIBUTING.md).
 - A deliberate exception is allowed with a comment giving the reason. An undocumented one-off value is a bug.
 
-## Known deviations
+## Sanctioned exceptions
 
-Inherited from BoringNotch, to be resolved as the surfaces are rebuilt in roadmap sections 2 and 3:
+Every value in the app is on this document's scale except these, which exist to match
+something the system already draws and are the complete list:
 
-- Spacing values off the grid: 3, 5, 6, 10, 22 pt appear throughout.
-- Corner radii that are not concentric with their container: 2, 2.5, 5, 6, 10, 16, 20 pt.
-- `design: .rounded` on four call sites.
-- Hard-coded `Font.system(size:)` where a text style would do.
-- A bundled Persian face selected in code rather than left to system fallback.
-- Widespread bare `.padding()`.
+| Where | Value | Why |
+|---|---|---|
+| The system feedback pill | 10 pt gap, 14 pt inset, 11 and 15 pt text | It stands in for the macOS volume and brightness HUD and must be indistinguishable from it |
+| The battery glyph's bolt | 7 pt | An overlay inside a drawn glyph, sized to the glyph rather than to text |
+| Missing-artwork placeholder | 26 pt | A single glyph filling artwork's square, not text |
+
+Anything else off the 4 pt grid, and any other `Font.system(size:)`, is a bug rather than
+a precedent.
+
+## The chin type scale
+
+Sizes inside the bezel surface come from `FlowDock/extensions/Typography.swift` rather
+than from each activity, so a new activity cannot introduce a fourth size for the same
+job:
+
+| Role | Style |
+|---|---|
+| Leading glyph in the chin | `.chinGlyph` — 13 pt medium |
+| Trailing value or short state in the chin | `.chinValue` — 12 pt semibold, with `.monospacedDigit()` |
+| A control's glyph in the panel | `.panelControl` — 15 pt medium |
+| Secondary text in a panel row | `.panelMeta` — 11 pt medium |
+
+The inherited BoringNotch deviations this section used to list — off-grid spacing,
+non-concentric radii, `design: .rounded`, a bundled Persian face, bare `.padding()` — are
+resolved. The only `.padding()` calls left are in `#Preview` blocks.

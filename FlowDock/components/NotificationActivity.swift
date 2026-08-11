@@ -80,7 +80,7 @@ private struct NotificationGlyph: View {
                     .aspectRatio(contentMode: .fit)
             } else {
                 Image(systemName: "bell.fill")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.chinGlyph)
                     .foregroundStyle(.white)
             }
         }
@@ -114,7 +114,7 @@ private struct NotificationRow: View {
     private var notification: FlowDockNotification { group.newest }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             NotificationGlyph(notification: notification)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -143,7 +143,7 @@ private struct NotificationRow: View {
             }
         }
         .frame(height: 30)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(.quaternary)
