@@ -605,7 +605,7 @@ struct CustomSlider: View {
             .frame(height: height)
             .clipShape(Capsule())
             .frame(height: 10)
-            .contentShape(Rectangle())
+            .contentShape(Rectangle().inset(by: -9))
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in

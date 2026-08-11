@@ -211,7 +211,7 @@ struct TimerPanel: View {
                             .padding(.horizontal, 8)
                             .frame(minWidth: 28, maxHeight: .infinity)
                             .background(Capsule().fill(.tertiary))
-                            .contentShape(Capsule())
+                            .contentShape(Capsule().inset(by: -3))
                     }
                     .buttonStyle(PressableButtonStyle())
                     .accessibilityLabel("\(minutes) minutes")
