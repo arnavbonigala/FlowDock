@@ -84,7 +84,7 @@ struct MusicSlotConfigurationView: View {
                         .frame(width: 56, height: 56)
 
                     Image(systemName: "trash")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.title2)
                         .foregroundStyle(Color.primary)
                 }
                 .cornerRadius(10)
@@ -172,9 +172,9 @@ struct MusicSlotConfigurationView: View {
 
         return HStack(spacing: 12) {
             Text("\(index + 1)")
-                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .font(.body.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 20)
+                .frame(minWidth: 20)
 
             Group {
                 if currentSlot != .none {
