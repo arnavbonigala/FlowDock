@@ -86,6 +86,10 @@ final class DeviceMonitor: NSObject, ObservableObject {
         lastChange = nil
     }
 
+    func clearLastChange() {
+        lastChange = nil
+    }
+
     func refresh() {
         let batteries = batteryLevels()
         devices = connectedBluetoothDevices().map { device in

@@ -59,8 +59,9 @@ private struct DeviceActivityBinder: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onChange(of: monitor.lastChange) { _, change in
-                guard enabled, let change else { return }
-                store.begin(.device(change))
+                guard let change else { return }
+                if enabled { store.begin(.device(change)) }
+                monitor.clearLastChange()
             }
             .onChange(of: enabled, initial: true) { _, enabled in
                 if enabled {
