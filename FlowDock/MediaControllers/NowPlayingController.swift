@@ -192,22 +192,37 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     }
     
     // MARK: - Setup Methods
+    private enum AdapterOutcome { case streamed, launchFailed, unavailable }
+
+    /// A stream that ends is normal — the adapter is restarted whenever the player changes —
+    /// so it comes back in a second. A launch that fails is not, and retrying it every second
+    /// for the life of the app is how a media bug becomes a battery bug.
     private func setupNowPlayingObserver() async {
         streamTask = Task { [weak self] in
+            var backoff: Duration = .seconds(1)
             while !Task.isCancelled {
-                guard let self, await self.runAdapterUntilStreamEnds() else { return }
-                try? await Task.sleep(for: .seconds(1))
+                guard let self else { return }
+                switch await self.runAdapterUntilStreamEnds() {
+                case .unavailable:
+                    return
+                case .streamed:
+                    backoff = .seconds(1)
+                    try? await Task.sleep(for: .seconds(1))
+                case .launchFailed:
+                    try? await Task.sleep(for: backoff)
+                    backoff = min(backoff * 2, .seconds(300))
+                }
             }
         }
     }
 
-    private func runAdapterUntilStreamEnds() async -> Bool {
+    private func runAdapterUntilStreamEnds() async -> AdapterOutcome {
         guard
             let scriptURL = Bundle.main.url(forResource: "mediaremote-adapter", withExtension: "pl"),
             let frameworkPath = Bundle.main.privateFrameworksPath?.appending("/MediaRemoteAdapter.framework")
         else {
             assertionFailure("Could not find mediaremote-adapter.pl script or framework path")
-            return false
+            return .unavailable
         }
 
         let process = Process()
@@ -224,7 +239,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
             try process.run()
         } catch {
             print("Failed to launch mediaremote-adapter.pl: \(error)")
-            return true
+            return .launchFailed
         }
 
         await pipeHandler.readJSONLines(as: NowPlayingUpdate.self) { [weak self] update in
@@ -235,7 +250,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         if process.isRunning {
             process.terminate()
         }
-        return true
+        return .streamed
     }
 
     func restartAdapter() {
