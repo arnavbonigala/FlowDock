@@ -334,6 +334,16 @@ private struct MusicScrubber: View {
                 .allowsHitTesting(music.canSeek)
                 .accessibilityLabel("Playback position")
                 .accessibilityValue(timeString(position))
+                .accessibilityAdjustableAction { direction in
+                    guard music.canSeek else { return }
+                    let step: Double = switch direction {
+                    case .increment: 15
+                    case .decrement: -15
+                    @unknown default: 0
+                    }
+                    position = min(max(position + step, 0), music.songDuration)
+                    music.seek(to: position)
+                }
 
                 HStack(spacing: 0) {
                     Text(timeString(position))
@@ -485,6 +495,17 @@ private struct MusicVolumeControl: View {
                     }
                 )
                 .frame(width: 48, height: 8)
+                .accessibilityLabel("Volume")
+                .accessibilityValue("\(Int(level * 100)) percent")
+                .accessibilityAdjustableAction { direction in
+                    let step: Double = switch direction {
+                    case .increment: 0.05
+                    case .decrement: -0.05
+                    @unknown default: 0
+                    }
+                    level = min(max(level + step, 0), 1)
+                    music.setVolume(to: level)
+                }
             }
         }
         .clipped()
