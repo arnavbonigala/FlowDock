@@ -50,7 +50,7 @@ struct HoverButton: View {
     }
 }
 
-private struct PressableButtonStyle: ButtonStyle {
+struct PressableButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {

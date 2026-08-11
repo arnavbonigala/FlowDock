@@ -201,13 +201,23 @@ struct TimerPanel: View {
                     .accessibilityLabel("Stop timer")
             } else {
                 ForEach(TimerCenter.durations, id: \.self) { minutes in
-                    Button("\(minutes)m") { timer.start(minutes: minutes) }
-                        .buttonStyle(.plain)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel("Start a \(minutes) minute timer")
+                    Button {
+                        timer.start(minutes: minutes)
+                    } label: {
+                        Text("\(minutes)m")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                            .monospacedDigit()
+                            .padding(.horizontal, 8)
+                            .frame(minWidth: 28, maxHeight: .infinity)
+                            .background(Capsule().fill(.tertiary))
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                    .accessibilityLabel("Start a \(minutes) minute timer")
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer(minLength: 0)
             }
         }
         .frame(height: 22)
