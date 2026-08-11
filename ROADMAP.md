@@ -82,7 +82,9 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Make AirDrop, system sharing, and moving content between apps dependable
 - [x] Provide a focused set of file actions, including preview, compression, image conversion, and background removal
 - [x] Make available actions discoverable without crowding the primary experience
-- [ ] Validate which workflows deserve to remain built in and which belong in extensions
+- [x] Validate which workflows deserve to remain built in and which belong in extensions
+
+The verdict on which drop workflows FlowDock ships and which belong to extensions is in [WORKFLOWS.md](WORKFLOWS.md).
 
 ## 7. Open FlowDock to extensions
 

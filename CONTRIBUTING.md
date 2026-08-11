@@ -27,7 +27,7 @@ Before submitting a change, run:
 
 This runs the release-tool tests and builds the app without code signing, matching CI.
 
-Changes must meet the applicable release gates in [QUALITY.md](QUALITY.md). Interface changes must also follow [DESIGN.md](DESIGN.md) and [INTERACTION.md](INTERACTION.md).
+Changes must meet the applicable release gates in [QUALITY.md](QUALITY.md). Interface changes must also follow [DESIGN.md](DESIGN.md) and [INTERACTION.md](INTERACTION.md). New drop workflows must pass the test in [WORKFLOWS.md](WORKFLOWS.md) or ship as an extension.
 
 ## Submit a change
 
