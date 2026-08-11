@@ -268,8 +268,6 @@ struct ExperienceView: View {
         }
     }
 
-    /// The view model owns whether the panel is open, so a global hotkey and the shell
-    /// move the same state.
     private func expand() {
         guard !isExpanded else { return }
         vm.open()
