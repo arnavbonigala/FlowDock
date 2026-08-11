@@ -54,7 +54,9 @@ enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable 
 /// wherever there is a bezel to imitate, and offers a choice only where there is not.
 enum SurfaceAppearance: String, CaseIterable, Identifiable, Defaults.Serializable {
     case black = "Black"
-    case glass = "Liquid Glass"
+    case glass = "Glass"
+    case tinted = "Tinted"
+    case translucent = "Translucent"
 
     var id: String { rawValue }
 }

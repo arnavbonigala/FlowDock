@@ -702,7 +702,7 @@ struct AppearanceSettings: View {
             } header: {
                 Text("Panel")
             } footer: {
-                Text("A display with a notch is always black, so the surface and the bezel around it are one piece of hardware. A display without one has nothing to match, so it can be glass instead. Reduce Transparency turns it back to black wherever it is on.")
+                Text("A display with a notch is always black, so the surface and the bezel around it are one piece of hardware. A display without one has nothing to match, so it can be glass, glass in your accent color, or a dark blur that takes its color from the wallpaper behind it. Reduce Transparency turns every surface back to black.")
             }
         }
         .onAppear(perform: loadCustomColor)

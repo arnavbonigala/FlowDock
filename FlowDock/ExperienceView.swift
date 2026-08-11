@@ -255,12 +255,34 @@ struct ExperienceView: View {
     /// and never when the user has asked the system for less transparency.
     @ViewBuilder
     private var surface: some View {
-        if displayHasNotch || surfaceAppearance == .black || reduceTransparency {
+        if displayHasNotch || reduceTransparency {
             Color.black
-        } else if #available(macOS 26.0, *) {
-            Color.clear.glassEffect(.regular, in: Rectangle())
+        } else {
+            switch surfaceAppearance {
+            case .black:
+                Color.black
+            case .glass:
+                glass(tint: nil)
+            case .tinted:
+                glass(tint: .effectiveAccent)
+            case .translucent:
+                /// A material blurs whatever the desktop is showing behind it, so this one
+                /// takes its color from the wallpaper without ever reading the wallpaper.
+                /// The black over it is what keeps white text on a pale desktop legible.
+                Rectangle().fill(.ultraThinMaterial)
+                    .overlay(Color.black.opacity(0.45))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func glass(tint: Color?) -> some View {
+        if #available(macOS 26.0, *) {
+            Color.clear.glassEffect(.regular.tint(tint), in: Rectangle())
         } else {
             Rectangle().fill(.ultraThinMaterial)
+                .overlay(Color.black.opacity(0.3))
+                .overlay(tint?.opacity(0.2) ?? .clear)
         }
     }
 
