@@ -123,6 +123,12 @@ Not judgement calls — these are enforced:
 - Holding a process open to poll. FlowDock launches you to ask and lets the system
   terminate you when your activity is not on the chin.
 
+## Getting listed
+
+FlowDock installs nothing on your behalf, so distribution is yours: your app, your
+release page, your signing. [DIRECTORY.md](DIRECTORY.md) is the list of extensions
+someone has read the source of and run, and the six checks a listing requires.
+
 ## Testing it
 
 Build and run your host app once, then turn the extension on in FlowDock ▸ Settings ▸
