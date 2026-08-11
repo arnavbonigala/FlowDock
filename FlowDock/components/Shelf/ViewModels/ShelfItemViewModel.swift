@@ -12,6 +12,21 @@ import UniformTypeIdentifiers
 import CoreServices
 import ObjectiveC
 
+enum ShelfAction: String, CaseIterable {
+    case quickLook = "Quick Look"
+    case open = "Open"
+    case share = "Share…"
+    case rename = "Rename"
+    case showInFinder = "Show in Finder"
+    case copyPath = "Copy Path"
+    case copy = "Copy"
+    case remove = "Remove"
+    case removeBackground = "Remove Background"
+    case convertImage = "Convert Image…"
+    case createPDF = "Create PDF"
+    case compress = "Compress"
+}
+
 @MainActor
 final class ShelfItemViewModel: ObservableObject {
     @Published private(set) var item: ShelfItem
@@ -302,9 +317,9 @@ final class ShelfItemViewModel: ObservableObject {
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 
-    func perform(_ action: String, in view: NSView) {
+    func perform(_ action: ShelfAction, in view: NSView) {
         let target = MenuActionTarget(item: item, view: view, viewModel: self)
-        target.handle(NSMenuItem(title: action, action: nil, keyEquivalent: ""))
+        target.handle(NSMenuItem(title: action.rawValue, action: nil, keyEquivalent: ""))
     }
 
     private func isDirectory(_ url: URL) -> Bool {
@@ -369,8 +384,8 @@ final class ShelfItemViewModel: ObservableObject {
                 return
             }
 
-            switch title {
-            case "Quick Look":
+            switch ShelfAction(rawValue: title) {
+            case .quickLook:
                 // Handle all selected items for Quick Look, not just the clicked item
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 let urls: [URL] = selected.compactMap { item in
@@ -386,18 +401,18 @@ final class ShelfItemViewModel: ObservableObject {
                     viewModel.onQuickLookRequest?(urls)
                 }
 
-            case "Open":
+            case .open:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 for it in selected { ShelfActionService.open(it) }
 
-            case "Share…":
+            case .share:
                 viewModel.shareItem(from: view)
 
-            case "Rename":
+            case .rename:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 if selected.count == 1, let single = selected.first { showRenameDialog(for: single) }
 
-            case "Show in Finder":
+            case .showInFinder:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 Task {
                     let urls = await selected.asyncCompactMap { item -> URL? in
@@ -414,7 +429,7 @@ final class ShelfItemViewModel: ObservableObject {
                     }
                 }
 
-            case "Copy Path":
+            case .copyPath:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 let paths = selected.compactMap { $0.fileURL?.path }
                 if !paths.isEmpty {
@@ -422,7 +437,7 @@ final class ShelfItemViewModel: ObservableObject {
                     NSPasteboard.general.setString(paths.joined(separator: "\n"), forType: .string)
                 }
 
-            case "Copy":
+            case .copy:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 let pb = NSPasteboard.general
                 
@@ -455,20 +470,20 @@ final class ShelfItemViewModel: ObservableObject {
                     }
                 }
 
-            case "Remove":
+            case .remove:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 for it in selected { ShelfActionService.remove(it) }
                 
-            case "Remove Background":
+            case .removeBackground:
                 handleRemoveBackground()
                 
-            case "Convert Image…":
+            case .convertImage:
                 showConvertImageDialog()
                 
-            case "Create PDF":
+            case .createPDF:
                 handleCreatePDF()
             
-            case "Compress":
+            case .compress:
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 let fileURLs = selected.compactMap { $0.fileURL }
                 guard !fileURLs.isEmpty else { break }

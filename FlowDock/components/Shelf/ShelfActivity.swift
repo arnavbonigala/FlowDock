@@ -177,32 +177,32 @@ private struct ShelfActionRow: View {
                     .accessibilityLabel("Copy")
 
                 if !files.isEmpty {
-                    HoverButton(icon: "doc.zipper", scale: .small) { run("Compress") }
+                    HoverButton(icon: "doc.zipper", scale: .small) { run(.compress) }
                         .accessibilityLabel("Compress")
                 }
 
                 if images.count == 1 {
-                    HoverButton(icon: "wand.and.stars", scale: .small) { run("Remove Background") }
+                    HoverButton(icon: "wand.and.stars", scale: .small) { run(.removeBackground) }
                         .accessibilityLabel("Remove the background")
                 }
 
                 if !images.isEmpty {
-                    HoverButton(icon: "doc.richtext", scale: .small) { run("Create PDF") }
+                    HoverButton(icon: "doc.richtext", scale: .small) { run(.createPDF) }
                         .accessibilityLabel("Create a PDF")
                 }
 
                 Menu {
                     if images.count == 1 {
-                        Button("Convert Image…") { run("Convert Image…") }
+                        Button("Convert Image…") { run(.convertImage) }
                     }
                     if items.count == 1, !files.isEmpty {
-                        Button("Rename") { run("Rename") }
+                        Button("Rename") { run(.rename) }
                     }
                     if !files.isEmpty {
-                        Button("Show in Finder") { run("Show in Finder") }
-                        Button("Copy Path") { run("Copy Path") }
+                        Button("Show in Finder") { run(.showInFinder) }
+                        Button("Copy Path") { run(.copyPath) }
                     }
-                    Button("Open") { run("Open") }
+                    Button("Open") { run(.open) }
                     Divider()
                     Button("Remove") { ShelfActionService.removeSelected() }
                 } label: {
@@ -229,7 +229,7 @@ private struct ShelfActionRow: View {
         }
     }
 
-    private func run(_ action: String) {
+    private func run(_ action: ShelfAction) {
         guard let item = items.first, let anchor else { return }
         let runner = ShelfItemViewModel(item: item)
         self.runner = runner
