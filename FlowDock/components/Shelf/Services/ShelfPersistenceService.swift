@@ -7,9 +7,6 @@
 
 import Foundation
 
-// Access model types
-@_exported import struct Foundation.URL
-
 
 final class ShelfPersistenceService {
     static let shared = ShelfPersistenceService()
@@ -46,7 +43,6 @@ final class ShelfPersistenceService {
             }
             
             var validItems: [ShelfItem] = []
-            var failedCount = 0
             
             for (index, jsonItem) in jsonArray.enumerated() {
                 do {
@@ -54,14 +50,10 @@ final class ShelfPersistenceService {
                     let item = try decoder.decode(ShelfItem.self, from: itemData)
                     validItems.append(item)
                 } catch {
-                    failedCount += 1
                     NSLog("Failed to decode shelf item at index \(index): \(error.localizedDescription)")
                 }
             }
-            
-            if failedCount > 0 {
-            }
-            
+
             return validItems
         } catch {
             NSLog("Failed to parse shelf persistence file: \(error.localizedDescription)")
