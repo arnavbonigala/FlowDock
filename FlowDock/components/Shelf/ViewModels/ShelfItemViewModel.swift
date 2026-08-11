@@ -378,7 +378,7 @@ final class ShelfItemViewModel: ObservableObject {
                                 try await NSWorkspace.shared.open(allSelectedURLs, withApplicationAt: appURL, configuration: config)
                             }
                         } catch {
-                            print("❌ Failed to open with application: \(error.localizedDescription)")
+                            NSLog("Failed to open with application: \(error.localizedDescription)")
                         }
                 }
                 return
@@ -659,10 +659,10 @@ final class ShelfItemViewModel: ObservableObject {
                             if alwaysCheckbox.state == .on, let bundleID = Bundle(url: appURL)?.bundleIdentifier {
                                 if let contentType = (try? fileURL.resourceValues(forKeys: [.contentTypeKey]))?.contentType {
                                     let status = LSSetDefaultRoleHandlerForContentType(contentType.identifier as CFString, LSRolesMask.all, bundleID as CFString)
-                                    if status != noErr { print("⚠️ Failed to set default handler for \(contentType.identifier): \(status)") }
+                                    if status != noErr { NSLog("Failed to set default handler for \(contentType.identifier): \(status)") }
                                 } else if let scheme = fileURL.scheme {
                                     let status = LSSetDefaultHandlerForURLScheme(scheme as CFString, bundleID as CFString)
-                                    if status != noErr { print("⚠️ Failed to set default handler for scheme \(scheme): \(status)") }
+                                    if status != noErr { NSLog("Failed to set default handler for scheme \(scheme): \(status)") }
                                 }
                             }
 
@@ -674,7 +674,7 @@ final class ShelfItemViewModel: ObservableObject {
                                 try await NSWorkspace.shared.open([fileURL], withApplicationAt: appURL, configuration: config)
                             }
                         } catch {
-                            print("❌ Failed to open with application: \(error.localizedDescription)")
+                            NSLog("Failed to open with application: \(error.localizedDescription)")
                         }
                     }
                 }

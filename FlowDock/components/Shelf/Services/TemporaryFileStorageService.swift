@@ -32,7 +32,7 @@ class TemporaryFileStorageService {
         let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
 
         guard url.path.hasPrefix(tempDirectory.path) else {
-            print("Refused to remove a file outside the temporary directory")
+            NSLog("Refused to remove a file outside the temporary directory")
             return
         }
 
@@ -44,11 +44,9 @@ class TemporaryFileStorageService {
             let contents = try FileManager.default.contentsOfDirectory(atPath: folderURL.path)
             if contents.isEmpty {
                 try FileManager.default.removeItem(at: folderURL)
-            } else {
             }
-
         } catch {
-            print("Error: \(error.localizedDescription)")
+            NSLog("Could not remove an emptied temporary folder: \(error.localizedDescription)")
         }
     }
     
@@ -76,65 +74,39 @@ class TemporaryFileStorageService {
     // MARK: - Private Implementation
 
     private func createTempFile(for type: TempFileType) -> URL? {
-        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         let uuid = UUID().uuidString
-        
+        let payload: (name: String, data: Data)?
+
         switch type {
         case .data(let data, let suggestedName):
-            let filename = suggestedName ?? ".dat"
-            let dirURL = tempDir.appendingPathComponent(uuid, isDirectory: true)
-            let fileURL = dirURL.appendingPathComponent(filename)
-            
-            do {
-                try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
-                try data.write(to: fileURL)
-                return fileURL
-            } catch {
-                print("Error: \(error)")
-                return nil
-            }
-            
+            payload = (suggestedName ?? ".dat", data)
         case .text(let string):
-            let filename = "\(uuid).txt"
-            let dirURL = tempDir.appendingPathComponent(uuid, isDirectory: true)
-            let fileURL = dirURL.appendingPathComponent(filename)
-            
-            guard let data = string.data(using: .utf8) else {
-                print("❌ Failed to convert text to data")
-                return nil
-            }
-            
-            do {
-                try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
-                try data.write(to: fileURL)
-                return fileURL
-            } catch {
-                print("Error: \(error)")
-                return nil
-            }
-            
+            payload = string.data(using: .utf8).map { ("\(uuid).txt", $0) }
         case .url(let url):
-            let filename = "\(url.host ?? uuid).webloc"
-            let dirURL = tempDir.appendingPathComponent(uuid, isDirectory: true)
-            let fileURL = dirURL.appendingPathComponent(filename)
-            
-            let weblocContent = createWeblocContent(for: url)
-            guard let data = weblocContent.data(using: String.Encoding.utf8) else {
-                print("❌ Failed to create webloc data")
-                return nil
-            }
-            
-            do {
-                try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
-                try data.write(to: fileURL)
-                return fileURL
-            } catch {
-                print("Error: \(error)")
-                return nil
-            }
+            payload = createWeblocContent(for: url)
+                .data(using: .utf8)
+                .map { ("\(url.host ?? uuid).webloc", $0) }
+        }
+
+        guard let payload else {
+            NSLog("Could not encode a dropped item as UTF-8")
+            return nil
+        }
+
+        let dirURL = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(uuid, isDirectory: true)
+
+        do {
+            try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
+            let fileURL = dirURL.appendingPathComponent(payload.name)
+            try payload.data.write(to: fileURL)
+            return fileURL
+        } catch {
+            NSLog("Could not write a dropped item to the temporary directory: \(error.localizedDescription)")
+            return nil
         }
     }
-    
+
     func createZip(from urls: [URL], suggestedName: String? = nil) async -> URL? {
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         let uuid = UUID().uuidString
@@ -143,7 +115,7 @@ class TemporaryFileStorageService {
         do {
             try FileManager.default.createDirectory(at: workingDir, withIntermediateDirectories: true)
         } catch {
-            print("❌ Failed to create zip working directory: \(error)")
+            NSLog("Failed to create zip working directory: \(error)")
             return nil
         }
 
@@ -158,7 +130,7 @@ class TemporaryFileStorageService {
                 proc.waitUntilExit()
                 return proc.terminationStatus == 0
             } catch {
-                print("❌ Failed to run zip: \(error)")
+                NSLog("Failed to run zip: \(error)")
                 return false
             }
         }
@@ -200,7 +172,7 @@ class TemporaryFileStorageService {
                     try FileManager.default.copyItem(at: src, to: dest)
                 }
             } catch {
-                print("Failed to copy an item to the working directory: \(error.localizedDescription)")
+                NSLog("Failed to copy an item to the working directory: \(error.localizedDescription)")
             }
         }
 
@@ -218,7 +190,7 @@ class TemporaryFileStorageService {
                     }
                 }
             } catch {
-                print("⚠️ Failed to cleanup working directory after zip: \(error)")
+                NSLog("Failed to cleanup working directory after zip: \(error)")
             }
             return archiveURL
         } else {

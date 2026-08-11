@@ -94,7 +94,7 @@ class MusicManager: ObservableObject {
             do {
                 self.isNowPlayingDeprecated = try await self.mediaChecker.checkDeprecationStatus()
             } catch {
-                print("Failed to check deprecation status: \(error). Defaulting to false.")
+                NSLog("Failed to check deprecation status: \(error). Defaulting to false.")
                 self.isNowPlayingDeprecated = false
             }
             
@@ -625,7 +625,7 @@ class MusicManager: ObservableObject {
     }
     func openMusicApp() {
         guard let bundleID = bundleIdentifier else {
-            print("Error: appBundleIdentifier is nil")
+            NSLog("appBundleIdentifier is nil")
             return
         }
 
@@ -634,12 +634,12 @@ class MusicManager: ObservableObject {
             let configuration = NSWorkspace.OpenConfiguration()
             workspace.openApplication(at: appURL, configuration: configuration) { (app, error) in
                 if let error = error {
-                    print("Failed to launch app with bundle ID: \(bundleID), error: \(error)")
+                    NSLog("Failed to launch app with bundle ID: \(bundleID), error: \(error)")
                 } else {
                 }
             }
         } else {
-            print("Failed to find app with bundle ID: \(bundleID)")
+            NSLog("Failed to find app with bundle ID: \(bundleID)")
         }
     }
 

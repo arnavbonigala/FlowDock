@@ -44,7 +44,7 @@ extension NSItemProvider {
         await withCheckedContinuation { (cont: CheckedContinuation<(data: Data, name: String)?, Never>) in
             _ = loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, error in
                 if let error {
-                    print("❌ Error loading file representation for type \(typeIdentifier): \(error.localizedDescription)")
+                    NSLog("Error loading file representation for type \(typeIdentifier): \(error.localizedDescription)")
                     cont.resume(returning: nil)
                     return
                 }
@@ -87,7 +87,7 @@ extension NSItemProvider {
         await withCheckedContinuation { (cont: CheckedContinuation<URL?, Never>) in
             self.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, error in
                 if let error = error {
-                    print("❌ Error loading item for type \(typeIdentifier): \(error.localizedDescription)")
+                    NSLog("Error loading item for type \(typeIdentifier): \(error.localizedDescription)")
                     cont.resume(returning: nil)
                     return
                 }

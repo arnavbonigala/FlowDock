@@ -235,7 +235,7 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         do {
             try process.run()
         } catch {
-            print("Failed to launch mediaremote-adapter.pl: \(error)")
+            NSLog("Failed to launch mediaremote-adapter.pl: \(error)")
             return .launchFailed
         }
 
@@ -417,7 +417,7 @@ actor JSONLinesPipeHandler {
                 await onLine(decodedObject)
             }
         } catch {
-            print("Error processing JSON stream: \(error)")
+            NSLog("Error processing JSON stream: \(error)")
         }
     }
     
@@ -470,7 +470,7 @@ actor JSONLinesPipeHandler {
             try fileHandle.close()
             try pipe.fileHandleForWriting.close()
         } catch {
-            print("Error closing pipe handler: \(error)")
+            NSLog("Error closing pipe handler: \(error)")
         }
     }
 }

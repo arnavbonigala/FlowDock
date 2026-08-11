@@ -37,7 +37,7 @@ final class YouTubeMusicController: MediaControllerProtocol {
             try? await Task.sleep(for: .milliseconds(150))
             await updatePlaybackInfo()
         } catch {
-            print("[YouTubeMusicController] Failed to set favorite: \(error)")
+            NSLog("Failed to set favorite: \(error)")
         }
     }
 
@@ -135,7 +135,7 @@ final class YouTubeMusicController: MediaControllerProtocol {
         } catch YouTubeMusicError.authenticationRequired {
             await authManager.invalidateToken()
         } catch {
-            print("[YouTubeMusicController] Failed to update playback info: \(error)")
+            NSLog("Failed to update playback info: \(error)")
         }
     }
     
@@ -203,14 +203,14 @@ final class YouTubeMusicController: MediaControllerProtocol {
             await startPeriodicUpdates()
             await updatePlaybackInfo()
         } catch {
-            print("[YouTubeMusicController] Failed to initialize: \(error)")
+            NSLog("Failed to initialize: \(error)")
             await scheduleReconnect()
         }
     }
     
     private func setupWebSocketIfPossible(token: String) async {
         guard let wsURL = WebSocketURLBuilder.buildURL(from: configuration.baseURL) else {
-            print("[YouTubeMusicController] Failed to build WebSocket URL")
+            NSLog("Failed to build WebSocket URL")
             return
         }
         
@@ -229,7 +229,7 @@ final class YouTubeMusicController: MediaControllerProtocol {
             stopPeriodicUpdates() // WebSocket will provide real-time updates
             reconnectDelay = configuration.reconnectDelay.lowerBound
         } catch {
-            print("[YouTubeMusicController] WebSocket connection failed: \(error)")
+            NSLog("WebSocket connection failed: \(error)")
             await scheduleReconnect()
         }
     }
@@ -384,7 +384,7 @@ final class YouTubeMusicController: MediaControllerProtocol {
         } catch YouTubeMusicError.authenticationRequired {
             await authManager.invalidateToken()
         } catch {
-            print("[YouTubeMusicController] Command failed: \(error)")
+            NSLog("Command failed: \(error)")
         }
     }
     
