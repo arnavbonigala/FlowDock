@@ -85,6 +85,9 @@ struct ShelfPanel: View {
     @ObservedObject private var shelf = ShelfStateViewModel.shared
     @ObservedObject private var selection = ShelfSelectionModel.shared
 
+    @State private var stripWidth: CGFloat = 0
+    @State private var visibleWidth: CGFloat = 0
+
     static let rowHeight = PanelRow.content
 
     var body: some View {
@@ -130,8 +133,43 @@ struct ShelfPanel: View {
                         ShelfChip(item: item, quickLook: quickLook)
                     }
                 }
+                .background {
+                    GeometryReader { content in
+                        Color.clear.onChange(of: content.size.width, initial: true) { _, width in
+                            stripWidth = width
+                        }
+                    }
+                }
             }
             .scrollIndicators(.never)
+            .background {
+                GeometryReader { viewport in
+                    Color.clear.onChange(of: viewport.size.width, initial: true) { _, width in
+                        visibleWidth = width
+                    }
+                }
+            }
+            .mask(alignment: .leading) { stripFade }
+        }
+    }
+
+    /// A strip that runs past its edge has to say so. macOS 14 cannot report a scroll
+    /// offset, so the fade marks the edge itself rather than tracking how far it has been
+    /// scrolled, and it is absent whenever everything already fits.
+    @ViewBuilder
+    private var stripFade: some View {
+        if stripWidth > visibleWidth + 1 {
+            LinearGradient(
+                stops: [
+                    .init(color: .black, location: 0),
+                    .init(color: .black, location: 0.9),
+                    .init(color: .clear, location: 1),
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        } else {
+            Color.black
         }
     }
 
