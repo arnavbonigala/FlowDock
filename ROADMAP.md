@@ -88,12 +88,14 @@ The verdict on which drop workflows FlowDock ships and which belong to extension
 
 ## 7. Open FlowDock to extensions
 
-- [ ] Define the boundaries and safety model for third-party activities and actions
+- [x] Define the boundaries and safety model for third-party activities and actions
 - [ ] Provide a stable way for extensions to supply compact and expanded experiences
 - [ ] Let extensions participate in activity priority and lifecycle rules
 - [ ] Publish developer documentation and a small set of example extensions
 - [ ] Use extensions for specialized music services, productivity tools, developer activities, weather, and other non-core integrations
 - [ ] Create a trustworthy discovery and distribution path for community extensions
+
+The boundary and safety model third-party activities live behind is in [EXTENSIONS.md](EXTENSIONS.md).
 
 ## 8. Prepare for sustainable public growth
 
