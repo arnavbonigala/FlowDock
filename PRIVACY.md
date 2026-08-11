@@ -30,9 +30,12 @@ opt out of because none was written.
 | Calendar and Reminders | The agenda, the meeting countdown, and the join button | The calendar column is empty; nothing else changes |
 | Apple Events, limited to Music and Spotify | Playback control and now-playing detail those apps only expose that way | Playback falls back to the system's Now Playing, with fewer controls |
 | Files you drop | The shelf holds what you put in it | The shelf holds nothing |
+| Downloads, read-only | Watching for a download in progress so it can show the bar | Download activities do not appear; nothing else changes |
 
-FlowDock is sandboxed. It has no camera entitlement, no microphone entitlement, and no
-ability to read files you did not hand it.
+FlowDock is sandboxed. It has no camera entitlement, no microphone entitlement, and
+cannot write outside its own container. It reads one folder you did not hand it —
+`~/Downloads`, read-only — and only to notice files appear and finish; it does not open
+them, index them, or send anything about them.
 
 Accessibility is held by a separate helper process, `FlowDockXPCHelper`, so the trust you
 grant is scoped to the thing that needs it. Notification text passes from that helper to
