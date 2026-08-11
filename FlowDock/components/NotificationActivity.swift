@@ -137,7 +137,24 @@ private struct NotificationRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if hovering {
+            if notification.isInteractive {
+                /// A ringing call cannot wait for the pointer to arrive, so an alert that
+                /// carries its own buttons shows them rather than the hover pair.
+                ForEach(notification.actions.prefix(2), id: \.self) { action in
+                    Button {
+                        NotificationFeed.shared.perform(action, on: notification)
+                    } label: {
+                        Text(action)
+                            .font(.panelMeta)
+                            .lineLimit(1)
+                            .padding(.horizontal, 8)
+                            .frame(height: 20)
+                            .background(.quaternary, in: Capsule())
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else if hovering {
                 HoverButton(icon: "arrow.up.forward.app", scale: .small) {
                     NotificationFeed.shared.activate(notification)
                 }
@@ -157,19 +174,28 @@ private struct NotificationRow: View {
         .accessibilityLabel(Activity.notificationLabel(notification, count: group.notifications.count))
         .accessibilityAction { NotificationFeed.shared.activate(notification) }
         .accessibilityAction(named: "Dismiss") { NotificationFeed.shared.dismiss(notification) }
+        .accessibilityActions {
+            ForEach(notification.actions, id: \.self) { action in
+                Button(action) { NotificationFeed.shared.perform(action, on: notification) }
+            }
+        }
     }
 }
 
 #if DEBUG
 extension NotificationPanel {
     static func selfCheck() {
-        let one = FlowDockNotification(token: "a", app: "Messages", title: "Ada", body: "On my way")
+        let one = FlowDockNotification(token: "a", app: "Messages", title: "Ada", body: "On my way", actions: [])
         assert(one.summary == "Ada — On my way")
-        assert(FlowDockNotification(token: "b", app: "Mail", title: "Ada", body: "").summary == "Ada")
+        assert(FlowDockNotification(token: "b", app: "Mail", title: "Ada", body: "", actions: []).summary == "Ada")
         assert(Activity.notificationLabel(one, count: 1) == "Messages, Ada — On my way")
         assert(Activity.notificationLabel(one, count: 3).hasSuffix("3 notifications"))
         assert(Activity.notification(one, count: 1).activityClass == .contextual)
         assert(Activity.notification(one, count: 1).expanded == nil)
+        assert(!one.isInteractive)
+        let call = FlowDockNotification(
+            token: "c", app: "FaceTime", title: "Ada", body: "iPhone", actions: ["Decline", "Accept"])
+        assert(call.isInteractive, "an alert with its own buttons offers them instead of the hover pair")
     }
 }
 #endif

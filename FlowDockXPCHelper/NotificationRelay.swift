@@ -12,6 +12,10 @@ struct RelayedNotification: Codable {
     let app: String
     let title: String
     let body: String
+    /// The alert's own buttons, by their own titles. An incoming call is a notification
+    /// whose buttons happen to say Decline and Accept, so nothing here knows what a call
+    /// is — it offers whatever the alert offers, in whatever language it says it.
+    let actions: [String]
 }
 
 final class NotificationRelay {
@@ -60,17 +64,24 @@ final class NotificationRelay {
                 return
             }
 
+            let buttons = self.buttons(in: window)
+
             switch action {
             case "dismiss":
-                if let close = self.buttons(in: window).first(where: { Self.isDismiss($0.title) }) {
+                if let close = buttons.first(where: { Self.isDismiss($0.title) }) {
                     AXUIElementPerformAction(close.element, kAXPressAction as CFString)
                 }
-            default:
-                let buttons = self.buttons(in: window)
+            case "activate":
                 if let primary = buttons.first(where: { !Self.isDismiss($0.title) }) {
                     AXUIElementPerformAction(primary.element, kAXPressAction as CFString)
                 } else {
                     AXUIElementPerformAction(window, kAXPressAction as CFString)
+                }
+            default:
+                /// Anything else names a button the alert reported, which is how declining
+                /// a call reaches a button that says neither close nor clear.
+                if let named = buttons.first(where: { $0.title == action }) {
+                    AXUIElementPerformAction(named.element, kAXPressAction as CFString)
                 }
             }
         }
@@ -134,17 +145,23 @@ final class NotificationRelay {
         let texts = staticTexts(in: window).filter { !$0.isEmpty }
         guard texts.count >= 2 else { return nil }
 
+        let actions = buttons(in: window)
+            .map(\.title)
+            .filter { !$0.isEmpty && !Self.isDismiss($0) }
+
         let notification = RelayedNotification(
             token: "",
             app: texts[0],
             title: texts[1],
-            body: texts.count > 2 ? texts[2...].joined(separator: " ") : ""
+            body: texts.count > 2 ? texts[2...].joined(separator: " ") : "",
+            actions: actions
         )
         return RelayedNotification(
             token: Self.token(for: notification),
             app: notification.app,
             title: notification.title,
-            body: notification.body
+            body: notification.body,
+            actions: actions
         )
     }
 

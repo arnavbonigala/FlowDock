@@ -13,8 +13,14 @@ struct FlowDockNotification: Identifiable, Equatable, Codable {
     let app: String
     let title: String
     let body: String
+    let actions: [String]
 
     var id: String { token }
+
+    /// A call is a notification whose buttons answer and decline it. FlowDock does not
+    /// recognise calls — it offers the buttons the alert offers, so this stays true of
+    /// whatever else macOS decides to put two buttons on.
+    var isInteractive: Bool { actions.count > 1 }
 
     var summary: String {
         body.isEmpty ? title : "\(title) — \(body)"
@@ -85,6 +91,11 @@ final class NotificationFeed: ObservableObject {
 
     func activate(_ notification: FlowDockNotification) {
         XPCHelperClient.shared.performNotificationAction("activate", token: notification.token)
+        remove(notification)
+    }
+
+    func perform(_ action: String, on notification: FlowDockNotification) {
+        XPCHelperClient.shared.performNotificationAction(action, token: notification.token)
         remove(notification)
     }
 
