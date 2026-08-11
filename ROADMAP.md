@@ -59,7 +59,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [ ] Handle external displays, alternate audio devices, AirPods, external keyboards, and third-party display tools without breaking their controls
 - [x] Keep media information, progress, artwork, source switching, and source-specific actions accurate
 - [x] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
-- [ ] Keep calendar dates, reminders, scrolling, and long content correct
+- [x] Keep calendar dates, reminders, scrolling, and long content correct
 - [ ] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
 - [ ] Minimize idle CPU use, memory, wakeups, and battery impact
 - [ ] Make installation, updates, permission recovery, and uninstallation dependable

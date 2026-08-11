@@ -34,7 +34,7 @@ final class CalendarManager: ObservableObject {
         calendarAuthorizationStatus = EKEventStore.authorizationStatus(for: .event)
         reminderAuthorizationStatus = EKEventStore.authorizationStatus(for: .reminder)
 
-        observers = [.EKEventStoreChanged, .NSCalendarDayChanged].map { name in
+        observers = [.EKEventStoreChanged, .NSCalendarDayChanged, .NSSystemTimeZoneDidChange].map { name in
             NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor in await self?.refresh() }
             }

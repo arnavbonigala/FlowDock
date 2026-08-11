@@ -123,6 +123,7 @@ struct AgendaPanel: View {
                             .foregroundStyle(.primary)
                             .lineLimit(showFullTitles ? nil : 2)
                             .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         if let location = event.location, !location.isEmpty {
                             Text(location)

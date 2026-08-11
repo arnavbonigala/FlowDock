@@ -65,16 +65,18 @@ class CalendarService: CalendarServiceProviding {
         var events: [EventModel] = []
         
         // Fetch regular events
-        if hasAccess(to: .event) {
-            let eventCalendars = ekCalendars.filter { store.calendars(for: .event).contains($0) }
+        let eventCalendars = ekCalendars.filter { store.calendars(for: .event).contains($0) }
+        if hasAccess(to: .event), !eventCalendars.isEmpty {
             let predicate = store.predicateForEvents(withStart: start, end: end, calendars: eventCalendars)
-            let ekEvents = store.events(matching: predicate)
+            let ekEvents = store.events(matching: predicate).filter {
+                $0.startDate < end && ($0.endDate > start || $0.endDate == $0.startDate)
+            }
             events.append(contentsOf: ekEvents.compactMap { EventModel(from: $0) })
         }
-        
+
         // Fetch reminders
-        if hasAccess(to: .reminder) {
-            let reminderCalendars = ekCalendars.filter { store.calendars(for: .reminder).contains($0) }
+        let reminderCalendars = ekCalendars.filter { store.calendars(for: .reminder).contains($0) }
+        if hasAccess(to: .reminder), !reminderCalendars.isEmpty {
             events.append(contentsOf: await fetchReminders(from: start, to: end, calendars: reminderCalendars))
         }
         
@@ -89,12 +91,13 @@ class CalendarService: CalendarServiceProviding {
             store.fetchReminders(matching: predicate) { reminders in
                 
                 let filteredReminders = (reminders ?? []).filter { reminder in
-                    // Check if reminder has a due date within our range
-                    guard let dueDate = reminder.dueDateComponents?.date else {
+                    guard let components = reminder.dueDateComponents,
+                          let dueDate = Calendar.current.date(from: components)
+                    else {
                         return false
                     }
-                    
-                    return dueDate >= start && dueDate <= end
+
+                    return dueDate >= start && dueDate < end
                 }
                 
                 // Convert to EventModel
