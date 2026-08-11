@@ -94,19 +94,20 @@ final class SharingLifecycleDelegate: NSObject, NSSharingServiceDelegate, NSShar
 		guard !pickerActive else { return }
 		pickerActive = true
 		onBegin()
+		startTimeoutFallback(after: .seconds(60))
 	}
 
 	func markServiceBegan() {
 		guard !serviceInProgress else { return }
 		serviceInProgress = true
 		onBegin()
-		startTimeoutFallback()
+		startTimeoutFallback(after: .seconds(2))
 	}
-	
-	private func startTimeoutFallback() {
+
+	private func startTimeoutFallback(after delay: Duration) {
 		timeoutTask?.cancel()
 		timeoutTask = Task { @MainActor [weak self] in
-			try? await Task.sleep(for: .seconds(2))
+			try? await Task.sleep(for: delay)
 			guard let self = self, !Task.isCancelled else { return }
 			if !self.finished {
 				self.finishIfNeeded()
@@ -134,7 +135,7 @@ final class SharingLifecycleDelegate: NSObject, NSSharingServiceDelegate, NSShar
 
 		service?.delegate = self
 		serviceInProgress = true
-		startTimeoutFallback()
+		startTimeoutFallback(after: .seconds(2))
 	}
 
 	// MARK: - NSSharingServiceDelegate

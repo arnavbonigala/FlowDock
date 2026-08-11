@@ -83,8 +83,8 @@ final class ShelfItemViewModel: ObservableObject {
                 }
             }
             
-            guard !itemsToShare.isEmpty else { return }
-             
+            guard !itemsToShare.isEmpty, let view else { return }
+
             stopSharingAccessingURLs()
             // Start security-scoped access for all file URLs and keep it active during sharing
             sharingAccessingURLs = fileURLs.filter { $0.startAccessingSecurityScopedResource() }
@@ -99,9 +99,7 @@ final class ShelfItemViewModel: ObservableObject {
             let picker = NSSharingServicePicker(items: itemsToShare)
             picker.delegate = lifecycle
             lifecycle.markPickerBegan()
-            if let view {
-                picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
-            }
+            picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
         }
     }
     

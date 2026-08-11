@@ -139,6 +139,9 @@ class QuickShareService: ObservableObject {
     @MainActor
     func shareFilesOrText(_ items: [Any], using provider: QuickShareProvider, from view: NSView?) async {
         let fileURLs = items.compactMap { $0 as? URL }.filter { $0.isFileURL }
+        let direct = cachedServices[provider.id].flatMap { $0.canPerform(withItems: items) ? $0 : nil }
+        guard direct != nil || view != nil else { return }
+
         // Stop any previous sharing access
         stopSharingAccessingURLs()
         // Start security-scoped access for all file URLs
@@ -151,18 +154,15 @@ class QuickShareService: ObservableObject {
         }
         lifecycleDelegate = delegate
 
-        if let svc = cachedServices[provider.id], svc.canPerform(withItems: items) {
-            // For direct service path, explicitly mark service interaction start
+        if let svc = direct {
             delegate.markServiceBegan()
             svc.delegate = delegate
             svc.perform(withItems: items)
-        } else {
+        } else if let view {
             let picker = NSSharingServicePicker(items: items)
             picker.delegate = delegate
             delegate.markPickerBegan()
-            if let view {
-                picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
-            }
+            picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
         }
     }
 
