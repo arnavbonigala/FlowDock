@@ -26,6 +26,7 @@ final class ActivityStore: ObservableObject {
         AgendaPanel.selfCheck()
         ShelfPanel.selfCheck()
         NotificationPanel.selfCheck()
+        DevicePanel.selfCheck()
         #endif
     }
 

@@ -70,7 +70,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 
 - [x] Expand music with reliable generic playback, richer context, queues, lyrics, and capability-aware controls
 - [x] Add a first-class notification experience with useful grouping and actions where macOS permits
-- [ ] Add Bluetooth and headphone connection, battery, and device-status activities
+- [x] Add Bluetooth and headphone connection, battery, and device-status activities
 - [ ] Add dependable download and progress activities
 - [ ] Add timers, meeting actions and countdowns, and richer calendar context
 - [ ] Let users control which activities appear and how they are prioritized

@@ -166,6 +166,7 @@ struct ExperienceView: View {
         .powerActivity(in: store, suppressed: isExpanded)
         .shelfActivity(in: store, receiving: isDropTargeted)
         .notificationActivity(in: store)
+        .deviceActivity(in: store)
     }
 
     // MARK: - Surfaces
@@ -211,6 +212,8 @@ struct ExperienceView: View {
                 }
 
                 Spacer(minLength: 0)
+
+                DevicePanel()
 
                 PowerPanelIndicator()
             }

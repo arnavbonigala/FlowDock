@@ -22,7 +22,7 @@ struct SettingsView: View {
     }
 
     enum Pane: String, Hashable, CaseIterable {
-        case music, notifications, systemFeedback, battery, calendar, shelf
+        case music, notifications, systemFeedback, battery, devices, calendar, shelf
         case general, appearance, shortcuts, about
 
         var title: String {
@@ -31,6 +31,7 @@ struct SettingsView: View {
             case .notifications: "Notifications"
             case .systemFeedback: "System feedback"
             case .battery: "Battery"
+            case .devices: "Devices"
             case .calendar: "Calendar"
             case .shelf: "Shelf"
             case .general: "General"
@@ -46,6 +47,7 @@ struct SettingsView: View {
             case .notifications: "bell.badge"
             case .systemFeedback: "dial.medium.fill"
             case .battery: "battery.100.bolt"
+            case .devices: "airpods"
             case .calendar: "calendar"
             case .shelf: "tray.full"
             case .general: "gear"
@@ -60,7 +62,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedPane) {
                 Section("Activities") {
-                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .calendar, .shelf], id: \.self) { pane in
+                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .devices, .calendar, .shelf], id: \.self) { pane in
                         NavigationLink(value: pane) {
                             Label(pane.title, systemImage: pane.symbol)
                         }
@@ -85,6 +87,7 @@ struct SettingsView: View {
                 case .notifications: NotificationSettings()
                 case .systemFeedback: SystemFeedbackSettings()
                 case .battery: BatterySettings()
+                case .devices: DeviceSettings()
                 case .calendar: CalendarSettings()
                 case .shelf: ShelfSettings()
                 case .general: GeneralSettings()
@@ -194,6 +197,23 @@ struct MusicSettings: View {
         MusicManager.shared.isNowPlayingDeprecated
             ? MediaControllerType.allCases.filter { $0 != .nowPlaying }
             : MediaControllerType.allCases
+    }
+}
+
+struct DeviceSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle(key: .showDeviceStatus) {
+                    Text("Show connected devices")
+                }
+            } footer: {
+                Text("Bluetooth headphones, keyboards, mice, and other paired devices announce themselves at the notch when they connect or disconnect, and their battery appears in the expanded panel when the device reports it.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accentColor(.effectiveAccent)
     }
 }
 

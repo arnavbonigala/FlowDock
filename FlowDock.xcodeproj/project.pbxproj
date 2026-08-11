@@ -112,6 +112,8 @@
 		F38DE6482D8243E7008B5C6D /* BatteryActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38DE6472D8243E2008B5C6D /* BatteryActivityManager.swift */; };
 		11FD2EC10000000000000001 /* NotificationActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000002 /* NotificationActivity.swift */; };
 		11FD2EC10000000000000003 /* NotificationFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000004 /* NotificationFeed.swift */; };
+		11FD2EC10000000000000005 /* DeviceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000006 /* DeviceMonitor.swift */; };
+		11FD2EC10000000000000007 /* DeviceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000008 /* DeviceActivity.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -248,6 +250,8 @@
 		F38DE6472D8243E2008B5C6D /* BatteryActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryActivityManager.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000002 /* NotificationActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationActivity.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000004 /* NotificationFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationFeed.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000006 /* DeviceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMonitor.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000008 /* DeviceActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -412,6 +416,7 @@
 		1471639B2C5D362F0068B555 /* components */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000008 /* DeviceActivity.swift */,
 				11FD2EC10000000000000002 /* NotificationActivity.swift */,
 				11FD2EC0000000000000000D /* PowerActivity.swift */,
 				11FD2EC0000000000000000F /* SystemFeedback.swift */,
@@ -430,6 +435,7 @@
 		147163B52C5D804B0068B555 /* managers */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000006 /* DeviceMonitor.swift */,
 				11FD2EC10000000000000004 /* NotificationFeed.swift */,
 				11D58EA12E760AE100FA8377 /* ImageService.swift */,
 				F38DE6472D8243E2008B5C6D /* BatteryActivityManager.swift */,
@@ -781,6 +787,8 @@
 			files = (
 				11FD2EC10000000000000003 /* NotificationFeed.swift in Sources */,
 				11FD2EC10000000000000001 /* NotificationActivity.swift in Sources */,
+				11FD2EC10000000000000005 /* DeviceMonitor.swift in Sources */,
+				11FD2EC10000000000000007 /* DeviceActivity.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,
