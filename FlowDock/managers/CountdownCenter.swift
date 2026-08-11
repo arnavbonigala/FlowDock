@@ -57,7 +57,7 @@ final class TimerCenter: ObservableObject {
     private func finish() {
         cancel()
         finishedAt = .now
-        NSSound(named: "Glass")?.play()
+        AudioPlayer.playAlertSound(named: "Glass")
     }
 }
 

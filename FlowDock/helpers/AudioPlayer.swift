@@ -26,4 +26,10 @@ enum AudioPlayer {
         playing = sound
         sound.play()
     }
+
+    static func playAlertSound(named name: String) {
+        guard let sound = NSSound(named: name) else { return }
+        playing = sound
+        sound.play()
+    }
 }
