@@ -89,7 +89,7 @@ struct AgendaPanel: View {
         ScrollViewReader { proxy in
             ScrollView {
                 TimelineView(.periodic(from: .now, by: 60)) { timeline in
-                    LazyVStack(alignment: .leading, spacing: 2) {
+                    LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(agenda) { event in
                             row(event, now: timeline.date).id(event.id)
                         }

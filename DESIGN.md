@@ -114,6 +114,7 @@ something the system already draws and are the complete list:
 | The drawn battery glyph | 25 × 12 pt body, 3.5 pt radius, 1 pt gap to the tip, 2 pt fill inset, 7 pt bolt | It reproduces the menu bar's own battery, so its internal metrics come from that glyph rather than from this scale. Nothing else may borrow them |
 | Missing-artwork placeholder | 26 pt | A single glyph filling artwork's square, not text |
 | The drawn spectrum | 16 × 14 pt, four 2 pt bars with 2 pt gaps | It is a glyph the app draws rather than a layout, and it stands in for the bars macOS shows beside a playing track. The mask it fills must match these metrics exactly or the bars clip |
+| A title with its own second line under it | 1 pt leading, and up to 2 pt of optical alignment for a control or rule set beside it | The pair is one thing being read, not two elements being spaced, and 4 pt between a title and its own subtitle breaks it into two. This applies inside a text stack only — the gap to whatever comes next is still on the grid |
 
 Anything else off the 4 pt grid, and any other `Font.system(size:)`, is a bug rather than
 a precedent.
