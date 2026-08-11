@@ -44,7 +44,7 @@ final class NotificationFeed: ObservableObject {
     @Published private(set) var recent: [FlowDockNotification] = []
     @Published private(set) var latest: FlowDockNotification?
 
-    private var seen: [String] = []
+    private var seen: Set<String> = []
     private var running = false
 
     private init() {}
@@ -103,10 +103,12 @@ final class NotificationFeed: ObservableObject {
         else { return }
 
         let arriving = delivered.filter { !seen.contains($0.token) }
-        guard !arriving.isEmpty else { return }
 
-        seen.append(contentsOf: arriving.map(\.token))
-        seen = Array(seen.suffix(Self.historyLimit * 4))
+        /// The relay reports everything still in Notification Center, so what has already
+        /// been announced is exactly what is still on that list. Remembering a fixed number
+        /// of tokens instead re-announces the oldest one still sitting there.
+        seen = Set(delivered.map(\.token))
+        guard !arriving.isEmpty else { return }
 
         recent = Array((arriving.reversed() + recent).prefix(Self.historyLimit))
         latest = recent.first
