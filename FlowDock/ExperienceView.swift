@@ -77,8 +77,10 @@ struct ExperienceView: View {
         (screen?.safeAreaInsets.top ?? 0) > 0
     }
 
+    private var isExpanded: Bool { vm.notchState == .open }
+
     var body: some View {
-        let state = store.state
+        let state: ActivityState = isExpanded ? .expanded : store.chinState
 
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
@@ -110,7 +112,7 @@ struct ExperienceView: View {
                     KeyboardShortcuts.disable(.dismissExpanded)
                     KeyboardShortcuts.onKeyDown(for: .dismissExpanded) { collapse() }
                 }
-                .onChange(of: store.isExpanded) { _, expanded in
+                .onChange(of: isExpanded) { _, expanded in
                     // The panel cannot take key focus, so Escape is a hotkey that exists
                     // only while there is something to dismiss.
                     if expanded {
@@ -161,7 +163,7 @@ struct ExperienceView: View {
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .preferredColorScheme(.dark)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
-        .powerActivity(in: store)
+        .powerActivity(in: store, suppressed: isExpanded)
         .shelfActivity(in: store, receiving: isDropTargeted)
     }
 
@@ -255,9 +257,9 @@ struct ExperienceView: View {
 
         settleTask?.cancel()
 
-        if !store.isExpanded, Defaults[.enableHaptics] { haptics.toggle() }
+        if !isExpanded, Defaults[.enableHaptics] { haptics.toggle() }
 
-        guard !store.isExpanded, store.state != .contextual, Defaults[.openNotchOnHover] else { return }
+        guard !isExpanded, store.chinState != .contextual, Defaults[.openNotchOnHover] else { return }
 
         hoverTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(Defaults[.minimumHoverDuration]))
@@ -266,20 +268,17 @@ struct ExperienceView: View {
         }
     }
 
-    /// The store owns the shell's state; the view model still holds the one notion of
-    /// "the notch is open" that surfaces outside the shell — the system feedback pill —
-    /// position themselves against.
+    /// The view model owns whether the panel is open, so a global hotkey and the shell
+    /// move the same state.
     private func expand() {
-        guard !store.isExpanded else { return }
-        store.isExpanded = true
+        guard !isExpanded else { return }
         vm.open()
     }
 
     private func collapse() {
-        guard store.isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
+        guard isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
         settleTask?.cancel()
         isOverAgenda = false
-        store.isExpanded = false
         vm.close()
     }
 

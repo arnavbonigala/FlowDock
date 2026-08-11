@@ -280,7 +280,7 @@ Every duration a user waits on is one of these. New timeouts are not invented pe
 
 ## Current implementation
 
-The shell implements the four-state ladder: `ActivityStore.state` derives idle, contextual, and persistent from which activity owns the chin, and `isExpanded` is the fourth. `NotchState` survives only as the one notion of "open" that surfaces outside the shell — the system feedback pill — position themselves against.
+The shell implements the four-state ladder: `ActivityStore.chinState` derives idle, contextual, and persistent from which activity owns the chin, and `FlowDockViewModel.notchState` is the fourth. That one flag is the only notion of "open" — the shell renders from it, the toggle hotkey moves it, and detached surfaces such as the system feedback pill position themselves against it.
 
 - `close()` re-derives what to show underneath, which is invariant 4.
 - Escape dismisses; the hotkey is registered only while there is something to dismiss.

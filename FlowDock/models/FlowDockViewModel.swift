@@ -71,7 +71,7 @@ class FlowDockViewModel: NSObject, ObservableObject {
             .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] shouldHide in
-                withAnimation(.smooth) {
+                withAnimation(.experience(reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)) {
                     self?.hideOnClosed = shouldHide
                 }
             }

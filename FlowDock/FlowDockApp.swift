@@ -61,7 +61,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     var quickShareService = QuickShareService.shared
     var timer: Timer?
-    var closeNotchTask: Task<Void, Never>?
     private var onboardingWindowController: NSWindowController?
     private var distributedObservers: [Any] = []
     private var workspaceObservers: [Any] = []
@@ -330,27 +329,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
 
-                self.closeNotchTask?.cancel()
-                self.closeNotchTask = nil
-
-                switch viewModel.notchState {
-                case .closed:
-                    await MainActor.run {
-                        viewModel.open()
-                    }
-
-                    let task = Task { [weak viewModel] in
-                        do {
-                            try await Task.sleep(for: .seconds(3))
-                            await MainActor.run {
-                                viewModel?.close()
-                            }
-                        } catch { }
-                    }
-                    self.closeNotchTask = task
-                case .open:
-                    await MainActor.run {
-                        viewModel.close()
+                await MainActor.run {
+                    switch viewModel.notchState {
+                    case .closed: viewModel.open()
+                    case .open: viewModel.close()
                     }
                 }
             }

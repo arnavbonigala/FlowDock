@@ -60,7 +60,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Keep media information, progress, artwork, source switching, and source-specific actions accurate
 - [x] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
 - [x] Keep calendar dates, reminders, scrolling, and long content correct
-- [ ] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
+- [x] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
 - [ ] Minimize idle CPU use, memory, wakeups, and battery impact
 - [ ] Make installation, updates, permission recovery, and uninstallation dependable
 - [ ] Validate the experience across supported hardware, display arrangements, and accessibility settings

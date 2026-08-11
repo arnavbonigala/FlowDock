@@ -108,13 +108,14 @@ extension Activity {
 }
 
 extension View {
-    func powerActivity(in store: ActivityStore) -> some View {
-        modifier(PowerActivityBinder(store: store))
+    func powerActivity(in store: ActivityStore, suppressed: Bool) -> some View {
+        modifier(PowerActivityBinder(store: store, suppressed: suppressed))
     }
 }
 
 private struct PowerActivityBinder: ViewModifier {
     let store: ActivityStore
+    let suppressed: Bool
 
     @ObservedObject private var battery = BatteryStatusViewModel.shared
     @Default(.showPowerStatusNotifications) private var enabled
@@ -135,7 +136,7 @@ private struct PowerActivityBinder: ViewModifier {
 
     func body(content: Content) -> some View {
         content.onChange(of: trigger) { _, _ in
-            guard enabled, !store.isExpanded else { return }
+            guard enabled, !suppressed else { return }
             store.begin(.power(battery.reading))
         }
     }

@@ -16,7 +16,6 @@ final class ActivityStore: ObservableObject {
     /// ponytail: one store per display, created by that display's view. Routing activities
     /// from the managers to the right store lands with the first activity in section 3.
     @Published private(set) var activities: [Activity] = []
-    @Published var isExpanded = false
 
     private var expiry: [String: Task<Void, Never>] = [:]
 
@@ -35,8 +34,7 @@ final class ActivityStore: ObservableObject {
 
     var owner: Activity? { Activity.owner(of: activities) }
 
-    var state: ActivityState {
-        if isExpanded { return .expanded }
+    var chinState: ActivityState {
         guard let owner else { return .idle }
         return owner.activityClass == .contextual ? .contextual : .persistent
     }
