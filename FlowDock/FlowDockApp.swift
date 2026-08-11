@@ -488,9 +488,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ))
             window.isRestorable = false
             window.identifier = NSUserInterfaceItemIdentifier("OnboardingWindow")
+            window.delegate = self
 
             onboardingWindowController = NSWindowController(window: window)
         }
+
+        NSApp.setActivationPolicy(.regular)
 
         onboardingWindowController?.window?.title = step == .welcome
             ? "Welcome to FlowDock"
@@ -499,6 +502,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         onboardingWindowController?.window?.makeKeyAndOrderFront(nil)
         onboardingWindowController?.window?.orderFrontRegardless()
+    }
+}
+
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        guard (notification.object as? NSWindow)?.identifier?.rawValue == "OnboardingWindow" else { return }
+        guard SettingsWindowController.shared.window?.isVisible != true else { return }
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 
