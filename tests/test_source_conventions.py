@@ -96,6 +96,31 @@ class DeadCodeTests(unittest.TestCase):
         )
 
 
+class SelfCheckTests(unittest.TestCase):
+    def test_every_self_check_is_invoked(self):
+        called = set()
+        declared = {}
+        for path in swift_files(APP):
+            source = path.read_text()
+            called.update(re.findall(r"(\w+)\.selfCheck\(\)", source))
+            if "static func selfCheck()" in source:
+                owners = set(re.findall(r"(?:extension|struct|class|enum)\s+(\w+)", source))
+                if "Self.selfCheck()" in source:
+                    owners.add("Self")
+                declared[relative(path)] = owners
+
+        self.assertTrue(declared, "expected the app to declare self-checks")
+        uninvoked = sorted(
+            file for file, owners in declared.items() if not owners & called
+        )
+        self.assertEqual(
+            uninvoked,
+            [],
+            "A selfCheck nobody calls asserts nothing. Invoke it from ActivityStore's "
+            "DEBUG block, or from the type's own initialiser.",
+        )
+
+
 class SettingsTests(unittest.TestCase):
     def test_every_stored_key_is_read(self):
         constants = APP / "models" / "Constants.swift"
