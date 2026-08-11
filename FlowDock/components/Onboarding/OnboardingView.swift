@@ -33,7 +33,8 @@ struct OnboardingView: View {
             }
         }
         .animation(.value(reduceMotion: reduceMotion), value: step)
-        .frame(width: 460, height: 520)
+        .frame(width: 460)
+        .frame(minHeight: 520)
         .background(.regularMaterial)
     }
 }
@@ -50,6 +51,7 @@ private struct WelcomeView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 96, height: 96)
+                .accessibilityHidden(true)
             Text("FlowDock")
                 .font(.largeTitle)
                 .fontWeight(.semibold)

@@ -469,7 +469,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.isMovableByWindowBackground = true
-            window.contentView = NSHostingView(
+            window.contentViewController = NSHostingController(
                 rootView: OnboardingView(
                     step: step,
                     onFinish: {
