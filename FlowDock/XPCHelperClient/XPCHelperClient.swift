@@ -196,13 +196,13 @@ final class XPCHelperClient: NSObject {
     
     // MARK: - Screen Brightness
     
-    nonisolated func isScreenBrightnessAvailable() async -> Bool {
+    nonisolated func isScreenBrightnessAvailable(forDisplay displayID: CGDirectDisplayID) async -> Bool {
         do {
             let service = await MainActor.run {
                 ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
-                service.isScreenBrightnessAvailable { available in
+                service.isScreenBrightnessAvailable(forDisplay: UInt32(displayID)) { available in
                     continuation.resume(returning: available)
                 }
             }
@@ -211,13 +211,13 @@ final class XPCHelperClient: NSObject {
         }
     }
     
-    nonisolated func currentScreenBrightness() async -> Float? {
+    nonisolated func currentScreenBrightness(forDisplay displayID: CGDirectDisplayID) async -> Float? {
         do {
             let service = await MainActor.run {
                 ensureRemoteService()
             }
             let result: NSNumber? = try await service.withContinuation { service, continuation in
-                service.currentScreenBrightness { value in
+                service.currentScreenBrightness(forDisplay: UInt32(displayID)) { value in
                     continuation.resume(returning: value)
                 }
             }
@@ -227,13 +227,13 @@ final class XPCHelperClient: NSObject {
         }
     }
     
-    nonisolated func setScreenBrightness(_ value: Float) async -> Bool {
+    nonisolated func setScreenBrightness(_ value: Float, forDisplay displayID: CGDirectDisplayID) async -> Bool {
         do {
             let service = await MainActor.run {
                 ensureRemoteService()
             }
             return try await service.withContinuation { service, continuation in
-                service.setScreenBrightness(value) { success in
+                service.setScreenBrightness(value, forDisplay: UInt32(displayID)) { success in
                     continuation.resume(returning: success)
                 }
             }

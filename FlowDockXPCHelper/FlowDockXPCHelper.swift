@@ -58,7 +58,10 @@ class FlowDockXPCHelper: NSObject, FlowDockXPCHelperProtocol {
             }
         }
 
-        var isAvailable: Bool { clientInstance != nil }
+        var acceptsBrightnessWrites: Bool {
+            guard clientInstance != nil, let current = currentBrightness() else { return false }
+            return setBrightness(max(0, min(1, current)))
+        }
 
         func currentBrightness() -> Float? {
             guard let clientInstance,
@@ -89,7 +92,7 @@ class FlowDockXPCHelper: NSObject, FlowDockXPCHelperProtocol {
     private static let keyboardClient = KeyboardBrightnessClient()
 
     @objc func isKeyboardBrightnessAvailable(with reply: @escaping (Bool) -> Void) {
-        reply(Self.keyboardClient.isAvailable)
+        reply(Self.keyboardClient.acceptsBrightnessWrites)
     }
 
     @objc func currentKeyboardBrightness(with reply: @escaping (NSNumber?) -> Void) {
@@ -101,18 +104,31 @@ class FlowDockXPCHelper: NSObject, FlowDockXPCHelperProtocol {
     }
     // MARK: - Screen Brightness (moved from client app into helper)
 
-    @objc func isScreenBrightnessAvailable(with reply: @escaping (Bool) -> Void) {
+    @objc func isScreenBrightnessAvailable(forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void) {
+        let display = CGDirectDisplayID(displayID)
         var b: Float = 0
-        reply(displayServicesGetBrightness(displayID: CGMainDisplayID(), out: &b) || ioServiceFor(displayID: CGMainDisplayID()) != nil)
+        if displayServicesGetBrightness(displayID: display, out: &b) {
+            reply(true)
+            return
+        }
+        guard let io = ioServiceFor(displayID: display) else {
+            reply(false)
+            return
+        }
+        var level: Float = 0
+        let ok = IODisplayGetFloatParameter(io, 0, kIODisplayBrightnessKey as CFString, &level) == kIOReturnSuccess
+        IOObjectRelease(io)
+        reply(ok)
     }
 
-    @objc func currentScreenBrightness(with reply: @escaping (NSNumber?) -> Void) {
+    @objc func currentScreenBrightness(forDisplay displayID: UInt32, with reply: @escaping (NSNumber?) -> Void) {
+        let display = CGDirectDisplayID(displayID)
         var b: Float = 0
-        if displayServicesGetBrightness(displayID: CGMainDisplayID(), out: &b) {
+        if displayServicesGetBrightness(displayID: display, out: &b) {
             reply(NSNumber(value: b))
             return
         }
-        if let io = ioServiceFor(displayID: CGMainDisplayID()) {
+        if let io = ioServiceFor(displayID: display) {
             var level: Float = 0
             if IODisplayGetFloatParameter(io, 0, kIODisplayBrightnessKey as CFString, &level) == kIOReturnSuccess {
                 IOObjectRelease(io)
@@ -124,13 +140,14 @@ class FlowDockXPCHelper: NSObject, FlowDockXPCHelperProtocol {
         reply(nil)
     }
 
-    @objc func setScreenBrightness(_ value: Float, with reply: @escaping (Bool) -> Void) {
+    @objc func setScreenBrightness(_ value: Float, forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void) {
+        let display = CGDirectDisplayID(displayID)
         let clamped = max(0, min(1, value))
-        if displayServicesSetBrightness(displayID: CGMainDisplayID(), value: clamped) {
+        if displayServicesSetBrightness(displayID: display, value: clamped) {
             reply(true)
             return
         }
-        if let io = ioServiceFor(displayID: CGMainDisplayID()) {
+        if let io = ioServiceFor(displayID: display) {
             let ok = IODisplaySetFloatParameter(io, 0, kIODisplayBrightnessKey as CFString, clamped) == kIOReturnSuccess
             IOObjectRelease(io)
             reply(ok)

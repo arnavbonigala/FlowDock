@@ -248,6 +248,7 @@ final class VolumeManager: NSObject, ObservableObject {
     }
 
     private func handleDefaultDeviceChange() {
+        softwareMuted = false
         attachDeviceListeners()
         fetchCurrentVolume()
 
@@ -318,24 +319,25 @@ final class VolumeManager: NSObject, ObservableObject {
     private func writeVolumeInternal(_ value: Float32) {
         let deviceID = systemOutputDeviceID()
         if deviceID == kAudioObjectUnknown { return }
-        let newVal = max(0, min(1, value))
+        let target = max(0, min(1, value))
 
-        var written = false
         if writeValidatedScalar(
-            deviceID: deviceID, element: kAudioObjectPropertyElementMain, value: newVal)
+            deviceID: deviceID, element: kAudioObjectPropertyElementMain, value: target)
         {
-            written = true
-        } else {
-            var any = false
-            for el in [UInt32](1...4) {
-                if writeValidatedScalar(deviceID: deviceID, element: el, value: newVal) {
-                    any = true
-                }
-            }
-            written = any
+            return
         }
-        if !written {
-            // silent fail
+
+        let channels: [(element: UInt32, level: Float32)] = [UInt32](1...4).compactMap { element in
+            guard let level = readValidatedScalar(deviceID: deviceID, element: element) else { return nil }
+            return (element, level)
+        }
+        guard !channels.isEmpty else { return }
+
+        let average = channels.reduce(Float32(0)) { $0 + $1.level } / Float32(channels.count)
+        for channel in channels {
+            let balanced = average > 0.001 ? target * (channel.level / average) : target
+            _ = writeValidatedScalar(
+                deviceID: deviceID, element: channel.element, value: max(0, min(1, balanced)))
         }
     }
 
@@ -452,10 +454,6 @@ final class VolumeManager: NSObject, ObservableObject {
             self.isMuted = muted
         }
     }
-}
-
-extension Array where Element == Float32 {
-    fileprivate var average: Float32? { isEmpty ? nil : reduce(0, +) / Float32(count) }
 }
 
 

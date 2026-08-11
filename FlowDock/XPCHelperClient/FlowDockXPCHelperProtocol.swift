@@ -17,8 +17,8 @@ import Foundation
     func currentKeyboardBrightness(with reply: @escaping (NSNumber?) -> Void)
     func setKeyboardBrightness(_ value: Float, with reply: @escaping (Bool) -> Void)
     // Screen brightness access (performed by the helper)
-    func isScreenBrightnessAvailable(with reply: @escaping (Bool) -> Void)
-    func currentScreenBrightness(with reply: @escaping (NSNumber?) -> Void)
-    func setScreenBrightness(_ value: Float, with reply: @escaping (Bool) -> Void)
+    func isScreenBrightnessAvailable(forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void)
+    func currentScreenBrightness(forDisplay displayID: UInt32, with reply: @escaping (NSNumber?) -> Void)
+    func setScreenBrightness(_ value: Float, forDisplay displayID: UInt32, with reply: @escaping (Bool) -> Void)
 }
 

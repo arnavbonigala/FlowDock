@@ -56,7 +56,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Keep the interface anchored and non-disruptive across full-screen apps, spaces, display changes, docking, and clamshell use
 - [x] Prevent clipping, menu bar obstruction, focus theft, and incorrect hit areas on notch and non-notch displays
 - [x] Ensure system feedback never blocks, changes, or misroutes native volume, brightness, backlight, microphone, or media controls
-- [ ] Handle external displays, alternate audio devices, AirPods, external keyboards, and third-party display tools without breaking their controls
+- [x] Handle external displays, alternate audio devices, AirPods, external keyboards, and third-party display tools without breaking their controls
 - [x] Keep media information, progress, artwork, source switching, and source-specific actions accurate
 - [x] Make file drag-and-drop dependable across common source and destination apps without stuck or lost items
 - [x] Keep calendar dates, reminders, scrolling, and long content correct

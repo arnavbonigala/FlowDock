@@ -11,10 +11,10 @@ final class BrightnessManager: ObservableObject {
 	@Published private(set) var rawBrightness: Float = 0
 	@Published private(set) var animatedBrightness: Float = 0
 	@Published private(set) var lastChangeAt: Date = .distantPast
-	@Published private(set) var isAvailable: Bool = false
 
 	private let visibleDuration: TimeInterval = 1.2
 	private let client = XPCHelperClient.shared
+	private var controllableDisplays: [CGDirectDisplayID: Bool] = [:]
 
 	private init() {
 		refresh()
@@ -29,21 +29,34 @@ final class BrightnessManager: ObservableObject {
 
 	var shouldShowOverlay: Bool { Date().timeIntervalSince(lastChangeAt) < visibleDuration }
 
+	var isAvailable: Bool {
+		guard let display = activeDisplayID else { return false }
+		return controllableDisplays[display] == true
+	}
+
+	private var activeDisplayID: CGDirectDisplayID? {
+		(NSScreen.main ?? NSScreen.screens.first)?.displayID
+	}
+
 	func refresh() {
 		Task { @MainActor in
-			isAvailable = await client.isScreenBrightnessAvailable()
-			if let current = await client.currentScreenBrightness() {
-				publish(brightness: current, touchDate: false)
+			for display in NSScreen.screens.compactMap({ $0.displayID }) {
+				controllableDisplays[display] = await client.isScreenBrightnessAvailable(forDisplay: display)
 			}
+			guard let display = activeDisplayID,
+			      let current = await client.currentScreenBrightness(forDisplay: display)
+			else { return }
+			publish(brightness: current, touchDate: false)
 		}
 	}
 
 	@MainActor func setRelative(delta: Float) {
 		Task { @MainActor in
-			let starting = await client.currentScreenBrightness() ?? rawBrightness
+			guard let display = activeDisplayID else { return }
+			let starting = await client.currentScreenBrightness(forDisplay: display) ?? rawBrightness
 			let target = max(0, min(1, starting + delta))
-			let ok = await client.setScreenBrightness(target)
-			isAvailable = ok
+			let ok = await client.setScreenBrightness(target, forDisplay: display)
+			controllableDisplays[display] = ok
 			guard ok else { return }
 			publish(brightness: target, touchDate: true)
 			SystemFeedbackStore.shared.report(.brightness, value: CGFloat(target))
@@ -53,8 +66,9 @@ final class BrightnessManager: ObservableObject {
 	func setAbsolute(value: Float) {
 		let clamped = max(0, min(1, value))
 		Task { @MainActor in
-			let ok = await client.setScreenBrightness(clamped)
-			isAvailable = ok
+			guard let display = activeDisplayID else { return }
+			let ok = await client.setScreenBrightness(clamped, forDisplay: display)
+			controllableDisplays[display] = ok
 			if ok {
 				publish(brightness: clamped, touchDate: true)
 			}
@@ -85,7 +99,16 @@ final class KeyboardBacklightManager: ObservableObject {
 	private let visibleDuration: TimeInterval = 1.2
 	private let client = XPCHelperClient.shared
 
-	private init() { refresh() }
+	private init() {
+		refresh()
+		NSWorkspace.shared.notificationCenter.addObserver(
+			forName: NSWorkspace.didWakeNotification,
+			object: nil,
+			queue: .main
+		) { [weak self] _ in
+			self?.refresh()
+		}
+	}
 
 	var shouldShowOverlay: Bool { Date().timeIntervalSince(lastChangeAt) < visibleDuration }
 
