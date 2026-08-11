@@ -111,7 +111,7 @@ private struct SetupView: View {
                     PermissionRow(
                         symbol: "slider.horizontal.3",
                         title: "Accessibility",
-                        detail: "Lets FlowDock replace the volume, brightness, and backlight HUDs.",
+                        detail: "Shows notifications at the notch, and replaces the volume, brightness, and backlight HUDs.",
                         granted: accessibilityAuthorized
                     ) {
                         XPCHelperClient.shared.requestAccessibilityAuthorization()
