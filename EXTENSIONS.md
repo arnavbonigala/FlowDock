@@ -100,6 +100,9 @@ extension:
 - **Idle cost.** An extension that is not currently showing an activity gets no process.
   FlowDock launches it to ask, and lets the system terminate it when it has nothing to
   say. An extension cannot hold a process open to poll.
+- **Answer deadline.** An extension has two seconds to return its declaration when asked.
+  One that does not answer is dropped and its process released, because discovery is
+  shared: an extension that never replies must not cost every other extension its place.
 - **Update rate.** Activity updates are coalesced by the host at the display's refresh
   rate. An extension that publishes faster is not faster, only busier.
 - **Render deadline.** A remote view that does not produce content within the transition

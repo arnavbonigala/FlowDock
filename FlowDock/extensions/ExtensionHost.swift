@@ -115,6 +115,11 @@ final class ExtensionHost: NSObject, ObservableObject {
                 return
             }
 
+            Task {
+                try? await Task.sleep(for: .seconds(2))
+                resumed.fire { continuation.resume(returning: nil) }
+            }
+
             proxy.activityDeclaration { reply in
                 resumed.fire { continuation.resume(returning: reply) }
             }

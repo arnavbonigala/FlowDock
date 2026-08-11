@@ -135,3 +135,7 @@ Build and run your host app once, then turn the extension on in FlowDock ▸ Set
 Activities. It appears in the same list as the built-in activities, with the same switch
 and the same drag handle — if it is missing there, FlowDock never got a usable
 declaration, and your extension's own log will say why.
+
+Answer within two seconds. `activityDeclaration` is asked once at discovery, and a reply
+block that has not been called by then is treated as no declaration at all. Do the work
+that decides what to declare before the call arrives, not inside it.
