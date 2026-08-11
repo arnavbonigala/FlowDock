@@ -26,7 +26,7 @@ struct HoverButton: View {
                 .frame(width: size, height: size)
                 .overlay {
                     Capsule()
-                        .fill(isHovering ? Color.gray.opacity(0.2) : .clear)
+                        .fill(isHovering ? AnyShapeStyle(.quaternary) : AnyShapeStyle(.clear))
                         .frame(width: size, height: size)
                         .overlay {
                             Image(systemName: icon)
@@ -36,11 +36,22 @@ struct HoverButton: View {
                         }
                 }
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PressableButtonStyle())
         .onHover { hovering in
             withAnimation(.value) {
                 isHovering = hovering
             }
         }
+    }
+}
+
+private struct PressableButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.92 : 1)
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .animation(.value(reduceMotion: reduceMotion), value: configuration.isPressed)
     }
 }

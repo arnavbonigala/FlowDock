@@ -118,7 +118,7 @@ struct ProgressRing: View {
                     .onAppear { spin = true }
             }
         }
-        .background(Circle().stroke(.white.opacity(0.2), lineWidth: 2.5))
+        .background(Circle().stroke(.quaternary, lineWidth: 2.5))
         .frame(width: 15, height: 15)
         .accessibilityHidden(true)
     }
