@@ -191,6 +191,7 @@ struct MeetingPanel: View {
 
 struct TimerPanel: View {
     @ObservedObject private var timer = TimerCenter.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 8) {
@@ -221,6 +222,7 @@ struct TimerPanel: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(.quaternary)
         )
+        .animation(.value(reduceMotion: reduceMotion), value: timer.isRunning)
     }
 }
 

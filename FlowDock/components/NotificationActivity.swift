@@ -90,19 +90,24 @@ private struct NotificationGlyph: View {
 
 struct NotificationPanel: View {
     @ObservedObject private var feed = NotificationFeed.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        if !feed.groups.isEmpty {
-            ScrollView(.vertical) {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(feed.groups) { group in
-                        NotificationRow(group: group)
+        Group {
+            if !feed.groups.isEmpty {
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(feed.groups) { group in
+                            NotificationRow(group: group)
+                        }
                     }
                 }
+                .scrollIndicators(.never)
+                .frame(maxHeight: 68)
+                .transition(.materialize(reduceMotion: reduceMotion))
             }
-            .scrollIndicators(.never)
-            .frame(maxHeight: 68)
         }
+        .animation(.experience(reduceMotion: reduceMotion), value: feed.groups.isEmpty)
     }
 }
 
