@@ -16,7 +16,7 @@ extension Activity {
             id: meetingID,
             activityClass: .persistent,
             band: .ambient,
-            label: MeetingPanel.label(event, now: .now),
+            label: MeetingPanel.label(event),
             chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: event.meetingURL == nil ? "calendar" : "video.fill")
@@ -166,7 +166,7 @@ struct MeetingPanel: View {
         .padding(.horizontal, 8)
         .panelRowBackground()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Self.label(event, now: .now))
+        .accessibilityLabel(Self.label(event))
     }
 
     static func detail(_ event: EventModel) -> String? {
@@ -175,9 +175,10 @@ struct MeetingPanel: View {
         return nil
     }
 
-    static func label(_ event: EventModel, now: Date) -> String {
-        let minutes = Int((event.start.timeIntervalSince(now) / 60).rounded(.up))
-        let when = minutes > 0 ? "in \(minutes) minutes" : "now"
+    /// A chin reads as one static VoiceOver element, so a label saying "in 9 minutes" is
+    /// still saying it nine minutes later. The start time does not go stale.
+    static func label(_ event: EventModel) -> String {
+        let when = event.start.formatted(date: .omitted, time: .shortened)
         return event.meetingURL == nil ? "\(event.title), \(when)" : "\(event.title), \(when), joinable"
     }
 }
@@ -244,8 +245,8 @@ extension MeetingPanel {
         assert(MeetingWatch.imminent(in: [EventModel.stub("now", start: noon.addingTimeInterval(-60))], now: noon)?
             .id == "now", "a meeting in progress still counts")
 
-        assert(label(soon, now: noon) == "standup, in 5 minutes")
-        assert(label(past, now: noon).hasSuffix("now"))
+        assert(label(soon).hasPrefix("standup, "))
+        assert(!label(soon).hasSuffix("joinable"), "an event with no link is not joinable")
 
         assert(EventModel.conferenceURL(in: "Join https://zoom.us/j/123 now")?.host() == "zoom.us")
         assert(EventModel.conferenceURL(in: "https://acme.webex.com/meet/x") != nil)
