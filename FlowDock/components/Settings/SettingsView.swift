@@ -729,6 +729,8 @@ struct ShortcutsSettings: View {
             Section {
                 KeyboardShortcuts.Recorder("Open the notch:", name: .toggleNotchOpen)
                 KeyboardShortcuts.Recorder("Keep the display awake:", name: .toggleKeepAwake)
+                KeyboardShortcuts.Recorder("Open the newest notification:", name: .openNewestNotification)
+                KeyboardShortcuts.Recorder("Dismiss the newest notification:", name: .dismissNewestNotification)
             }
             Section {
                 KeyboardShortcuts.Recorder("Close:", name: .dismissExpanded)

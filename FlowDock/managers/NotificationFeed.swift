@@ -35,12 +35,22 @@ struct FlowDockNotification: Identifiable, Equatable, Codable {
     var icon: NSImage? { RunningAppIcons.icon(named: app) }
 }
 
+/// One conversation, not one application. Grouping by application alone collapses three
+/// people into "Messages (3)", which reports that something happened and hides who it
+/// happened with — the one part of a message worth glancing at. An alert's title is the
+/// sender or the thread, so the pair of them is as close to a conversation as the banner
+/// will admit to.
 struct NotificationGroup: Identifiable {
     let app: String
+    let title: String
     let notifications: [FlowDockNotification]
 
-    var id: String { app }
+    var id: String { "\(app)|\(title)" }
     var newest: FlowDockNotification { notifications[0] }
+
+    static func key(_ notification: FlowDockNotification) -> String {
+        "\(notification.app)|\(notification.title)"
+    }
 }
 
 @MainActor
@@ -79,15 +89,25 @@ final class NotificationFeed: ObservableObject {
 
     var groups: [NotificationGroup] {
         var order: [String] = []
-        var byApp: [String: [FlowDockNotification]] = [:]
+        var byConversation: [String: [FlowDockNotification]] = [:]
 
         for notification in recent {
-            if byApp[notification.app] == nil { order.append(notification.app) }
-            byApp[notification.app, default: []].append(notification)
+            let key = NotificationGroup.key(notification)
+            if byConversation[key] == nil { order.append(key) }
+            byConversation[key, default: []].append(notification)
         }
 
-        return order.map { NotificationGroup(app: $0, notifications: byApp[$0] ?? []) }
+        return order.compactMap { key in
+            guard let notifications = byConversation[key], let newest = notifications.first
+            else { return nil }
+            return NotificationGroup(app: newest.app, title: newest.title, notifications: notifications)
+        }
     }
+
+    /// What a shortcut acts on. A ringing call is not in the list — the chin has it — so
+    /// "the newest notification" is the call whenever there is one, and the top of the list
+    /// otherwise.
+    var newest: FlowDockNotification? { call ?? latest ?? recent.first }
 
     func start() {
         guard Defaults[.showNotifications], !running else { return }

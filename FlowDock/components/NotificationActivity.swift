@@ -53,7 +53,8 @@ private struct NotificationActivityBinder: ViewModifier {
         content
             .onChange(of: feed.latest) { _, latest in
                 guard enabled, let latest else { return }
-                let count = feed.groups.first { $0.app == latest.app }?.notifications.count ?? 1
+                let key = NotificationGroup.key(latest)
+                let count = feed.groups.first { $0.id == key }?.notifications.count ?? 1
                 store.begin(.notification(latest, count: count))
             }
             .onChange(of: enabled, initial: true) { _, enabled in
@@ -125,11 +126,14 @@ private struct NotificationRow: View {
             NotificationGlyph(notification: notification)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(group.notifications.count > 1 ? "\(group.app) (\(group.notifications.count))" : group.app)
+                /// The row is headed by who it is from, not what it came through — the icon
+                /// beside it already says the application, and saying it twice costs the line
+                /// that would have said the name.
+                Text(group.notifications.count > 1 ? "\(group.title) (\(group.notifications.count))" : group.title)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .lineLimit(1)
-                Text(notification.summary)
+                Text(notification.body.isEmpty ? group.app : notification.body)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -196,6 +200,13 @@ extension NotificationPanel {
         let call = FlowDockNotification(
             token: "c", app: "FaceTime", title: "Ada", body: "iPhone", actions: ["Decline", "Accept"])
         assert(call.isInteractive, "an alert with its own buttons offers them instead of the hover pair")
+
+        let other = FlowDockNotification(token: "e", app: "Messages", title: "Grace", body: "Hi", actions: [])
+        assert(NotificationGroup.key(one) != NotificationGroup.key(other),
+               "two people in one app are two conversations, not one count of three")
+        assert(NotificationGroup.key(one)
+               == NotificationGroup.key(
+                   FlowDockNotification(token: "f", app: "Messages", title: "Ada", body: "Two", actions: [])))
     }
 }
 #endif

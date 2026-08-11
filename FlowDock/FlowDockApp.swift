@@ -318,6 +318,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { @MainActor in KeepAwake.shared.toggle() }
         }
 
+        /// A banner is gone in about five seconds, and reaching it means reaching the
+        /// pointer. These act on whatever FlowDock is still holding, so they stay useful
+        /// after the banner itself has left the screen.
+        KeyboardShortcuts.onKeyDown(for: .openNewestNotification) {
+            Task { @MainActor in
+                let feed = NotificationFeed.shared
+                if let newest = feed.newest { feed.activate(newest) }
+            }
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .dismissNewestNotification) {
+            Task { @MainActor in
+                let feed = NotificationFeed.shared
+                if let newest = feed.newest { feed.dismiss(newest) }
+            }
+        }
+
         KeyboardShortcuts.onKeyDown(for: .toggleNotchOpen) { [weak self] in
             Task { [weak self] in
                 guard let self = self else { return }
