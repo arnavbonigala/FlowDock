@@ -80,6 +80,7 @@ content row are separated by 1 pt, which is optical, not a spacing step.
 - **State changes animate the symbol**, not the view: `.contentTransition(.symbolEffect(.replace))` for play/pause, mute/unmute, and similar pairs. Never crossfade two `Image` views.
 - Filled variants inside the panel, outline variants in detached surfaces such as settings — matching macOS.
 - The menu bar icon is a monochrome template image and inherits menu bar tinting.
+- **One symbol, one action.** A control never swaps which command it runs based on how much is selected or what state the app is in — a glyph the user has learned must keep meaning the same thing. Two commands are two controls, shown when each applies.
 - Every symbol that is the only content of a control carries an `.accessibilityLabel`. A symbol is never the only carrier of state where color or shape alone would have to communicate it.
 
 ## Conformance

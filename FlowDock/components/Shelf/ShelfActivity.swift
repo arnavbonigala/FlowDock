@@ -181,11 +181,12 @@ private struct ShelfActionRow: View {
                         .accessibilityLabel("Compress")
                 }
 
-                if !images.isEmpty {
-                    HoverButton(icon: "wand.and.stars", scale: .small) {
-                        run(images.count == 1 ? "Remove Background" : "Create PDF")
-                    }
-                    .accessibilityLabel(images.count == 1 ? "Remove the background" : "Create a PDF")
+                if images.count == 1 {
+                    HoverButton(icon: "wand.and.stars", scale: .small) { run("Remove Background") }
+                        .accessibilityLabel("Remove the background")
+                } else if !images.isEmpty {
+                    HoverButton(icon: "doc.richtext", scale: .small) { run("Create PDF") }
+                        .accessibilityLabel("Create a PDF")
                 }
 
 
