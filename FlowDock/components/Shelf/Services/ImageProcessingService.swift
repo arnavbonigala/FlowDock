@@ -54,6 +54,52 @@ final class ImageProcessingService {
     private init() {}
     private let ciContext = CIContext(options: nil)
     
+    // MARK: - Recognize Text
+
+    /// Reads the text in an image and returns it in reading order.
+    func recognizeText(in url: URL) async throws -> String {
+        let text = try await Task.detached(priority: .userInitiated) { () throws -> String in
+            guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                  let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
+            else { throw ImageProcessingError.invalidImage }
+
+            let request = VNRecognizeTextRequest()
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+            try VNImageRequestHandler(cgImage: cgImage).perform([request])
+
+            let lines = (request.results ?? []).compactMap { observation -> (box: CGRect, text: String)? in
+                guard let candidate = observation.topCandidates(1).first else { return nil }
+                return (observation.boundingBox, candidate.string)
+            }
+            return Self.readingOrder(lines)
+        }.value
+
+        guard !text.isEmpty else { throw ImageProcessingError.noTextFound }
+        return text
+    }
+
+    /// Vision reports every piece of text it finds, in no particular order and with the
+    /// origin at the bottom left, so a larger y is further up the page. Pieces whose middles
+    /// sit within the same band are one line and are read left to right. A screenshot of a
+    /// stack trace or a table is worth nothing in any other order.
+    nonisolated static func readingOrder(_ lines: [(box: CGRect, text: String)]) -> String {
+        var rows: [[(box: CGRect, text: String)]] = []
+
+        for line in lines.sorted(by: { $0.box.midY > $1.box.midY }) {
+            if let last = rows.indices.last, let first = rows[last].first,
+               line.box.midY < first.box.maxY, line.box.midY > first.box.minY {
+                rows[last].append(line)
+            } else {
+                rows.append([line])
+            }
+        }
+
+        return rows
+            .map { $0.sorted { $0.box.minX < $1.box.minX }.map(\.text).joined(separator: " ") }
+            .joined(separator: "\n")
+    }
+
     // MARK: - Remove Background
     
     /// Removes the background from an image using Vision framework
@@ -300,6 +346,7 @@ enum ImageProcessingError: LocalizedError {
     case pdfCreationFailed
     case noImagesProvided
     case saveFailed
+    case noTextFound
     
     var errorDescription: String? {
         switch self {
@@ -315,6 +362,26 @@ enum ImageProcessingError: LocalizedError {
             return "No images were provided"
         case .saveFailed:
             return "Failed to save processed file"
+        case .noTextFound:
+            return "No text was found in the image"
         }
     }
 }
+
+#if DEBUG
+extension ImageProcessingService {
+    static func selfCheck() {
+        func box(_ x: CGFloat, _ y: CGFloat) -> CGRect {
+            CGRect(x: x, y: y, width: 0.2, height: 0.05)
+        }
+
+        let scrambled: [(box: CGRect, text: String)] = [
+            (box(0.5, 0.8), "world"),
+            (box(0.1, 0.5), "second"),
+            (box(0.1, 0.8), "hello"),
+        ]
+        assert(readingOrder(scrambled) == "hello world\nsecond", "text is read down the page and across each line")
+        assert(readingOrder([]).isEmpty)
+    }
+}
+#endif

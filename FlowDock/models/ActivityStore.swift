@@ -50,6 +50,7 @@ final class ActivityStore: ObservableObject {
         NetworkReachability.selfCheck()
         AgendaPanel.selfCheck()
         ShelfPanel.selfCheck()
+        ImageProcessingService.selfCheck()
         NotificationPanel.selfCheck()
         CallPanel.selfCheck()
         DevicePanel.selfCheck()

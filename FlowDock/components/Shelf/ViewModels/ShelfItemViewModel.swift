@@ -21,6 +21,7 @@ enum ShelfAction: String, CaseIterable {
     case copyPath = "Copy Path"
     case copy = "Copy"
     case remove = "Remove"
+    case recognizeText = "Copy Text"
     case removeBackground = "Remove Background"
     case convertImage = "Convert Image…"
     case createPDF = "Create PDF"
@@ -253,6 +254,12 @@ final class ShelfItemViewModel: ObservableObject {
             let imageActions = NSMenuItem(title: "Image Actions", action: nil, keyEquivalent: "")
             let imageSubmenu = NSMenu()
 
+            // Copy Text - only for single images
+            if imageURLs.count == 1 {
+                let recognizeItem = NSMenuItem(title: "Copy Text", action: nil, keyEquivalent: "")
+                imageSubmenu.addItem(recognizeItem)
+            }
+
             // Remove Background - only for single images
             if imageURLs.count == 1 {
                 let removeBg = NSMenuItem(title: "Remove Background", action: nil, keyEquivalent: "")
@@ -474,6 +481,9 @@ final class ShelfItemViewModel: ObservableObject {
                 let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
                 for it in selected { ShelfActionService.remove(it) }
                 
+            case .recognizeText:
+                handleRecognizeText()
+
             case .removeBackground:
                 handleRemoveBackground()
                 
@@ -724,6 +734,28 @@ final class ShelfItemViewModel: ObservableObject {
             }
         }
         
+        @MainActor
+        private func handleRecognizeText() {
+            let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
+            let imageURLs = selected.compactMap { $0.fileURL }.filter { ImageProcessingService.shared.isImageFile($0) }
+
+            guard let imageURL = imageURLs.first else { return }
+
+            Task {
+                do {
+                    let text = try await imageURL.accessSecurityScopedResource { url in
+                        try await ImageProcessingService.shared.recognizeText(in: url)
+                    }
+
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    pasteboard.setString(text, forType: .string)
+                } catch {
+                    showErrorAlert(title: "Copy Text Failed", message: error.localizedDescription)
+                }
+            }
+        }
+
         @MainActor
         private func handleRemoveBackground() {
             let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
