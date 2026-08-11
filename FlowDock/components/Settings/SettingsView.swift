@@ -13,7 +13,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @State private var selectedPane: Pane = .activities
-    @State private var accentColorUpdateTrigger = UUID()
+    @Default(.useCustomAccentColor) private var useCustomAccentColor
+    @Default(.customAccentColorData) private var customAccentColorData
 
     let updaterController: SPUStandardUpdaterController?
 
@@ -108,12 +109,8 @@ struct SettingsView: View {
         .navigationSplitViewStyle(.balanced)
         .toolbar(removing: .sidebarToggle)
         .formStyle(.grouped)
-        .frame(width: 700)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(.effectiveAccent)
-        .id(accentColorUpdateTrigger)
-        .onReceive(NotificationCenter.default.publisher(for: .accentColorChanged)) { _ in
-            accentColorUpdateTrigger = UUID()
-        }
     }
 }
 
@@ -683,7 +680,6 @@ struct AppearanceSettings: View {
                     Text("Custom").tag(true)
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: useCustomAccentColor) { announceAccentChange() }
 
                 if useCustomAccentColor {
                     ColorPicker("Custom color", selection: $customAccentColor, supportsOpacity: false)
@@ -710,7 +706,6 @@ struct AppearanceSettings: View {
     private func save(_ color: Color) {
         customAccentColorData = try? NSKeyedArchiver.archivedData(
             withRootObject: NSColor(color), requiringSecureCoding: false)
-        announceAccentChange()
     }
 
     private func loadCustomColor() {
@@ -718,10 +713,6 @@ struct AppearanceSettings: View {
               let nsColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data)
         else { return }
         customAccentColor = Color(nsColor: nsColor)
-    }
-
-    private func announceAccentChange() {
-        NotificationCenter.default.post(name: .accentColorChanged, object: nil)
     }
 }
 
@@ -792,5 +783,4 @@ struct AboutSettings: View {
 }
 
 extension Notification.Name {
-    static let accentColorChanged = Notification.Name("AccentColorChanged")
 }

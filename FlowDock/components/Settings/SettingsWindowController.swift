@@ -58,6 +58,7 @@ class SettingsWindowController: NSWindowController {
         window.isRestorable = true
         window.identifier = NSUserInterfaceItemIdentifier("FlowDockSettingsWindow")
         window.setFrameAutosaveName(frameName)
+        window.contentMinSize = NSSize(width: 700, height: 480)
         
         // Create the SwiftUI content
         let settingsView = SettingsView(updaterController: updaterController)
