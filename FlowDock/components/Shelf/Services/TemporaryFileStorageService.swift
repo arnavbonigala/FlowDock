@@ -32,7 +32,7 @@ class TemporaryFileStorageService {
         let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
 
         guard url.path.hasPrefix(tempDirectory.path) else {
-            print("Attempted to remove temporary file outside temp directory: \(url.path)")
+            print("Refused to remove a file outside the temporary directory")
             return
         }
 
@@ -40,14 +40,11 @@ class TemporaryFileStorageService {
 
         do {
             try FileManager.default.removeItem(at: url)
-            print("Deleted file: \(url.path)")
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: folderURL.path)
             if contents.isEmpty {
                 try FileManager.default.removeItem(at: folderURL)
-                print("Folder was empty, deleted folder: \(folderURL.path)")
             } else {
-                print("Folder not deleted — it still contains \(contents.count) item(s).")
             }
 
         } catch {
@@ -143,7 +140,7 @@ class TemporaryFileStorageService {
             try data.write(to: url)
             return url
         } catch {
-            print("❌ Failed to create temp file at \(url.path): \(error)")
+            print("Failed to create a temporary file: \(error.localizedDescription)")
             return nil
         }
     }
@@ -212,7 +209,7 @@ class TemporaryFileStorageService {
                     try FileManager.default.copyItem(at: src, to: dest)
                 }
             } catch {
-                print("⚠️ Failed to copy \(src.path) to working dir: \(error)")
+                print("Failed to copy an item to the working directory: \(error.localizedDescription)")
             }
         }
 
