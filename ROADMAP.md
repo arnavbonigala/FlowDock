@@ -81,7 +81,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Support selection, clearing, keyboard actions, and other essential shelf management
 - [x] Make AirDrop, system sharing, and moving content between apps dependable
 - [x] Provide a focused set of file actions, including preview, compression, image conversion, and background removal
-- [ ] Make available actions discoverable without crowding the primary experience
+- [x] Make available actions discoverable without crowding the primary experience
 - [ ] Validate which workflows deserve to remain built in and which belong in extensions
 
 ## 7. Open FlowDock to extensions

@@ -190,6 +190,29 @@ private struct ShelfActionRow: View {
                 }
 
 
+                Menu {
+                    if images.count == 1 {
+                        Button("Convert Image…") { run("Convert Image…") }
+                        Button("Create PDF") { run("Create PDF") }
+                    }
+                    if items.count == 1, !files.isEmpty {
+                        Button("Rename") { run("Rename") }
+                    }
+                    if !files.isEmpty {
+                        Button("Show in Finder") { run("Show in Finder") }
+                        Button("Copy Path") { run("Copy Path") }
+                    }
+                    Button("Open") { run("Open") }
+                    Divider()
+                    Button("Remove") { ShelfActionService.removeSelected() }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .frame(width: 22)
+                .accessibilityLabel("More actions")
+
                 Spacer(minLength: 0)
 
                 Text(items.count == 1 ? "1 selected" : "\(items.count) selected")
@@ -198,6 +221,11 @@ private struct ShelfActionRow: View {
             }
             .frame(height: 22)
             .background(ShareAnchor(view: $anchor))
+        } else if !shelf.items.isEmpty {
+            Text("Select an item for actions")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .frame(height: 22)
         }
     }
 
