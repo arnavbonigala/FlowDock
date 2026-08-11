@@ -34,6 +34,8 @@ struct MarqueeText: View {
     @State private var animate = false
     @State private var textSize: CGSize = .zero
     @State private var offset: CGFloat = 0
+
+    private let gap: CGFloat = 24
     
     init(_ text: Binding<String>, font: Font = .body, nsFont: NSFont.TextStyle = .body, textColor: Color = .primary, backgroundColor: Color = .clear, minDuration: Double = 3.0, frameWidth: CGFloat = 200) {
         _text = text
@@ -54,7 +56,7 @@ struct MarqueeText: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                HStack(spacing: 24) {
+                HStack(spacing: gap) {
                     Text(text)
                     Text(text)
                         .opacity(needsScrolling ? 1 : 0)
@@ -66,7 +68,7 @@ struct MarqueeText: View {
                 .offset(x: self.animate ? offset : 0)
                 .animation(
                     self.animate ?
-                        .linear(duration: Double(textSize.width / 30))
+                        .linear(duration: Double((textSize.width + gap) / 30))
                         .delay(minDuration)
                         .repeatForever(autoreverses: false) : .none,
                     value: self.animate
@@ -74,13 +76,13 @@ struct MarqueeText: View {
                 .background(backgroundColor)
                 .modifier(MeasureSizeModifier())
                 .onPreferenceChange(SizePreferenceKey.self) { size in
-                    self.textSize = CGSize(width: size.width / 2, height: NSFont.preferredFont(forTextStyle: nsFont).pointSize)
+                    self.textSize = CGSize(width: size.width / 2 - gap / 2, height: NSFont.preferredFont(forTextStyle: nsFont).pointSize)
                     self.animate = false
                     self.offset = 0
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.01){
                         if needsScrolling {
                             self.animate = true
-                            self.offset = -(textSize.width + 10)
+                            self.offset = -(textSize.width + gap)
                             
                         }
                     }
