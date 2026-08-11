@@ -83,8 +83,9 @@ private struct ProgressActivityBinder: ViewModifier {
                 }
             }
             .onChange(of: center.finished) { _, finished in
-                guard enabled, let finished else { return }
-                store.begin(.progressDone(finished))
+                guard let finished else { return }
+                if enabled { store.begin(.progressDone(finished)) }
+                center.clearFinished()
             }
             .onChange(of: enabled, initial: true) { _, enabled in
                 if enabled {
@@ -192,6 +193,14 @@ extension ProgressPanel {
         assert(Activity.progressDone(indeterminate).expanded == nil)
         assert(DownloadWatcher.partialExtensions.contains("crdownload"))
         assert(!DownloadWatcher.partialExtensions.contains("dmg"))
+
+        let center = ProgressCenter.shared
+        center.report(indeterminate)
+        center.finish("a", at: nil)
+        assert(center.finished?.id == "a")
+        center.clearFinished()
+        assert(center.finished == nil, "a completion must not linger, or an identical one cannot follow it")
+        center.drop("a")
     }
 }
 #endif
