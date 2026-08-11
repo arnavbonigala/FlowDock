@@ -74,7 +74,7 @@ private struct ProgressActivityBinder: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: center.reports) { _, reports in
+            .onChange(of: center.reports, initial: true) { _, reports in
                 guard enabled else { return }
                 if let primary = reports.first {
                     store.begin(.progress(primary, count: reports.count))
