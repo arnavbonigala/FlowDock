@@ -60,7 +60,7 @@ private struct ExtensionActivityBinder: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: host.live) { previous, current in
+            .onChange(of: host.live, initial: true) { previous, current in
                 let ids = Set(current.map(\.id))
                 previous.filter { !ids.contains($0.id) }.forEach { store.end($0.id) }
                 current.forEach { store.begin(.hosted($0)) }
