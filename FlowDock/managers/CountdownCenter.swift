@@ -65,7 +65,7 @@ final class TimerCenter: ObservableObject {
 final class MeetingWatch: ObservableObject {
     static let shared = MeetingWatch()
 
-    static let lead: TimeInterval = 10 * 60
+    nonisolated static let lead: TimeInterval = 10 * 60
 
     @Published private(set) var imminent: EventModel?
 
