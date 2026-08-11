@@ -139,12 +139,8 @@ struct MusicSettings: View {
             } footer: {
                 if MusicManager.shared.isNowPlayingDeprecated {
                     Text("YouTube Music requires [Pear Desktop](https://github.com/pear-devs/pear-desktop) to be installed.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 } else {
                     Text("Now Playing works with every media app. The others talk to one app directly.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -173,8 +169,6 @@ struct MusicSettings: View {
                 Text("Controls")
             } footer: {
                 Text("Choose which controls appear in the expanded player. Volume expands when active.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Section {
@@ -193,7 +187,6 @@ struct MusicSettings: View {
                 Text("Appearance")
             }
         }
-        .accentColor(.effectiveAccent)
     }
 
     private var availableMediaControllers: [MediaControllerType] {
@@ -259,11 +252,8 @@ struct ActivitySettings: View {
 
                     Text("Extensions are apps you install yourself, and each one stays off until you turn it on. [Reviewed extensions](https://github.com/arnavbonigala/FlowDock/blob/main/DIRECTORY.md)")
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
     }
 }
 
@@ -276,11 +266,8 @@ struct DownloadSettings: View {
                 }
             } footer: {
                 Text("Files arriving in the Downloads folder show their progress at the notch until they finish, then show once more as complete. Safari reports how much is left; other browsers only report how much has arrived.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
     }
 }
 
@@ -293,11 +280,8 @@ struct DeviceSettings: View {
                 }
             } footer: {
                 Text("Bluetooth headphones, keyboards, mice, and other paired devices announce themselves at the notch when they connect or disconnect, and their battery appears in the expanded panel when the device reports it.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
     }
 }
 
@@ -321,11 +305,8 @@ struct NotificationSettings: View {
                 }
             } footer: {
                 Text("Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility and shows nothing without that access.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
         .task {
             accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
         }
@@ -367,8 +348,6 @@ struct SystemFeedbackSettings: View {
                 Text(accessibilityAuthorized
                     ? "Volume, display brightness, and keyboard brightness appear at the notch instead of the middle of the screen. Accessibility access is required to see the key presses."
                     : "Volume, display brightness, and keyboard brightness appear at the notch instead of the middle of the screen. Accessibility access is required to see the key presses. macOS drops that access when FlowDock is moved or updated, and it then ignores the request above because a stale entry already exists. Open Accessibility settings, remove FlowDock, and add it again.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Section {
@@ -380,7 +359,6 @@ struct SystemFeedbackSettings: View {
             }
             .disabled(!hudReplacement)
         }
-        .accentColor(.effectiveAccent)
         .task {
             accessibilityAuthorized = await XPCHelperClient.shared.isAccessibilityAuthorized()
         }
@@ -407,7 +385,6 @@ struct BatterySettings: View {
                 }
             }
         }
-        .accentColor(.effectiveAccent)
     }
 }
 
@@ -456,7 +433,6 @@ struct CalendarSettings: View {
                 )
             }
         }
-        .accentColor(.effectiveAccent)
         .onAppear {
             Task { await calendarManager.requestAccess() }
         }
@@ -543,11 +519,8 @@ struct ShelfSettings: View {
                 }
             } footer: {
                 Text("The share button in the shelf hands files to this service.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
         .task {
             await QuickShareService.shared.discoverAvailableProviders()
         }
@@ -638,8 +611,6 @@ struct GeneralSettings: View {
                 Text("Gestures")
             } footer: {
                 Text("Two-finger swipe down on the notch to open, swipe up to close.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Section {
@@ -653,7 +624,6 @@ struct GeneralSettings: View {
                 Text("Privacy")
             }
         }
-        .accentColor(.effectiveAccent)
         .onChange(of: openNotchOnHover) {
             if !openNotchOnHover { enableGestures = true }
         }
@@ -687,8 +657,6 @@ struct AppearanceSettings: View {
                 }
             } footer: {
                 Text("The accent marks progress, selection, and activity. It is never used for text.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Section {
@@ -699,7 +667,6 @@ struct AppearanceSettings: View {
                 Text("Panel")
             }
         }
-        .accentColor(.effectiveAccent)
         .onAppear(perform: loadCustomColor)
     }
 
@@ -732,11 +699,8 @@ struct ShortcutsSettings: View {
                 Text("While the panel is open")
             } footer: {
                 Text("The panel never takes keyboard focus, so these work as shortcuts and are live only while it is open.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
     }
 }
 
@@ -769,11 +733,8 @@ struct AboutSettings: View {
                 Text("Open source")
             } footer: {
                 Text("FlowDock is a modified version of BoringNotch, distributed under the GNU GPL v3. Copyright © FlowDock and BoringNotch contributors.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
-        .accentColor(.effectiveAccent)
         .toolbar {
             if let updater {
                 CheckForUpdatesView(updater: updater)
