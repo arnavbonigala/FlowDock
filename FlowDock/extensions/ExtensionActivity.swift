@@ -33,7 +33,7 @@ extension Activity {
         if declaration.showsPanel {
             activity = activity.withExpanded {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.panel)
-                    .frame(height: 30)
+                    .frame(height: PanelRow.content)
                     .frame(maxWidth: .infinity)
                     .panelRowBackground()
                     .accessibilityElement(children: .contain)

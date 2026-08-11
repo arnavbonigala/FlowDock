@@ -146,7 +146,7 @@ private struct NotificationRow: View {
                 .iconLabel("Dismiss")
             }
         }
-        .frame(height: 30)
+        .frame(height: PanelRow.content)
         .padding(.horizontal, 8)
         .panelRowBackground()
         .onHover { hovering = $0 }

@@ -5,6 +5,13 @@
 
 import SwiftUI
 
+/// DESIGN.md §4 allows two row heights in the panel: one for a row that carries content,
+/// one for a strip that only carries controls. A third is a new layout, not a new number.
+enum PanelRow {
+    static let content: CGFloat = 30
+    static let controls: CGFloat = 22
+}
+
 extension View {
     func panelRowBackground(cornerRadius: CGFloat = 8) -> some View {
         modifier(PanelRowBackground(cornerRadius: cornerRadius))
@@ -29,7 +36,7 @@ private struct PanelRowBackground: ViewModifier {
 
         content.background {
             shape
-                .fill(contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary))
+                .fill(.raised(contrast))
                 .overlay(shape.strokeBorder(.primary, lineWidth: contrast == .increased ? 1 : 0))
         }
     }

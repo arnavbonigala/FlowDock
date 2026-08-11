@@ -168,7 +168,7 @@ struct ProgressPanel: View {
                         }
                         .iconLabel("Show in Finder")
                     }
-                    .frame(height: 30)
+                    .frame(height: PanelRow.content)
                     .padding(.horizontal, 8)
                     .panelRowBackground()
                     .accessibilityElement(children: .contain)

@@ -162,7 +162,7 @@ struct MeetingPanel: View {
                     .tint(.effectiveAccent)
             }
         }
-        .frame(height: 30)
+        .frame(height: PanelRow.content)
         .padding(.horizontal, 8)
         .panelRowBackground()
         .accessibilityElement(children: .contain)
@@ -221,7 +221,7 @@ struct TimerPanel: View {
                 Spacer(minLength: 0)
             }
         }
-        .frame(height: 22)
+        .frame(height: PanelRow.controls)
         .padding(.horizontal, 8)
         .panelRowBackground()
         .animation(.value(reduceMotion: reduceMotion), value: timer.isRunning)

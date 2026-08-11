@@ -85,7 +85,7 @@ struct ShelfPanel: View {
     @ObservedObject private var shelf = ShelfStateViewModel.shared
     @ObservedObject private var selection = ShelfSelectionModel.shared
 
-    static let rowHeight: CGFloat = 30
+    static let rowHeight = PanelRow.content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -218,13 +218,13 @@ private struct ShelfActionRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            .frame(height: 22)
+            .frame(height: PanelRow.controls)
             .background(ShareAnchor(view: $anchor))
         } else if !shelf.items.isEmpty {
             Text("Select an item for actions")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
-                .frame(height: 22)
+                .frame(height: PanelRow.controls)
         }
     }
 
