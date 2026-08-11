@@ -117,8 +117,14 @@ struct ProgressRing: View {
                 Circle()
                     .trim(from: 0, to: 0.25)
                     .stroke(.white, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .rotationEffect(.degrees(spin ? 360 : 0))
-                    .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: spin)
+                    .rotationEffect(.degrees(reduceMotion ? 0 : (spin ? 360 : 0)))
+                    .opacity(reduceMotion && spin ? 0.35 : 1)
+                    .animation(
+                        reduceMotion
+                            ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true)
+                            : .linear(duration: 1).repeatForever(autoreverses: false),
+                        value: spin
+                    )
                     .onAppear { spin = true }
             }
         }
