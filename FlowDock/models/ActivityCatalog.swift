@@ -26,6 +26,7 @@ struct ActivityCatalog {
         Entry(id: Activity.meetingID, name: "Meetings", symbol: "video", key: .showMeetingCountdown),
         Entry(id: Activity.timerID, name: "Timers", symbol: "timer", key: nil),
         Entry(id: Activity.shelfID, name: "Shelf", symbol: "tray.full", key: .shelfEnabled),
+        Entry(id: Activity.keepAwakeID, name: "Keep Awake", symbol: "cup.and.saucer", key: nil),
     ]
 
     static func entry(_ id: String) -> Entry? {

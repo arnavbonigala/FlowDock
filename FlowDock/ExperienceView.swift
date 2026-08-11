@@ -187,6 +187,7 @@ struct ExperienceView: View {
         .deviceActivity(in: store)
         .progressActivity(in: store)
         .countdownActivity(in: store)
+        .keepAwakeActivity(in: store)
         .extensionActivities(in: store)
     }
 
