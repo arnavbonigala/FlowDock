@@ -107,10 +107,12 @@ private struct MusicChinIndicator: View {
                     .foregroundStyle(.secondary)
             } else {
                 Rectangle()
-                    .fill(coloredSpectrogram ? Color(nsColor: music.avgColor).gradient : Color.gray.gradient)
+                    .fill(coloredSpectrogram
+                        ? AnyShapeStyle(Color(nsColor: music.avgColor).gradient)
+                        : AnyShapeStyle(.secondary))
                     .mask {
                         AudioSpectrumView(isPlaying: $music.isPlaying)
-                            .frame(width: 16, height: 12)
+                            .frame(width: 16, height: 14)
                     }
             }
         }

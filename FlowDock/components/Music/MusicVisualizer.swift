@@ -74,9 +74,7 @@ class AudioSpectrum: NSView {
             barLayer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             barLayer.position = CGPoint(x: xPosition + barWidth / 2, y: totalHeight / 2)
             barLayer.fillColor = NSColor.white.cgColor
-            barLayer.backgroundColor = NSColor.white.cgColor
             barLayer.allowsGroupOpacity = false
-            barLayer.masksToBounds = true
             let path = NSBezierPath(roundedRect: CGRect(x: 0, y: 0, width: barWidth, height: totalHeight),
                                     xRadius: barWidth / 2,
                                     yRadius: barWidth / 2)
