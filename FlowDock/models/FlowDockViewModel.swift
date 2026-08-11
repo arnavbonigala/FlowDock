@@ -19,6 +19,10 @@ class FlowDockViewModel: NSObject, ObservableObject {
     
     @Published var hideOnClosed: Bool = true
 
+    /// Mirrored off the display's store so window placement can ask what is on screen
+    /// without owning it. A HUD that teleports mid-glance is worse than a late move.
+    @Published var chinState: ActivityState = .idle
+
     @Published var edgeAutoOpenActive: Bool = false
 
     @Published var screenUUID: String?

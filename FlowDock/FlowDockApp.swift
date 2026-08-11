@@ -371,17 +371,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AudioPlayer.playInterfaceSound(fileName: "FlowDock", fileExtension: "m4a")
     }
 
-    func deviceHasNotch() -> Bool {
-        if #available(macOS 12.0, *) {
-            for screen in NSScreen.screens {
-                if screen.safeAreaInsets.top > 0 {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     @objc func screenConfigurationDidChange() {
         DispatchQueue.main.async { [weak self] in
             self?.adjustWindowPosition()
@@ -393,6 +382,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func followActiveDisplay() {
         allWindows.forEach { $0.orderFrontRegardless() }
         guard !Defaults[.showOnAllDisplays], Defaults[.automaticallySwitchDisplay],
+              vm.notchState == .closed, vm.chinState != .contextual,
               let activeScreenUUID = NSScreen.main?.displayUUID,
               activeScreenUUID != vm.screenUUID
         else { return }

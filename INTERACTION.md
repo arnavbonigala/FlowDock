@@ -184,7 +184,7 @@ Every display runs its own ladder from its own anchor (invariant 9). Notch and n
 ### Which display
 
 - **One display is active**: the one the user chose, or the built-in display if they have not chosen. When following the pointer is enabled, the active display is the one containing the pointer.
-- **The active display only changes while idle.** FlowDock never moves mid-activity or while the panel is open. A surface that teleports between monitors is worse than one that stays in the wrong place.
+- **The active display never changes out from under something being watched or used.** FlowDock does not move while the panel is open, and does not move while a contextual activity is on screen — a HUD that teleports mid-glance is worse than one that stays a second longer in the wrong place. A persistent activity does not pin it: music plays for hours, and a rule that waited for silence would quietly stop following the pointer for the whole afternoon. The move happens on the next pointer change instead.
 - **Expanded state exists on one display at a time**, always — including when FlowDock is shown on all displays. Opening on one collapses any other.
 - When FlowDock is shown on all displays: **contextual activities appear only on the active display** — a volume HUD on four monitors is noise — while persistent activities mirror everywhere, since they are ambient by nature.
 - A display showing no activity is idle, which means it shows nothing at all.
@@ -215,11 +215,8 @@ Every display's interactive region matches what that display is currently drawin
 
 ### Current implementation
 
-- A screen configuration change closes and recreates every window rather than repositioning them.
-- Following the pointer is implemented by setting `alphaValue` to 0 on the inactive display, so a window remains present on a display that appears to have nothing.
-- Drag detection registers a region the size of the *expanded* panel (640 × 190) at the top of every screen, regardless of the state that screen is in.
-- `deviceHasNotch()` returns true when any display has a notch, answering a per-display question for the whole machine.
-- Windows are created per display only in all-displays mode; single-display mode keeps one window and moves it, so the two modes take different code paths to the same result.
+- Single-display mode keeps one window and moves it; all-displays mode keeps one per screen. The two modes reach the same result down different code paths, so a placement fix has to be made twice.
+- A display's hit region is its drawn height, which is zero while a full-screen app owns a display with no cutout. The one exception is deliberate: while something is actually being dragged, the whole top strip of the screen accepts the drop, because aiming at the cutout mid-drag is slow.
 
 ## Anchoring
 

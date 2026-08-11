@@ -139,6 +139,7 @@ struct ExperienceView: View {
                         Self.expandedShortcuts.forEach { KeyboardShortcuts.disable($0) }
                     }
                 }
+                .onChange(of: store.chinState, initial: true) { _, chin in vm.chinState = chin }
                 .onHover(perform: hover)
                 .onTapGesture { expand() }
                 .conditionalModifier(enableGestures) { view in
