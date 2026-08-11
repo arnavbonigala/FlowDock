@@ -109,7 +109,7 @@ struct NotificationPanel: View {
                 .transition(.materialize(reduceMotion: reduceMotion))
             }
         }
-        .animation(.experience(reduceMotion: reduceMotion), value: feed.groups.isEmpty)
+        .animation(.content, value: feed.groups.isEmpty)
     }
 }
 

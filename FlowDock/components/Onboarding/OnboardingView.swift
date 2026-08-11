@@ -19,8 +19,6 @@ struct OnboardingView: View {
     let onFinish: () -> Void
     let onOpenSettings: () -> Void
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     var body: some View {
         Group {
             switch step {
@@ -32,7 +30,7 @@ struct OnboardingView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.value(reduceMotion: reduceMotion), value: step)
+        .animation(.content, value: step)
         .frame(width: 460)
         .frame(minHeight: 520)
         .background(.regularMaterial)

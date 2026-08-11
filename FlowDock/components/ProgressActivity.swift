@@ -112,7 +112,7 @@ struct ProgressRing: View {
                     .trim(from: 0, to: max(0.02, fraction))
                     .stroke(Color.effectiveAccent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                    .animation(.value(reduceMotion: reduceMotion), value: fraction)
+                    .animation(.progress, value: fraction)
             } else {
                 Circle()
                     .trim(from: 0, to: 0.25)

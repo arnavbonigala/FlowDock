@@ -186,7 +186,7 @@ struct SystemFeedbackView: View {
                         Rectangle().frame(width: geo.size.width * value)
                     }
             }
-            .animation(.value(reduceMotion: reduceMotion), value: value)
+            .animation(.progress, value: value)
         }
         .frame(height: 10)
     }

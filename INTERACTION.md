@@ -222,6 +222,8 @@ Every display's interactive region matches what that display is currently drawin
 
 Everything FlowDock draws hangs below the cutout, so everything it animates must read as coming from it. Content that fades in place, or scales from its own center, reads as a floating window and breaks the illusion the whole product depends on.
 
+- **Geometry has mass; content does not.** Anything that changes the shell's shape — expanding, collapsing, a sneak peek, the chin swapping owners — moves like an object: it accelerates, decelerates, overshoots by an amount that is felt rather than seen, and settles. Anything drawn *inside* a shape that is not changing eases instead. A fade that springs reads as a wobble; a fraction that springs reports a number the work never reached. `Animation.experience` and `Animation.value` are the springs, `Animation.content` and `Animation.progress` are the curves, and picking the wrong one is the single most common way this interface stops feeling built rather than assembled.
+
 - **One transition, defined once.** A surface that arrives or leaves uses a single shared transition — a scale toward the top edge combined with opacity, declared in `FlowDock/animations/ExperienceMotion.swift`. The scale is what carries the meaning; the fade only keeps the first frame from popping. A center-anchored `.scale`, a `.move(edge:)`, or a bare `.opacity` on a surface that is genuinely arriving is a bug.
 - **Content replacing itself in place cross-fades**, and that is the one correct use of a bare `.opacity`: album artwork on a track change, a row leaving a list inside the already-open panel. Nothing arrived from the notch, so nothing should look like it did.
 - **Call sites choose timing, never the anchor.** Attaching `.animation(…)` where a surface needs its own pacing is fine. Redefining the scale or the anchor is not.
@@ -286,8 +288,11 @@ Current values, in one place so they stay consistent:
 | Hover intent | 0.3 s, configurable | `minimumHoverDuration` |
 | Close grace after pointer exit | 100 ms | `ExperienceView.hover(_:)` |
 | Drop settle before collapse | 500 ms | `ExperienceView.settle()` |
-| Expand animation | spring, response 0.42, damping 0.8 | `Animation.experience(reduceMotion:collapsing:)` |
-| Collapse animation | spring, response 0.45, damping 1.0 | `Animation.experience(reduceMotion:collapsing:)` |
+| Expand animation | spring, response 0.42, damping 0.86 | `Animation.experience(reduceMotion:collapsing:)` |
+| Collapse animation | spring, response 0.4, damping 1.0 | `Animation.experience(reduceMotion:collapsing:)` |
+| Small geometry change | spring, response 0.26, damping 0.9 | `Animation.value(reduceMotion:)` |
+| Content appearing or leaving | ease out, 0.18 s | `Animation.content` |
+| A fraction changing | ease out, 0.25 s | `Animation.progress` |
 
 Every duration a user waits on is one of these. New timeouts are not invented per activity; an activity that needs different pacing changes state, not the clock.
 

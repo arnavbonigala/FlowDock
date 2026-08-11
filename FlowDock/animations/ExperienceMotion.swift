@@ -71,22 +71,34 @@ extension AnyTransition {
     }
 }
 
+/// Geometry has mass; content does not. Anything that changes the shell's shape accelerates,
+/// decelerates, and settles like an object — a spring whose overshoot is felt rather than
+/// seen. Anything drawn inside that shape has no mass to carry, so it eases: a fade that
+/// springs reads as a wobble, and a fraction that springs reports a number the work never had.
 extension Animation {
+    /// A small geometry change: the chin swapping owners, a control taking a press.
     static func value(reduceMotion: Bool) -> Animation {
-        reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.28, dampingFraction: 1.0)
+        reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.26, dampingFraction: 0.9)
     }
 
     static var value: Animation {
         value(reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
     }
 
-    /// Reduce Motion keeps the size change — size is the information — and drops the overshoot.
+    /// The shell's own shape. Reduce Motion keeps the size change — size is the information —
+    /// and drops the overshoot. Collapsing has nothing to settle into, so it never overshoots.
     static func experience(reduceMotion: Bool, collapsing: Bool = false) -> Animation {
         if reduceMotion { return .easeOut(duration: 0.3) }
         return collapsing
-            ? .spring(response: 0.45, dampingFraction: 1.0)
-            : .spring(response: 0.42, dampingFraction: 0.8)
+            ? .spring(response: 0.4, dampingFraction: 1.0)
+            : .spring(response: 0.42, dampingFraction: 0.86)
     }
+
+    /// Something appearing, leaving, or being replaced inside a shape that is not changing.
+    static let content: Animation = .easeOut(duration: 0.18)
+
+    /// A fraction only ever reports what has happened. A spring would carry it past that.
+    static let progress: Animation = .easeOut(duration: 0.25)
 }
 
 private struct BounceOnAppear: ViewModifier {
