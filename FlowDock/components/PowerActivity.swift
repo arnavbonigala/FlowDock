@@ -83,7 +83,6 @@ extension PowerReading {
 
 extension Activity {
     static let powerID = "power"
-    static let powerChinSide: CGFloat = 34
 
     static func power(_ reading: PowerReading) -> Activity {
         Activity(
@@ -91,17 +90,17 @@ extension Activity {
             activityClass: .contextual,
             band: .power,
             label: reading.label,
-            chinSideWidth: powerChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 BatteryGauge(reading: reading)
-                    .frame(width: powerChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text("\(Int(reading.level))%")
                     .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.primary)
-                    .frame(width: powerChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }

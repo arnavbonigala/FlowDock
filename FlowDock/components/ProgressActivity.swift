@@ -9,7 +9,6 @@ import SwiftUI
 extension Activity {
     static let progressID = "progress"
     static let progressDoneID = "progressDone"
-    static let progressChinSide: CGFloat = 34
 
     static func progress(_ report: ProgressReport, count: Int) -> Activity {
         Activity(
@@ -17,10 +16,10 @@ extension Activity {
             activityClass: .persistent,
             band: .progress,
             label: count > 1 ? "\(report.label), \(count) in progress" : report.label,
-            chinSideWidth: progressChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 ProgressRing(fraction: report.fraction)
-                    .frame(width: progressChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text(count > 1 ? "\(count)" : report.detail)
@@ -28,7 +27,7 @@ extension Activity {
                     .monospacedDigit()
                     .foregroundStyle(.primary)
                     .lineLimit(1)
-                    .frame(width: progressChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
         .withExpanded { ProgressPanel() }
@@ -40,13 +39,13 @@ extension Activity {
             activityClass: .contextual,
             band: .progress,
             label: "\(report.title), finished",
-            chinSideWidth: progressChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.green)
                     .bounceOnAppear()
-                    .frame(width: progressChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text(report.detail)
@@ -54,7 +53,7 @@ extension Activity {
                     .monospacedDigit()
                     .foregroundStyle(.primary)
                     .lineLimit(1)
-                    .frame(width: progressChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }

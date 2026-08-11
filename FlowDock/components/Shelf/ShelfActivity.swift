@@ -11,7 +11,6 @@ import UniformTypeIdentifiers
 
 extension Activity {
     static let shelfID = "shelf"
-    static let shelfChinSide: CGFloat = 34
 
     static func shelf(count: Int) -> Activity {
         Activity(
@@ -19,19 +18,19 @@ extension Activity {
             activityClass: .persistent,
             band: .drag,
             label: shelfLabel(count: count),
-            chinSideWidth: shelfChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 Image(systemName: "tray.and.arrow.down.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
-                    .frame(width: shelfChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text(count > 0 ? "\(count)" : "")
                     .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.primary)
-                    .frame(width: shelfChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }

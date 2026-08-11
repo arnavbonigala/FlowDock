@@ -9,7 +9,6 @@ import SwiftUI
 
 extension Activity {
     static let deviceID = "device"
-    static let deviceChinSide: CGFloat = 34
 
     static func device(_ device: ConnectedDevice) -> Activity {
         Activity(
@@ -17,12 +16,12 @@ extension Activity {
             activityClass: .contextual,
             band: .power,
             label: device.label,
-            chinSideWidth: deviceChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 Image(systemName: device.symbol)
                     .font(.chinGlyph)
                     .foregroundStyle(device.isConnected ? .white : .secondary)
-                    .frame(width: deviceChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Group {
@@ -38,7 +37,7 @@ extension Activity {
                             .bounceOnAppear()
                     }
                 }
-                .frame(width: deviceChinSide, alignment: .trailing)
+                .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }

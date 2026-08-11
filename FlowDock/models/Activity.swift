@@ -47,6 +47,11 @@ struct Activity: Identifiable {
     let trailing: () -> AnyView
     /// How much room each side needs. `nil` takes the shell's square default.
     let chinSideWidth: CGFloat?
+
+    /// The two chin side widths DESIGN.md allows. A third is an activity asking for the
+    /// expanded state instead.
+    static let chinSide: CGFloat = 34
+    static let chinClockSide: CGFloat = 44
     /// Contextual activities have no expanded form.
     private(set) var expanded: (() -> AnyView)?
     /// Used to break ties within a band. Preserved when a live activity updates, so the

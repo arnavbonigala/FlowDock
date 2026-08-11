@@ -10,7 +10,6 @@ extension Activity {
     static let meetingID = "meeting"
     static let timerID = "timer"
     static let timerDoneID = "timerDone"
-    static let countdownChinSide: CGFloat = 44
 
     static func meeting(_ event: EventModel) -> Activity {
         Activity(
@@ -18,16 +17,16 @@ extension Activity {
             activityClass: .persistent,
             band: .ambient,
             label: MeetingPanel.label(event, now: .now),
-            chinSideWidth: countdownChinSide,
+            chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: event.meetingURL == nil ? "calendar" : "video.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
-                    .frame(width: countdownChinSide, alignment: .leading)
+                    .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
                 CountdownText(to: event.start)
-                    .frame(width: countdownChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
         .withExpanded { MeetingPanel(event: event) }
@@ -39,16 +38,16 @@ extension Activity {
             activityClass: .persistent,
             band: .progress,
             label: "Timer running",
-            chinSideWidth: countdownChinSide,
+            chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: "timer")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
-                    .frame(width: countdownChinSide, alignment: .leading)
+                    .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
                 CountdownText(to: endsAt)
-                    .frame(width: countdownChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
     }
@@ -59,19 +58,19 @@ extension Activity {
             activityClass: .contextual,
             band: .progress,
             label: "Timer finished",
-            chinSideWidth: countdownChinSide,
+            chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: "timer")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
                     .bounceOnAppear()
-                    .frame(width: countdownChinSide, alignment: .leading)
+                    .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
                 Text("Done")
                     .font(.chinValue)
                     .foregroundStyle(.primary)
-                    .frame(width: countdownChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
     }

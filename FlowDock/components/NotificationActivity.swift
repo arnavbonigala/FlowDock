@@ -8,7 +8,6 @@ import SwiftUI
 
 extension Activity {
     static let notificationID = "notification"
-    static let notificationChinSide: CGFloat = 34
 
     static func notification(_ notification: FlowDockNotification, count: Int) -> Activity {
         Activity(
@@ -16,10 +15,10 @@ extension Activity {
             activityClass: .contextual,
             band: .power,
             label: notificationLabel(notification, count: count),
-            chinSideWidth: notificationChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 NotificationGlyph(notification: notification)
-                    .frame(width: notificationChinSide, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text(count > 1 ? "\(count)" : "")
@@ -27,7 +26,7 @@ extension Activity {
                     .fontWeight(.semibold)
                     .monospacedDigit()
                     .foregroundStyle(.primary)
-                    .frame(width: notificationChinSide, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }

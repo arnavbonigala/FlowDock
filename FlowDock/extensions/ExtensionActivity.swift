@@ -9,7 +9,6 @@ import ExtensionKit
 import SwiftUI
 
 extension Activity {
-    static let extensionChinSide: CGFloat = 34
 
     static func hosted(_ hosted: HostedExtension) -> Activity {
         let identity = hosted.identity
@@ -20,14 +19,14 @@ extension Activity {
             activityClass: declaration.activityClass,
             band: declaration.band,
             label: declaration.label,
-            chinSideWidth: extensionChinSide,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.leading)
-                    .frame(width: extensionChinSide, height: 22)
+                    .frame(width: Activity.chinSide, height: 22)
             },
             trailing: {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.trailing)
-                    .frame(width: extensionChinSide, height: 22)
+                    .frame(width: Activity.chinSide, height: 22)
             }
         )
 

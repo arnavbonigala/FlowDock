@@ -50,18 +50,18 @@ extension Activity {
             activityClass: .persistent,
             band: .ambient,
             label: "Display kept awake",
-            chinSideWidth: 34,
+            chinSideWidth: Activity.chinSide,
             leading: {
                 Image(systemName: "cup.and.saucer.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
-                    .frame(width: 34, alignment: .leading)
+                    .frame(width: Activity.chinSide, alignment: .leading)
             },
             trailing: {
                 Text("Awake")
                     .font(.chinValue)
                     .foregroundStyle(.primary)
-                    .frame(width: 34, alignment: .trailing)
+                    .frame(width: Activity.chinSide, alignment: .trailing)
             }
         )
     }
