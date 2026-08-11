@@ -697,6 +697,7 @@ struct ShortcutsSettings: View {
         Form {
             Section {
                 KeyboardShortcuts.Recorder("Open the notch:", name: .toggleNotchOpen)
+                KeyboardShortcuts.Recorder("Keep the display awake:", name: .toggleKeepAwake)
             }
             Section {
                 KeyboardShortcuts.Recorder("Close:", name: .dismissExpanded)

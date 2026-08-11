@@ -313,6 +313,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         observeLifecycle()
 
+        KeyboardShortcuts.onKeyDown(for: .toggleKeepAwake) {
+            Task { @MainActor in KeepAwake.shared.toggle() }
+        }
+
         KeyboardShortcuts.onKeyDown(for: .toggleNotchOpen) { [weak self] in
             Task { [weak self] in
                 guard let self = self else { return }
