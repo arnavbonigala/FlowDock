@@ -97,14 +97,17 @@ An extension that erases the product's value is not extensible, it is a regressi
 limits are the host's existing budgets from [QUALITY.md](QUALITY.md), applied per
 extension:
 
-- **Idle cost.** An extension that is not currently showing an activity gets no process.
-  FlowDock launches it to ask, and lets the system terminate it when it has nothing to
+- **Idle cost.** An extension that is not currently showing an activity gets no process
+  between questions. FlowDock launches it to ask, and releases it when it has nothing to
   say. An extension cannot hold a process open to poll.
+- **Update rate.** FlowDock asks each enabled extension for its declaration when it is
+  discovered and every fifteen seconds after that, and holds the process only while the
+  answer is `live`. An activity therefore begins within fifteen seconds of becoming true,
+  and an extension that is off is never asked at all. Nothing an extension does makes this
+  faster, because the question is the host's to ask.
 - **Answer deadline.** An extension has two seconds to return its declaration when asked.
   One that does not answer is dropped and its process released, because discovery is
   shared: an extension that never replies must not cost every other extension its place.
-- **Update rate.** Activity updates are coalesced by the host at the display's refresh
-  rate. An extension that publishes faster is not faster, only busier.
 - **Render deadline.** A remote scene has two seconds to connect and draw. One that does
   not is released along with the rest of that extension: the chin shows the next activity
   down and the extension's activity ends. A scene that fails after it has drawn ends the

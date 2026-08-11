@@ -27,7 +27,10 @@ final class ExtensionHost: NSObject, ObservableObject {
     @Published private(set) var available: [HostedExtension] = []
     @Published private(set) var live: [HostedExtension] = []
 
+    static let pollInterval: Duration = .seconds(15)
+
     private var discovery: Task<Void, Never>?
+    private var poll: Task<Void, Never>?
     private var ranking: AnyCancellable?
     private var processes: [String: AppExtensionProcess] = [:]
     private var connections: [String: NSXPCConnection] = [:]
@@ -51,11 +54,20 @@ final class ExtensionHost: NSObject, ObservableObject {
                 await self?.refresh(found)
             }
         }
+        poll = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.pollInterval)
+                guard !Task.isCancelled else { return }
+                await self?.reask()
+            }
+        }
     }
 
     func stop() {
         discovery?.cancel()
         discovery = nil
+        poll?.cancel()
+        poll = nil
         ranking?.cancel()
         ranking = nil
         connections.values.forEach { $0.invalidate() }
@@ -87,6 +99,23 @@ final class ExtensionHost: NSObject, ObservableObject {
         }
 
         available = hosted
+        settle()
+    }
+
+    private func reask() async {
+        let enabled = Defaults[.enabledExtensions]
+        let asking = available.filter { enabled.contains($0.id) }
+        guard !asking.isEmpty else { return }
+
+        for hosted in asking {
+            guard let declaration = await declaration(from: hosted.identity) else {
+                release(hosted.identity.bundleIdentifier)
+                continue
+            }
+            guard let index = available.firstIndex(where: { $0.id == hosted.id }) else { continue }
+            available[index].declaration = declaration
+        }
+
         settle()
     }
 

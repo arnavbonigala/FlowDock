@@ -33,7 +33,8 @@ once. Nothing is registered with FlowDock and nothing is copied anywhere.
 
 ## 2. Declare the activity
 
-FlowDock opens a connection and asks once, each time it refreshes. Reply with JSON:
+FlowDock opens a connection and asks — when your extension is discovered, and every
+fifteen seconds while the user has it switched on. Reply with JSON:
 
 ```json
 {
@@ -57,7 +58,8 @@ FlowDock opens a connection and asks once, each time it refreshes. Reply with JS
 
 Return `live: false` — or nothing at all — and the activity ends. That is the whole
 lifecycle: there is no separate begin and end call, and no state FlowDock keeps for you
-between refreshes.
+between refreshes. Your activity begins within fifteen seconds of the first `true`, so
+answer with what is true right now rather than trying to announce anything.
 
 ## 3. Supply the scenes
 
