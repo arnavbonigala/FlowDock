@@ -476,15 +476,21 @@ final class ShelfItemViewModel: ObservableObject {
                 guard !fileURLs.isEmpty else { break }
 
                 Task {
-                    if let zipTempURL = await fileURLs.accessSecurityScopedResources(accessor: { urls in
+                    guard let zipTempURL = await fileURLs.accessSecurityScopedResources(accessor: { urls in
                         await TemporaryFileStorageService.shared.createZip(from: urls)
-                    }) {
-                        if let bookmark = try? Bookmark(url: zipTempURL) {
-                            let newItem = ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
-                            ShelfStateViewModel.shared.add([newItem])
-                        } else {
-                            NSWorkspace.shared.activateFileViewerSelecting([zipTempURL])
-                        }
+                    }) else {
+                        showErrorAlert(
+                            title: "Compress Failed",
+                            message: "FlowDock could not create an archive from the selected items."
+                        )
+                        return
+                    }
+
+                    if let bookmark = try? Bookmark(url: zipTempURL) {
+                        let newItem = ShelfItem(kind: .file(bookmark: bookmark.data), isTemporary: true)
+                        ShelfStateViewModel.shared.add([newItem])
+                    } else {
+                        NSWorkspace.shared.activateFileViewerSelecting([zipTempURL])
                     }
                 }
                 
