@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 
 extension Activity {
     static let shelfID = "shelf"
-    static let shelfChinSide: CGFloat = 30
+    static let shelfChinSide: CGFloat = 34
 
     static func shelf(count: Int) -> Activity {
         Activity(
@@ -29,8 +29,7 @@ extension Activity {
             },
             trailing: {
                 Text(count > 0 ? "\(count)" : "")
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(.chinValue)
                     .monospacedDigit()
                     .foregroundStyle(.white)
                     .frame(width: shelfChinSide, alignment: .trailing)

@@ -9,7 +9,7 @@ import ExtensionKit
 import SwiftUI
 
 extension Activity {
-    static let extensionChinSide: CGFloat = 40
+    static let extensionChinSide: CGFloat = 34
 
     static func hosted(_ hosted: HostedExtension) -> Activity {
         let identity = hosted.identity
