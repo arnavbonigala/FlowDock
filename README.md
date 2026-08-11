@@ -32,6 +32,24 @@ Run the same tests and unsigned debug build used by CI:
 
 See [RELEASING.md](RELEASING.md) for the current artifact and release process.
 
+## Install
+
+FlowDock is not yet distributed as a signed release; see [RELEASING.md](RELEASING.md) for
+where that stands. Until then, build from source above.
+
+Updates arrive in the app itself once a release exists. FlowDock checks an appcast and
+installs what you approve; nothing else is downloaded.
+
+## Privacy
+
+No account, no analytics, no server of ours. [PRIVACY.md](PRIVACY.md) lists every
+permission FlowDock asks for, everything that leaves your Mac, and how to remove all of it.
+
+## Support
+
+Bugs and feature requests go through the issue templates in this repository. Security
+reports follow [SECURITY.md](SECURITY.md).
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.

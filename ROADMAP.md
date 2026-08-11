@@ -99,7 +99,7 @@ The boundary and safety model third-party activities live behind is in [EXTENSIO
 
 ## 8. Prepare for sustainable public growth
 
-- [ ] Publish clear installation, update, support, privacy, security, and contribution guidance
+- [x] Publish clear installation, update, support, privacy, security, and contribution guidance
 - [ ] Establish dependable signed release and update processes
 - [ ] Create a feedback loop for bugs, feature requests, and extension proposals
 - [ ] Define release channels and compatibility expectations
