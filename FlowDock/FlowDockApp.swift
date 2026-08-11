@@ -62,7 +62,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let vm: FlowDockViewModel = .init()
     @ObservedObject var coordinator = FlowDockViewCoordinator.shared
     var quickShareService = QuickShareService.shared
-    var timer: Timer?
     private var onboardingWindowController: NSWindowController?
     private var distributedObservers: [Any] = []
     private var workspaceObservers: [Any] = []
@@ -503,6 +502,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         guard (notification.object as? NSWindow)?.identifier?.rawValue == "OnboardingWindow" else { return }
+        coordinator.firstLaunch = false
         guard SettingsWindowController.shared.window?.isVisible != true else { return }
         NSApp.setActivationPolicy(.accessory)
     }
