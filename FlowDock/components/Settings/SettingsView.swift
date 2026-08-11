@@ -216,10 +216,10 @@ struct ActivitySettings: View {
                             Label(entry.name, systemImage: entry.symbol)
                             Spacer()
                             if let key = entry.key {
-                                Defaults.Toggle(key: key) { Text("") }
+                                Defaults.Toggle(key: key) { Text(entry.name) }
                                     .labelsHidden()
                             } else if entry.hosted {
-                                Toggle("", isOn: Binding(
+                                Toggle(entry.name, isOn: Binding(
                                     get: { enabledExtensions.contains(entry.id) },
                                     set: { on in
                                         if on {
@@ -243,7 +243,7 @@ struct ActivitySettings: View {
                         priority = ordered.map(\.id)
                     }
                 }
-                .frame(height: 240)
+                .frame(minHeight: 240, maxHeight: .infinity)
             } header: {
                 Text("Priority")
             } footer: {
