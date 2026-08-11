@@ -166,7 +166,7 @@ struct MeetingPanel: View {
                     .tint(.effectiveAccent)
             }
         }
-        .frame(height: 34)
+        .frame(height: 30)
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)

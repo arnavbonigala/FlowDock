@@ -63,7 +63,7 @@ between refreshes.
 
 Each scene is a SwiftUI view rendered in your process and composited into FlowDock's
 window. The chin scenes are drawn at roughly 40 × 22 points on a black background; the
-panel is one full-width row of about 34 points. FlowDock chooses those sizes, and a view
+panel is one full-width row of 30 points. FlowDock chooses those sizes, and a view
 that wants more is clipped rather than obeyed.
 
 ```swift

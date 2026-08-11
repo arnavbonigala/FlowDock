@@ -122,7 +122,7 @@ private struct NotificationRow: View {
         HStack(spacing: 8) {
             NotificationGlyph(notification: notification)
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(group.notifications.count > 1 ? "\(group.app) (\(group.notifications.count))" : group.app)
                     .font(.caption)
                     .fontWeight(.semibold)
