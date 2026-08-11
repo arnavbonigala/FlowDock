@@ -40,7 +40,7 @@ Values that already exist in code are cited rather than restated. Where current 
 
 The closed and contextual surfaces must be indistinguishable from the display bezel, so they are `Color.black` — never a material, never translucent, never tinted, and never lighter in light appearance. A blur that lets the desktop through breaks the illusion that the hardware grew.
 
-- **Elevation inside the panel is opacity, not shadow.** Base is black; a raised region uses `.quaternary` fill; a raised region on top of that uses `.tertiary`. Shadows are used only where the panel meets the desktop (`enableShadow`), never between internal layers.
+- **Elevation inside the panel is opacity, not shadow.** Base is black; a raised region uses `.quaternary` fill; a raised region on top of that uses `.tertiary`. Shadows are used only where the expanded panel meets the desktop (`enableShadow`), never between internal layers and never behind the closed or contextual surface — bezel does not cast a shadow onto the menu bar.
 - **Materials belong to detached surfaces only** — settings, popovers, menus, and windows that are not attached to the bezel. Those use `.regularMaterial` and follow the system appearance normally.
 - **The panel is always dark**, in both light and dark appearance, because it is bezel. Detached surfaces are not.
 - **Accent.** `Color.accentColor`, or the user's override (`useCustomAccentColor`). Accent marks state — progress, selection, activity — and is never used for body text or as a large fill.

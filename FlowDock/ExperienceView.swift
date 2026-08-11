@@ -116,8 +116,9 @@ struct ExperienceView: View {
                     )
                 )
                 .shadow(
-                    color: enableShadow && state != .idle ? .black.opacity(0.7) : .clear,
-                    radius: 6
+                    color: enableShadow && state == .expanded ? .black.opacity(0.32) : .clear,
+                    radius: 12,
+                    y: 4
                 )
                 .contentShape(Rectangle())
                 .sensoryFeedback(.alignment, trigger: haptics)
