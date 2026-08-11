@@ -56,6 +56,11 @@ for app in /Applications/FlowDock.app "$HOME/Applications/FlowDock.app"; do
 done
 
 echo "Removing preferences, caches, and stored data…"
+# FlowDock is sandboxed, so its preferences, caches, and shelf bookmarks live in
+# its container rather than in ~/Library. The paths below it cover copies built
+# before the sandbox and cost nothing when they are absent.
+run rm -rf "$HOME/Library/Containers/$APP_ID"
+run rm -rf "$HOME/Library/Containers/$HELPER_ID"
 run defaults delete "$APP_ID"
 run rm -rf "$HOME/Library/Preferences/$APP_ID.plist"
 run rm -rf "$HOME/Library/Caches/$APP_ID"

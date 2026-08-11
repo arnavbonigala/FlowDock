@@ -59,15 +59,24 @@ extensions you have installed.
 
 ## Removing everything
 
-Delete FlowDock.app, then:
+From a checkout, one command removes the app, its container, and the permission
+grants it holds:
 
 ```sh
-defaults delete com.arnavbonigala.flowdock
-rm -rf ~/Library/Containers/com.arnavbonigala.flowdock
+./scripts/uninstall.sh
 ```
 
-That is the whole footprint. Revoke the Accessibility and Calendar entries in System
-Settings ▸ Privacy & Security if you want the permission rows gone too.
+By hand, delete FlowDock.app and then:
+
+```sh
+rm -rf ~/Library/Containers/com.arnavbonigala.flowdock
+rm -rf ~/Library/Containers/com.arnavbonigala.flowdock.FlowDockXPCHelper
+```
+
+FlowDock is sandboxed, so those two directories are the whole footprint — preferences,
+shelf bookmarks, and the artwork cache all live inside them. Revoke the Accessibility and
+Calendar entries in System Settings ▸ Privacy & Security if you want the permission rows
+gone too; `uninstall.sh` does that for you.
 
 ## Reporting a privacy problem
 
