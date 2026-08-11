@@ -47,29 +47,22 @@ class SettingsWindowController: NSWindowController {
     
     private func setupWindow() {
         guard let window = window else { return }
-        
+
         window.title = "FlowDock Settings"
-        window.titlebarAppearsTransparent = false
-        window.titleVisibility = .visible
         window.toolbarStyle = .unified
         window.isMovableByWindowBackground = true
-        
-        // Make it behave like a regular app window with proper Spaces support
         window.collectionBehavior = [.managed, .participatesInCycle, .fullScreenAuxiliary]
-        
-        // Ensure proper window behavior
-        window.hidesOnDeactivate = false
-        window.isExcludedFromWindowsMenu = false
-        
-        // Configure window to be a standard document-style window
-        window.isRestorable = true
+
+        /// An accessory app has no business reappearing on the screen at login, so the
+        /// window remembers where it was without asking macOS to restore it.
+        window.isRestorable = false
         window.identifier = NSUserInterfaceItemIdentifier("FlowDockSettingsWindow")
         window.setFrameAutosaveName(frameName)
         window.contentMinSize = NSSize(width: 700, height: 480)
-        
+
         window.delegate = self
     }
-    
+
     func showWindow() {
         if !hasContent { installContent() }
 
@@ -118,16 +111,7 @@ extension SettingsWindowController: NSWindowDelegate {
         relinquishFocus()
     }
     
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        return true
-    }
-    
     func windowDidBecomeKey(_ notification: Notification) {
-        // Ensure app is in regular mode when window becomes key
         NSApp.setActivationPolicy(.regular)
     }
-    
-    func windowDidResignKey(_ notification: Notification) {
-    }
-    
 }
