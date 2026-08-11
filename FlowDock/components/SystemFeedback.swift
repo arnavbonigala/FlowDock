@@ -135,7 +135,7 @@ struct SystemFeedbackView: View {
     }
 
     private func pill(_ reading: SystemFeedbackReading) -> some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(reading.title)
                 .font(.system(size: 11, weight: .semibold))
                 .tracking(0.2)
