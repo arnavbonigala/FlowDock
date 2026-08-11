@@ -61,6 +61,8 @@ struct MusicSlotConfigurationView: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Slot \(index + 1), \(slot == .none ? "empty" : slot.label)")
                     .accessibilityAction(named: "Clear slot") { updateSlot(.none, at: index) }
+                    .accessibilityAction(named: "Move left") { move(index, by: -1) }
+                    .accessibilityAction(named: "Move right") { move(index, by: 1) }
                 }
             }
             .padding(12)
@@ -199,82 +201,49 @@ struct MusicSlotConfigurationView: View {
         musicControlSlots.append(contentsOf: Array(repeating: .none, count: missing))
     }
 
-    private func slotBinding(for index: Int) -> Binding<MusicControlButton> {
-        Binding(
-            get: { slotValue(at: index) },
-            set: { newValue in updateSlot(newValue, at: index) }
-        )
-    }
-
     private func slotValue(at index: Int) -> MusicControlButton {
         guard musicControlSlots.indices.contains(index) else { return .none }
         return musicControlSlots[index]
     }
 
     private func handleDrop(_ providers: [NSItemProvider], toIndex: Int) -> Bool {
-        for provider in providers {
-            if provider.canLoadObject(ofClass: NSString.self) {
-                provider.loadObject(ofClass: NSString.self) { item, error in
-                    // item may be an NSString (which conforms to NSItemProviderReading) or other reading type
-                    if let nsstring = item as? NSString {
-                        let raw = nsstring as String
-                        DispatchQueue.main.async {
-                            processDropString(raw, toIndex: toIndex)
-                        }
-                    } else if let str = item as? String {
-                        DispatchQueue.main.async {
-                            processDropString(str, toIndex: toIndex)
-                        }
-                    }
-                }
-                return true
-            }
-        }
-        return false
+        load(providers) { processDropString($0, toIndex: toIndex) }
     }
 
     private func handleDropOnTrash(_ providers: [NSItemProvider]) -> Bool {
-        for provider in providers {
-            if provider.canLoadObject(ofClass: NSString.self) {
-                provider.loadObject(ofClass: NSString.self) { item, error in
-                    if let nsstring = item as? NSString {
-                        let raw = nsstring as String
-                        DispatchQueue.main.async {
-                            if raw.hasPrefix("slot:") {
-                                // parse source slot index and clear it
-                                let from = Int(raw.replacingOccurrences(of: "slot:", with: "")) ?? -1
-                                guard from >= 0 && from < fixedSlotCount else { return }
-                                var slots = musicControlSlots
-                                if from < slots.count {
-                                    slots[from] = .none
-                                    musicControlSlots = slots
-                                }
-                            }
-                        }
-                    } else if let str = item as? String {
-                        DispatchQueue.main.async {
-                            if str.hasPrefix("slot:") {
-                                let from = Int(str.replacingOccurrences(of: "slot:", with: "")) ?? -1
-                                guard from >= 0 && from < fixedSlotCount else { return }
-                                var slots = musicControlSlots
-                                if from < slots.count {
-                                    slots[from] = .none
-                                    musicControlSlots = slots
-                                }
-                            }
-                        }
-                    }
-                }
-                return true
-            }
+        load(providers) { raw in
+            guard let from = sourceSlot(raw) else { return }
+            updateSlot(.none, at: from)
         }
-        return false
+    }
+
+    private func load(_ providers: [NSItemProvider], then handle: @escaping @Sendable (String) -> Void) -> Bool {
+        guard let provider = providers.first(where: { $0.canLoadObject(ofClass: NSString.self) }) else { return false }
+        provider.loadObject(ofClass: NSString.self) { item, _ in
+            guard let raw = item as? NSString else { return }
+            DispatchQueue.main.async { handle(raw as String) }
+        }
+        return true
+    }
+
+    private func sourceSlot(_ raw: String) -> Int? {
+        guard raw.hasPrefix("slot:"), let index = Int(raw.dropFirst(5)),
+              (0..<fixedSlotCount).contains(index) else { return nil }
+        return index
+    }
+
+    private func move(_ index: Int, by offset: Int) {
+        let target = index + offset
+        guard slotValue(at: index) != .none,
+              musicControlSlots.indices.contains(index),
+              musicControlSlots.indices.contains(target) else { return }
+        var slots = musicControlSlots
+        slots.swapAt(index, target)
+        withAnimation { musicControlSlots = slots }
     }
 
     private func processDropString(_ raw: String, toIndex: Int) {
-        if raw.hasPrefix("slot:") {
-            let from = Int(raw.replacingOccurrences(of: "slot:", with: "")) ?? -1
-            guard from >= 0 && from < fixedSlotCount else { return }
+        if let from = sourceSlot(raw) {
             var slots = musicControlSlots
             if from < slots.count && toIndex < slots.count {
                 slots.swapAt(from, toIndex)
