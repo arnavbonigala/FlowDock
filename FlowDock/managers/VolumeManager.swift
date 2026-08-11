@@ -155,7 +155,10 @@ final class VolumeManager: NSObject, ObservableObject {
     func outputDeviceName() -> String? {
         let deviceID = systemOutputDeviceID()
         guard deviceID != kAudioObjectUnknown else { return nil }
+        return name(of: deviceID)
+    }
 
+    private func name(of deviceID: AudioObjectID) -> String? {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioObjectPropertyName,
             mScope: kAudioObjectPropertyScopeGlobal,
@@ -168,6 +171,76 @@ final class VolumeManager: NSObject, ObservableObject {
               !value.isEmpty
         else { return nil }
         return value
+    }
+
+    // MARK: - Output Routing
+
+    struct OutputDevice: Identifiable, Equatable {
+        let id: AudioObjectID
+        let name: String
+    }
+
+    var currentOutputDevice: AudioObjectID { systemOutputDeviceID() }
+
+    func outputDevices() -> [OutputDevice] {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDevices,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(
+            AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size) == noErr,
+              size > 0
+        else { return [] }
+
+        var ids = [AudioObjectID](repeating: kAudioObjectUnknown, count: Int(size) / MemoryLayout<AudioObjectID>.size)
+        guard AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &ids) == noErr
+        else { return [] }
+
+        return ids
+            .filter { hasOutputChannels($0) }
+            .compactMap { id in name(of: id).map { OutputDevice(id: id, name: $0) } }
+    }
+
+    /// Every audio device is listed whichever way it points, so a microphone is in the same
+    /// array as a speaker. What separates them is whether the device has any channel at all
+    /// in the output scope.
+    private func hasOutputChannels(_ deviceID: AudioObjectID) -> Bool {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyStreamConfiguration,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(deviceID, &address, 0, nil, &size) == noErr, size > 0
+        else { return false }
+
+        let buffer = UnsafeMutableRawPointer.allocate(
+            byteCount: Int(size), alignment: MemoryLayout<AudioBufferList>.alignment)
+        defer { buffer.deallocate() }
+        guard AudioObjectGetPropertyData(deviceID, &address, 0, nil, &size, buffer) == noErr
+        else { return false }
+
+        let list = UnsafeMutableAudioBufferListPointer(buffer.assumingMemoryBound(to: AudioBufferList.self))
+        return list.contains { $0.mNumberChannels > 0 }
+    }
+
+    func selectOutputDevice(_ deviceID: AudioObjectID) {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var target = deviceID
+        let status = AudioObjectSetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject), &address, 0, nil,
+            UInt32(MemoryLayout<AudioObjectID>.size), &target
+        )
+        if status != noErr {
+            NSLog("Could not move audio output to device \(deviceID): status \(status)")
+        }
     }
 
     private func fetchCurrentVolume() {

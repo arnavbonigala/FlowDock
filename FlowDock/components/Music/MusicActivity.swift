@@ -3,6 +3,7 @@
 //  FlowDock
 //
 
+import CoreAudio
 import Defaults
 import SwiftUI
 
@@ -459,6 +460,8 @@ private struct MusicVolumeControl: View {
     @State private var dragging = false
     @State private var expanded = false
     @State private var lastSent: Date = .distantPast
+    @State private var outputs: [VolumeManager.OutputDevice] = []
+    @State private var currentOutput: AudioObjectID = kAudioObjectUnknown
 
     private let throttle: TimeInterval = 0.1
 
@@ -512,6 +515,30 @@ private struct MusicVolumeControl: View {
                     level = min(max(level + step, 0), 1)
                     music.setVolume(to: level)
                 }
+
+                Menu {
+                    ForEach(outputs) { device in
+                        Button {
+                            VolumeManager.shared.selectOutputDevice(device.id)
+                            currentOutput = device.id
+                        } label: {
+                            if device.id == currentOutput {
+                                Label(device.name, systemImage: "checkmark")
+                            } else {
+                                Text(device.name)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "airplay.audio")
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .frame(width: 28)
+                .iconLabel("Sound output")
+                .accessibilityValue(outputs.first { $0.id == currentOutput }?.name ?? "")
             }
         }
         .clipped()
@@ -523,6 +550,8 @@ private struct MusicVolumeControl: View {
         }
         .onChange(of: expanded) { _, showing in
             guard showing else { return }
+            outputs = VolumeManager.shared.outputDevices()
+            currentOutput = VolumeManager.shared.currentOutputDevice
             Task { await music.syncVolumeFromActiveApp() }
         }
     }
