@@ -32,6 +32,10 @@ final class ExtensionHost: NSObject, ObservableObject {
     private var discovery: Task<Void, Never>?
     private var poll: Task<Void, Never>?
     private var ranking: AnyCancellable?
+
+    /// EXTENSIONS.md gives an extension two seconds to say what it is. Longer than that and
+    /// discovery is waiting on a process rather than answering the user.
+    static let answerDeadline: Duration = .seconds(2)
     private var processes: [String: AppExtensionProcess] = [:]
     private var connections: [String: NSXPCConnection] = [:]
 
@@ -97,11 +101,15 @@ final class ExtensionHost: NSObject, ObservableObject {
         available.first { $0.id == id }?.identity
     }
 
+    /// Every installed extension is asked at once. Asked one after another, a single
+    /// extension that never answers holds up discovery of all the ones behind it for the
+    /// whole answer deadline.
     private func refresh(_ identities: [AppExtensionIdentity]) async {
-        var hosted: [HostedExtension] = []
+        let answers = await ask(identities)
 
-        for identity in identities {
-            guard let declaration = await declaration(from: identity) else {
+        var hosted: [HostedExtension] = []
+        for (identity, declaration) in zip(identities, answers) {
+            guard let declaration else {
                 release(identity.bundleIdentifier)
                 continue
             }
@@ -122,8 +130,8 @@ final class ExtensionHost: NSObject, ObservableObject {
         let asking = available.filter { enabled.contains($0.id) }
         guard !asking.isEmpty else { return }
 
-        for hosted in asking {
-            guard let declaration = await declaration(from: hosted.identity) else {
+        for (hosted, declaration) in zip(asking, await ask(asking.map(\.identity))) {
+            guard let declaration else {
                 release(hosted.identity.bundleIdentifier)
                 continue
             }
@@ -145,6 +153,20 @@ final class ExtensionHost: NSObject, ObservableObject {
         }
     }
 
+    private func ask(_ identities: [AppExtensionIdentity]) async -> [ActivityExtension.Declaration?] {
+        await withTaskGroup(of: (Int, ActivityExtension.Declaration?).self) { group in
+            for (index, identity) in identities.enumerated() {
+                group.addTask { @MainActor [weak self] in
+                    (index, await self?.declaration(from: identity))
+                }
+            }
+
+            var answers = [ActivityExtension.Declaration?](repeating: nil, count: identities.count)
+            for await (index, declaration) in group { answers[index] = declaration }
+            return answers
+        }
+    }
+
     private func declaration(from identity: AppExtensionIdentity) async -> ActivityExtension.Declaration? {
         guard let connection = connection(for: identity) else { return nil }
 
@@ -160,7 +182,7 @@ final class ExtensionHost: NSObject, ObservableObject {
             }
 
             Task {
-                try? await Task.sleep(for: .seconds(2))
+                try? await Task.sleep(for: Self.answerDeadline)
                 resumed.fire { continuation.resume(returning: nil) }
             }
 

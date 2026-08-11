@@ -22,11 +22,11 @@ extension Activity {
             chinSideWidth: Activity.chinSide,
             leading: {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.leading)
-                    .frame(width: Activity.chinSide, height: 22)
+                    .frame(width: Activity.chinSide, height: Activity.chinHeight)
             },
             trailing: {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.trailing)
-                    .frame(width: Activity.chinSide, height: 22)
+                    .frame(width: Activity.chinSide, height: Activity.chinHeight)
             }
         )
 

@@ -52,6 +52,9 @@ struct Activity: Identifiable {
     /// expanded state instead.
     static let chinSide: CGFloat = 34
     static let chinClockSide: CGFloat = 44
+    /// What a chin view is drawn at. An extension renders in its own process, so this is
+    /// the size FlowDock hands across that boundary rather than a layout it can negotiate.
+    static let chinHeight: CGFloat = 22
     /// Contextual activities have no expanded form.
     private(set) var expanded: (() -> AnyView)?
     /// Used to break ties within a band. Preserved when a live activity updates, so the
