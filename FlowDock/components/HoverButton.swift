@@ -51,7 +51,7 @@ extension Image.Scale {
     /// control has to ask for the same one or the preview lies about the panel.
     var glyphFont: Font {
         switch self {
-        case .large: .largeTitle
+        case .large: .panelPrimary
         case .small: .panelMeta
         default: .panelControl
         }

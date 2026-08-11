@@ -89,7 +89,7 @@ app and the only place the two row heights do not apply.
 
 **SF Symbols only.** The app icon and the brand mark are the only custom art. A concept macOS already has a symbol for uses that symbol — `speaker.wave.2.fill`, `sun.max.fill`, `keyboard`, `mic.fill`, `battery.75percent` — because FlowDock stands in for system HUDs and must not invent a second vocabulary for the same thing.
 
-- **Sizes.** 12 pt metadata, 15 pt default control, 18 pt primary control (matching the existing `prefersLargeScale ? 18 : 15` split). Symbols paired with text use the text's own style so they scale together.
+- **Sizes** are the named tokens in `FlowDock/extensions/Typography.swift` — `.panelMeta`, `.panelControl`, `.panelPrimary` — reached through `Image.Scale.glyphFont` so a preview cannot pick a size the panel never draws. A text style such as `.largeTitle` is not one of them: it grows with Dynamic Type inside a control whose frame does not. Symbols paired with text use the text's own style so they scale together.
 - **Weight** matches the adjacent text weight; default `.medium`.
 - **Rendering** is `.hierarchical` by default. `.palette` is used only when a second color carries meaning, `.multicolor` only where the system's own multicolor form is expected.
 - **State changes animate the symbol**, not the view: `.contentTransition(.symbolEffect(.replace))` for play/pause, mute/unmute, and similar pairs. Never crossfade two `Image` views.
