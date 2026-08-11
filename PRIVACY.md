@@ -19,7 +19,7 @@ Four things, three of them optional, all of them off unless the feature is on:
 | YouTube Music | Only with that source selected | Playback commands | `localhost` — your own Mac, not the network |
 
 Nothing else. FlowDock does not send your calendar, your notifications, your files, your
-shelf, your device names, or the fact that you use it, anywhere. There is no telemetry to
+shelf, your paired devices, or the fact that you use it, anywhere. There is no telemetry to
 opt out of because none was written.
 
 ## What FlowDock asks macOS for
@@ -29,6 +29,7 @@ opt out of because none was written.
 | Accessibility | Reading notifications as they appear, and the media keys | Notification activities do not appear; nothing else changes |
 | Calendar and Reminders | The agenda, the meeting countdown, and the join button | The calendar column is empty; nothing else changes |
 | Apple Events, limited to Music and Spotify | Playback control and now-playing detail those apps only expose that way | Playback falls back to the system's Now Playing, with fewer controls |
+| Bluetooth | The name, kind, and battery level of devices already paired with this Mac | Connected-device activities do not appear; nothing else changes |
 | Files you drop | The shelf holds what you put in it | The shelf holds nothing |
 | Downloads, read-only | Watching for a download in progress so it can show the bar | Download activities do not appear; nothing else changes |
 
