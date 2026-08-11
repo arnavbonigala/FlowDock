@@ -167,6 +167,7 @@ struct ExperienceView: View {
         .shelfActivity(in: store, receiving: isDropTargeted)
         .notificationActivity(in: store)
         .deviceActivity(in: store)
+        .progressActivity(in: store)
     }
 
     // MARK: - Surfaces

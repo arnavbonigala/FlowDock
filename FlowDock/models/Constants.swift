@@ -104,6 +104,7 @@ extension Defaults.Keys {
     static let showDeviceStatus = Key<Bool>("showDeviceStatus", default: true)
     
     // MARK: Downloads
+    static let showDownloads = Key<Bool>("showDownloads", default: true)
     
     // MARK: HUD
     static let hudReplacement = Key<Bool>("hudReplacement", default: true)

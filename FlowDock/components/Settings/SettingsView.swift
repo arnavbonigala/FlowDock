@@ -22,7 +22,7 @@ struct SettingsView: View {
     }
 
     enum Pane: String, Hashable, CaseIterable {
-        case music, notifications, systemFeedback, battery, devices, calendar, shelf
+        case music, notifications, systemFeedback, battery, devices, downloads, calendar, shelf
         case general, appearance, shortcuts, about
 
         var title: String {
@@ -32,6 +32,7 @@ struct SettingsView: View {
             case .systemFeedback: "System feedback"
             case .battery: "Battery"
             case .devices: "Devices"
+            case .downloads: "Downloads"
             case .calendar: "Calendar"
             case .shelf: "Shelf"
             case .general: "General"
@@ -48,6 +49,7 @@ struct SettingsView: View {
             case .systemFeedback: "dial.medium.fill"
             case .battery: "battery.100.bolt"
             case .devices: "airpods"
+            case .downloads: "arrow.down.circle"
             case .calendar: "calendar"
             case .shelf: "tray.full"
             case .general: "gear"
@@ -62,7 +64,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedPane) {
                 Section("Activities") {
-                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .devices, .calendar, .shelf], id: \.self) { pane in
+                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .devices, .downloads, .calendar, .shelf], id: \.self) { pane in
                         NavigationLink(value: pane) {
                             Label(pane.title, systemImage: pane.symbol)
                         }
@@ -88,6 +90,7 @@ struct SettingsView: View {
                 case .systemFeedback: SystemFeedbackSettings()
                 case .battery: BatterySettings()
                 case .devices: DeviceSettings()
+                case .downloads: DownloadSettings()
                 case .calendar: CalendarSettings()
                 case .shelf: ShelfSettings()
                 case .general: GeneralSettings()
@@ -197,6 +200,23 @@ struct MusicSettings: View {
         MusicManager.shared.isNowPlayingDeprecated
             ? MediaControllerType.allCases.filter { $0 != .nowPlaying }
             : MediaControllerType.allCases
+    }
+}
+
+struct DownloadSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle(key: .showDownloads) {
+                    Text("Show downloads in progress")
+                }
+            } footer: {
+                Text("Files arriving in the Downloads folder show their progress at the notch until they finish, then show once more as complete. Safari reports how much is left; other browsers only report how much has arrived.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accentColor(.effectiveAccent)
     }
 }
 
