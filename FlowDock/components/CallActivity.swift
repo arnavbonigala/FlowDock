@@ -112,19 +112,24 @@ struct CallPanel: View {
 extension CallPanel {
     static func selfCheck() {
         let call = FlowDockNotification(
-            token: "c", app: "FaceTime", title: "Ada", body: "iPhone", actions: ["Decline", "Accept"])
-        assert(call.isCall)
+            token: "c", app: "Phone", title: "Ada", body: "iPhone", actions: ["Decline", "Accept"])
         assert(call.callRoute == "iPhone")
         assert(label(call) == "Incoming call from Ada, iPhone")
 
-        let alert = FlowDockNotification(
+        let missed = FlowDockNotification(
             token: "d", app: "FaceTime", title: "Ada", body: "", actions: ["Call Back"])
-        assert(!alert.isCall, "one button is a missed call, not a ringing one")
-        assert(alert.callRoute == "FaceTime")
+        assert(missed.callRoute == "FaceTime")
 
-        let message = FlowDockNotification(
-            token: "e", app: "Messages", title: "Ada", body: "hi", actions: ["Reply", "Mark as Read"])
-        assert(!message.isCall, "two buttons are not a call on their own")
+        let start = Date()
+        let ringing = start.addingTimeInterval(NotificationFeed.ringingDelay)
+        let seen = [call.token: start, missed.token: start]
+
+        assert(NotificationFeed.ringing(among: [call, missed], firstSeen: seen, now: start) == nil,
+               "an alert that has only just appeared could still be a banner")
+        assert(NotificationFeed.ringing(among: [call, missed], firstSeen: seen, now: ringing) == call,
+               "an alert with its own buttons that outlasts a banner is ringing")
+        assert(NotificationFeed.ringing(among: [missed], firstSeen: seen, now: ringing) == nil,
+               "one button is a missed call, not a ringing one")
     }
 }
 #endif

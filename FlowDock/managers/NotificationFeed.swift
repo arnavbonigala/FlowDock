@@ -22,15 +22,9 @@ struct FlowDockNotification: Identifiable, Equatable, Codable {
     /// whatever else macOS decides to put two buttons on.
     var isInteractive: Bool { actions.count > 1 }
 
-    /// A call from an iPhone reaches the Mac through FaceTime too, so this one name covers
-    /// both. It is the application's own display name, which is the only thing the alert
-    /// says about where it came from.
-    static let callingApp = "FaceTime"
-
-    var isCall: Bool { app == Self.callingApp && isInteractive }
-
     /// FaceTime puts the route in the alert's body — "iPhone" for a call ringing through a
-    /// phone, the kind of call it is otherwise.
+    /// phone, the kind of call it is otherwise. An application that says nothing there is
+    /// itself the route.
     var callRoute: String { body.isEmpty ? app : body }
 
     var summary: String {
@@ -55,16 +49,31 @@ final class NotificationFeed: ObservableObject {
 
     static let historyLimit = 12
 
+    /// A ringing call cannot be told from any other alert by what it says: the application
+    /// may be anything and the buttons are in the user's language. It can be told by what it
+    /// does. A banner is gone in about five seconds, so an alert carrying buttons of its own
+    /// that is still on screen after that is ringing — whoever is ringing it.
+    static let ringingDelay: TimeInterval = 6
+
     @Published private(set) var recent: [FlowDockNotification] = []
     @Published private(set) var latest: FlowDockNotification?
+    @Published private(set) var call: FlowDockNotification?
+
     /// What is still on screen, as opposed to what has been seen. A ringing call has to
     /// stop ringing the moment its alert goes, and history cannot say when that was.
-    @Published private(set) var present: [FlowDockNotification] = []
-
-    var call: FlowDockNotification? { present.first(where: \.isCall) }
-
+    private var present: [FlowDockNotification] = []
+    private var firstSeen: [String: Date] = [:]
+    private var ringingTask: Task<Void, Never>?
     private var seen: Set<String> = []
     private var running = false
+
+    static func ringing(
+        among present: [FlowDockNotification], firstSeen: [String: Date], now: Date
+    ) -> FlowDockNotification? {
+        present.first {
+            $0.isInteractive && now.timeIntervalSince(firstSeen[$0.token] ?? now) >= ringingDelay
+        }
+    }
 
     private init() {}
 
@@ -93,19 +102,29 @@ final class NotificationFeed: ObservableObject {
         running = false
         XPCHelperClient.shared.stopNotificationRelay()
         latest = nil
-        present = []
+        clearPresent()
     }
 
     func clear() {
         recent = []
         latest = nil
+        clearPresent()
+    }
+
+    private func clearPresent() {
+        ringingTask?.cancel()
+        ringingTask = nil
         present = []
+        firstSeen = [:]
+        call = nil
     }
 
     func remove(_ notification: FlowDockNotification) {
         recent.removeAll { $0.token == notification.token }
         present.removeAll { $0.token == notification.token }
+        firstSeen[notification.token] = nil
         if latest?.token == notification.token { latest = nil }
+        if call?.token == notification.token { call = nil }
     }
 
     func activate(_ notification: FlowDockNotification) {
@@ -129,18 +148,44 @@ final class NotificationFeed: ObservableObject {
               let delivered = try? JSONDecoder().decode([FlowDockNotification].self, from: data)
         else { return }
 
-        /// A ringing call is its own activity, so it must not also arrive as a line in
-        /// the notification list. A missed one has a single button and is not a call.
-        let arriving = delivered.filter { !seen.contains($0.token) && !$0.isCall }
+        let arriving = delivered.filter { !seen.contains($0.token) }
 
         /// The relay reports everything still in Notification Center, so what has already
         /// been announced is exactly what is still on that list. Remembering a fixed number
         /// of tokens instead re-announces the oldest one still sitting there.
         seen = Set(delivered.map(\.token))
         present = delivered
-        guard !arriving.isEmpty else { return }
 
-        recent = Array((arriving.reversed() + recent).prefix(Self.historyLimit))
-        latest = recent.first
+        let now = Date()
+        for notification in arriving { firstSeen[notification.token] = now }
+        firstSeen = firstSeen.filter { seen.contains($0.key) }
+        promote()
+
+        if !arriving.isEmpty {
+            recent = Array((arriving.reversed() + recent).prefix(Self.historyLimit))
+            latest = recent.first
+        }
+    }
+
+    private func promote() {
+        ringingTask?.cancel()
+        ringingTask = nil
+
+        call = Self.ringing(among: present, firstSeen: firstSeen, now: Date())
+
+        /// A call that has just arrived is not yet distinguishable from a banner, and no
+        /// further relay message is due while it simply sits there ringing. One delayed
+        /// look settles it; nothing waits when there is nothing waiting to be settled.
+        if let call {
+            /// The chin is announcing it, so the list must not announce it twice.
+            recent.removeAll { $0.token == call.token }
+            if latest?.token == call.token { latest = recent.first }
+        } else if present.contains(where: \.isInteractive) {
+            ringingTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(Self.ringingDelay))
+                guard !Task.isCancelled else { return }
+                await self?.promote()
+            }
+        }
     }
 }
