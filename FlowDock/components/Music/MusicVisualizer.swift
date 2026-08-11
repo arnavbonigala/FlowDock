@@ -47,6 +47,15 @@ class AudioSpectrum: NSView {
                 self.screensAreAsleep = false
                 if self.isPlaying { self.startAnimating() }
             },
+            center.addObserver(
+                forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.stopAnimating()
+                if self.isPlaying { self.startAnimating() }
+            },
         ]
     }
 
@@ -79,7 +88,12 @@ class AudioSpectrum: NSView {
     }
     
     private func startAnimating() {
-        guard animationTimer == nil, !screensAreAsleep else { return }
+        guard !screensAreAsleep else { return }
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else {
+            holdBars()
+            return
+        }
+        guard animationTimer == nil else { return }
         animationTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             self?.updateBars()
         }
@@ -110,6 +124,14 @@ class AudioSpectrum: NSView {
         }
     }
     
+    private func holdBars() {
+        for (i, barLayer) in barLayers.enumerated() {
+            barLayer.removeAllAnimations()
+            barLayer.transform = CATransform3DMakeScale(1, 1, 1)
+            barScales[i] = 1
+        }
+    }
+
     private func resetBars() {
         for (i, barLayer) in barLayers.enumerated() {
             barLayer.removeAllAnimations()
