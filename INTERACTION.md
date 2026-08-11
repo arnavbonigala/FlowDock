@@ -230,7 +230,7 @@ Everything FlowDock draws hangs below the cutout, so everything it animates must
 
 - **The shared transition becomes a cross-fade in place** — opacity only, no scale, no movement. It keeps its duration; an instant swap is its own kind of disorienting.
 - **Springs become an ease curve.** The chin still resizes and the panel still grows, because size *is* the information. What goes is the overshoot, the bounce, and the settle.
-- **Looping decoration stops entirely** — the music visualizer, the face animation, and anything else that moves without being asked. It is switched off, not slowed down.
+- **Looping decoration stops entirely** — the music visualizer, the face animation, and anything else that moves without being asked. It is switched off, not slowed down. A loop that is the only report of a live unknown — the indeterminate progress ring, which has no fraction to show — is not decoration and does not stop; it drops from spinning to a slow opacity pulse and still ends the moment the work does.
 - **Scrolling text stops.** A title that would marquee truncates instead, and the full value is available to VoiceOver and in expanded state.
 - Auto-scrolling to the next calendar event becomes an instant jump.
 - Gesture tracking is unaffected. Movement the user is driving with their own finger is not animation.
