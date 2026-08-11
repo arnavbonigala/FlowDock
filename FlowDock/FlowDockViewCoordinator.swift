@@ -17,7 +17,6 @@ class FlowDockViewCoordinator: ObservableObject {
     private var hudEnableTask: Task<Void, Never>?
 
     @AppStorage("firstLaunch") var firstLaunch: Bool = true
-    @AppStorage("musicLiveActivityEnabled") var musicLiveActivityEnabled: Bool = true
 
     @Default(.hudReplacement) var hudReplacement: Bool
     

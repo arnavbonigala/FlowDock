@@ -117,7 +117,6 @@ struct SettingsView: View {
 // MARK: - Activities
 
 struct MusicSettings: View {
-    @ObservedObject private var coordinator = FlowDockViewCoordinator.shared
     @Default(.mediaController) private var mediaController
     @Default(.waitInterval) private var waitInterval
     @Default(.hideNotchOption) private var hideNotchOption
@@ -145,7 +144,6 @@ struct MusicSettings: View {
             }
 
             Section {
-                Toggle("Show music activity", isOn: $coordinator.musicLiveActivityEnabled.animation())
                 Stepper(value: $waitInterval, in: 0...10, step: 1) {
                     LabeledContent("Inactivity timeout") {
                         Text("\(waitInterval, specifier: "%.0f") seconds")

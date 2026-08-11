@@ -38,7 +38,6 @@ private struct MusicActivityBinder: ViewModifier {
     let suppressed: Bool
 
     @ObservedObject private var music = MusicManager.shared
-    @ObservedObject private var coordinator = FlowDockViewCoordinator.shared
 
     private struct Snapshot: Equatable {
         var live: Bool
@@ -49,9 +48,7 @@ private struct MusicActivityBinder: ViewModifier {
 
     private var snapshot: Snapshot {
         Snapshot(
-            live: !suppressed
-                && coordinator.musicLiveActivityEnabled
-                && (music.isPlaying || !music.isPlayerIdle),
+            live: !suppressed && (music.isPlaying || !music.isPlayerIdle),
             title: music.songTitle,
             artist: music.artistName,
             isPlaying: music.isPlaying
