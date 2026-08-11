@@ -227,9 +227,6 @@ class MusicManager: ObservableObject {
                 self.isPlaying = state.isPlaying
                 self.updateIdleState(state: state.isPlaying)
             }
-
-            if state.isPlaying && !state.title.isEmpty && !state.artist.isEmpty {
-            }
         }
 
         // Check for changes in track metadata using last artwork change values
@@ -262,10 +259,6 @@ class MusicManager: ObservableObject {
                 self.lastArtworkArtist = state.artist
                 self.lastArtworkAlbum = state.album
                 self.lastArtworkBundleIdentifier = state.bundleIdentifier
-            }
-
-            // Only update sneak peek if there's actual content and something changed
-            if !state.title.isEmpty && !state.artist.isEmpty && state.isPlaying {
             }
 
             // Fetch lyrics on content change
@@ -633,9 +626,8 @@ class MusicManager: ObservableObject {
         if let appURL = workspace.urlForApplication(withBundleIdentifier: bundleID) {
             let configuration = NSWorkspace.OpenConfiguration()
             workspace.openApplication(at: appURL, configuration: configuration) { (app, error) in
-                if let error = error {
+                if let error {
                     NSLog("Failed to launch app with bundle ID: \(bundleID), error: \(error)")
-                } else {
                 }
             }
         } else {

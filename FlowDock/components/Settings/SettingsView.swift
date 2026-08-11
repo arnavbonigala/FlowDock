@@ -753,6 +753,3 @@ struct AboutSettings: View {
         }
     }
 }
-
-extension Notification.Name {
-}
