@@ -148,7 +148,17 @@ Set these in System Settings → Accessibility. Toggle them **while FlowDock is 
 | Run an update end to end. | Helper is re-authorized, settings survive, no duplicate login item. |
 | Uninstall. | No leftover login item, helper, or window. |
 
-### 4.8 Resource use
+### 4.8 Keep awake
+
+| Do | Correct |
+|---|---|
+| Turn it on, then leave the Mac untouched past the display-sleep delay. | The display stays on. `pmset -g assertions` lists exactly one `PreventUserIdleDisplaySleep` assertion held by FlowDock. |
+| Turn it off, then wait again. | The assertion is gone from `pmset -g assertions` and the display sleeps on schedule. |
+| Turn it on, close the panel. | The chin says Awake. Start music: music takes the chin, and the assertion is still held. |
+| Turn it on, then quit FlowDock. | The assertion dies with the process; the Mac sleeps normally without a relaunch. |
+| Turn it on, then close the lid on a MacBook with no external display. | Clamshell sleep still happens — this assertion prevents idle sleep, not lid sleep, and must not be sold as more than that. |
+
+### 4.9 Resource use
 
 Measure with the panel idle and the Mac otherwise quiet. See QUALITY.md for the numbers.
 
