@@ -22,6 +22,17 @@ struct FlowDockNotification: Identifiable, Equatable, Codable {
     /// whatever else macOS decides to put two buttons on.
     var isInteractive: Bool { actions.count > 1 }
 
+    /// A call from an iPhone reaches the Mac through FaceTime too, so this one name covers
+    /// both. It is the application's own display name, which is the only thing the alert
+    /// says about where it came from.
+    static let callingApp = "FaceTime"
+
+    var isCall: Bool { app == Self.callingApp && isInteractive }
+
+    /// FaceTime puts the route in the alert's body — "iPhone" for a call ringing through a
+    /// phone, the kind of call it is otherwise.
+    var callRoute: String { body.isEmpty ? app : body }
+
     var summary: String {
         body.isEmpty ? title : "\(title) — \(body)"
     }
@@ -46,6 +57,11 @@ final class NotificationFeed: ObservableObject {
 
     @Published private(set) var recent: [FlowDockNotification] = []
     @Published private(set) var latest: FlowDockNotification?
+    /// What is still on screen, as opposed to what has been seen. A ringing call has to
+    /// stop ringing the moment its alert goes, and history cannot say when that was.
+    @Published private(set) var present: [FlowDockNotification] = []
+
+    var call: FlowDockNotification? { present.first(where: \.isCall) }
 
     private var seen: Set<String> = []
     private var running = false
@@ -77,15 +93,18 @@ final class NotificationFeed: ObservableObject {
         running = false
         XPCHelperClient.shared.stopNotificationRelay()
         latest = nil
+        present = []
     }
 
     func clear() {
         recent = []
         latest = nil
+        present = []
     }
 
     func remove(_ notification: FlowDockNotification) {
         recent.removeAll { $0.token == notification.token }
+        present.removeAll { $0.token == notification.token }
         if latest?.token == notification.token { latest = nil }
     }
 
@@ -110,12 +129,15 @@ final class NotificationFeed: ObservableObject {
               let delivered = try? JSONDecoder().decode([FlowDockNotification].self, from: data)
         else { return }
 
-        let arriving = delivered.filter { !seen.contains($0.token) }
+        /// A ringing call is its own activity, so it must not also arrive as a line in
+        /// the notification list. A missed one has a single button and is not a call.
+        let arriving = delivered.filter { !seen.contains($0.token) && !$0.isCall }
 
         /// The relay reports everything still in Notification Center, so what has already
         /// been announced is exactly what is still on that list. Remembering a fixed number
         /// of tokens instead re-announces the oldest one still sitting there.
         seen = Set(delivered.map(\.token))
+        present = delivered
         guard !arriving.isEmpty else { return }
 
         recent = Array((arriving.reversed() + recent).prefix(Self.historyLimit))
