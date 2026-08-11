@@ -175,7 +175,7 @@ Ties inside a band go to whichever activity the user ranked higher in Settings, 
 
 - Priority is a band on `Activity`, so adding an activity declares a rank instead of editing a rendering branch, and `Activity.owner(of:priority:)` resolves the chin from that and the user's order alone.
 - One expiration mechanism serves the whole contextual class: `ActivityStore.contextualDwell`.
-- Media completion is still inferred from `isPlayerIdle` rather than published by the activity, which is why a quit player can leave the chin populated.
+- Media completion is inferred from `isPlayerIdle` rather than published by the activity. A player quitting is handled separately, by watching for its termination and clearing playback, so the chin ends rather than freezing on the last track.
 
 ## Displays
 
