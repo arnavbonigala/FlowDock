@@ -23,6 +23,7 @@ struct ExperienceView: View {
     @State private var isOverAgenda = false
     @State private var isOverColumn = false
     @State private var haptics = false
+    @State private var columnHeight: CGFloat = 0
     @Namespace private var shell
 
     @ObservedObject private var calendar = CalendarManager.shared
@@ -288,9 +289,11 @@ struct ExperienceView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .onHover { isOverColumn = $0 }
+                    .measuring($columnHeight, along: .vertical)
                 }
                 .scrollIndicators(.never)
                 .scrollBounceBehavior(.basedOnSize)
+                .fadesPastEdge(.vertical, contentLength: columnHeight)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 if showsAgenda {

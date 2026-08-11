@@ -16,6 +16,8 @@ struct AgendaPanel: View {
     @Default(.showFullEventTitles) private var showFullTitles
     @Default(.autoScrollToNextEvent) private var autoScroll
 
+    @State private var agendaHeight: CGFloat = 0
+
     private var agenda: [EventModel] {
         Self.agenda(manager.events, hideCompleted: hideCompletedReminders, hideAllDay: hideAllDayEvents)
     }
@@ -91,8 +93,10 @@ struct AgendaPanel: View {
                         row(event).id(event.id)
                     }
                 }
+                .measuring($agendaHeight, along: .vertical)
             }
             .scrollIndicators(.never)
+            .fadesPastEdge(.vertical, contentLength: agendaHeight)
             .onAppear { scrollToNext(proxy) }
             .onChange(of: agenda) { _, _ in scrollToNext(proxy) }
         }

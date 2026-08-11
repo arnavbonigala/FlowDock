@@ -89,6 +89,7 @@ private struct NotificationGlyph: View {
 
 struct NotificationPanel: View {
     @ObservedObject private var feed = NotificationFeed.shared
+    @State private var feedHeight: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -100,9 +101,11 @@ struct NotificationPanel: View {
                             NotificationRow(group: group)
                         }
                     }
+                    .measuring($feedHeight, along: .vertical)
                 }
                 .scrollIndicators(.never)
                 .frame(maxHeight: 64)
+                .fadesPastEdge(.vertical, contentLength: feedHeight)
                 .transition(.materialize(reduceMotion: reduceMotion))
             }
         }
