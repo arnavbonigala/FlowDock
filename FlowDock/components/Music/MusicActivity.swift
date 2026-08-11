@@ -242,8 +242,21 @@ private struct MusicDetails: View {
     var body: some View {
         GeometryReader { geo in
             VStack(alignment: .leading, spacing: 4) {
-                ScrollingText(music.songTitle, style: .body, weight: .semibold, color: .primary, width: geo.size.width)
-                ScrollingText(music.artistName, style: .subheadline, color: .secondary, width: geo.size.width)
+                ScrollingText(
+                    music.songTitle,
+                    style: .body,
+                    weight: .semibold,
+                    color: .primary,
+                    width: geo.size.width,
+                    scrolls: music.isPlaying
+                )
+                ScrollingText(
+                    music.artistName,
+                    style: .subheadline,
+                    color: .secondary,
+                    width: geo.size.width,
+                    scrolls: music.isPlaying
+                )
 
                 MusicContextLine(width: geo.size.width)
 
@@ -265,7 +278,13 @@ private struct MusicContextLine: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
-            ScrollingText(line(at: timeline.date), style: .subheadline, color: .secondary, width: width)
+            ScrollingText(
+                line(at: timeline.date),
+                style: .subheadline,
+                color: .secondary,
+                width: width,
+                scrolls: music.isPlaying
+            )
         }
         .frame(height: 16)
     }
@@ -490,15 +509,24 @@ private struct ScrollingText: View {
     var weight: Font.Weight = .regular
     let color: Color
     let width: CGFloat
+    let scrolls: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(_ text: String, style: Font.TextStyle, weight: Font.Weight = .regular, color: Color, width: CGFloat) {
+    init(
+        _ text: String,
+        style: Font.TextStyle,
+        weight: Font.Weight = .regular,
+        color: Color,
+        width: CGFloat,
+        scrolls: Bool = true
+    ) {
         self.text = text
         self.style = style
         self.weight = weight
         self.color = color
         self.width = width
+        self.scrolls = scrolls
     }
 
     private var nsStyle: NSFont.TextStyle {
@@ -510,7 +538,7 @@ private struct ScrollingText: View {
     }
 
     var body: some View {
-        if reduceMotion {
+        if reduceMotion || !scrolls {
             Text(text)
                 .font(.system(style).weight(weight))
                 .foregroundStyle(color)

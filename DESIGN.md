@@ -31,7 +31,7 @@ Values that already exist in code are cited rather than restated. Where current 
 - **Anything that changes in place uses `.monospacedDigit()`** — elapsed time, remaining time, percentages, countdowns, byte counts. Digits must not reflow while ticking.
 - **Letter spacing belongs to the font.** No `tracking()` and no `kerning()`. San Francisco tracks optically by size already, and a hand-set value fights it at exactly the small sizes where it is tempting.
 - **Color is semantic.** `.primary` and `.secondary` only. No hard-coded greys, no opacity applied to text to fake a tier.
-- **Truncation.** One line closed, two lines maximum expanded, `.truncationMode(.tail)`. Scrolling text is reserved for a title that loses meaning when cut, and only while hovered or immediately after the value changes.
+- **Truncation.** One line closed, two lines maximum expanded, `.truncationMode(.tail)`. Scrolling text is reserved for a title that loses meaning when cut, and only while the thing it names is still moving — a playing track scrolls its title, a paused one truncates. Motion that outlives the state it describes is noise.
 - Sentence case for labels, title case for proper names. No all-caps.
 
 ## 3. Materials and color
