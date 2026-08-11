@@ -208,6 +208,14 @@ struct ActivitySettings: View {
         })
     }
 
+    private func move(_ entry: ActivityCatalog.Entry, by offset: Int) {
+        var ordered = entries
+        guard let index = ordered.firstIndex(of: entry),
+              ordered.indices.contains(index + offset) else { return }
+        ordered.swapAt(index, index + offset)
+        priority = ordered.map(\.id)
+    }
+
     var body: some View {
         Form {
             Section {
@@ -215,6 +223,8 @@ struct ActivitySettings: View {
                     ForEach(entries) { entry in
                         HStack {
                             Label(entry.name, systemImage: entry.symbol)
+                                .accessibilityAction(named: "Move up") { move(entry, by: -1) }
+                                .accessibilityAction(named: "Move down") { move(entry, by: 1) }
                             Spacer()
                             if let key = entry.key {
                                 Defaults.Toggle(key: key) { Text(entry.name) }
