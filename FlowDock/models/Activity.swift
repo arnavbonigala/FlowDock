@@ -77,10 +77,14 @@ struct Activity: Identifiable {
         return copy
     }
 
-    /// Highest band wins; ties go to whichever started most recently.
-    static func owner(of activities: [Activity]) -> Activity? {
+    /// Highest band wins, then whatever the user ranked higher, then whichever started
+    /// most recently.
+    static func owner(of activities: [Activity], priority: [String] = []) -> Activity? {
         activities.min { lhs, rhs in
-            lhs.band == rhs.band ? lhs.startedAt > rhs.startedAt : lhs.band < rhs.band
+            guard lhs.band == rhs.band else { return lhs.band < rhs.band }
+            let left = priority.firstIndex(of: lhs.id) ?? Int.max
+            let right = priority.firstIndex(of: rhs.id) ?? Int.max
+            return left == right ? lhs.startedAt > rhs.startedAt : left < right
         }
     }
 }
@@ -118,6 +122,9 @@ extension Activity {
         let older = stub("older", .persistent, .media, startedAt: old)
         let newer = stub("newer", .persistent, .media, startedAt: new)
         assert(owner(of: [older, newer])?.id == "newer", "ties go to the most recent")
+
+        assert(owner(of: [older, newer], priority: ["older"])?.id == "older", "the user's order beats recency")
+        assert(owner(of: [media, volume], priority: ["media"])?.id == "volume", "but never the band")
 
         let drag = stub("drag", .persistent, .drag, startedAt: old)
         assert(owner(of: [media, volume, drag])?.id == "drag", "nothing outranks a drag")

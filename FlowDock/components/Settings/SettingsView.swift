@@ -22,11 +22,12 @@ struct SettingsView: View {
     }
 
     enum Pane: String, Hashable, CaseIterable {
-        case music, notifications, systemFeedback, battery, devices, downloads, calendar, shelf
+        case activities, music, notifications, systemFeedback, battery, devices, downloads, calendar, shelf
         case general, appearance, shortcuts, about
 
         var title: String {
             switch self {
+            case .activities: "All activities"
             case .music: "Music"
             case .notifications: "Notifications"
             case .systemFeedback: "System feedback"
@@ -44,6 +45,7 @@ struct SettingsView: View {
 
         var symbol: String {
             switch self {
+            case .activities: "square.stack.3d.up"
             case .music: "play.laptopcomputer"
             case .notifications: "bell.badge"
             case .systemFeedback: "dial.medium.fill"
@@ -64,7 +66,7 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedPane) {
                 Section("Activities") {
-                    ForEach([Pane.music, .notifications, .systemFeedback, .battery, .devices, .downloads, .calendar, .shelf], id: \.self) { pane in
+                    ForEach([Pane.activities, .music, .notifications, .systemFeedback, .battery, .devices, .downloads, .calendar, .shelf], id: \.self) { pane in
                         NavigationLink(value: pane) {
                             Label(pane.title, systemImage: pane.symbol)
                         }
@@ -85,6 +87,7 @@ struct SettingsView: View {
         } detail: {
             Group {
                 switch selectedPane {
+                case .activities: ActivitySettings()
                 case .music: MusicSettings()
                 case .notifications: NotificationSettings()
                 case .systemFeedback: SystemFeedbackSettings()
@@ -200,6 +203,48 @@ struct MusicSettings: View {
         MusicManager.shared.isNowPlayingDeprecated
             ? MediaControllerType.allCases.filter { $0 != .nowPlaying }
             : MediaControllerType.allCases
+    }
+}
+
+struct ActivitySettings: View {
+    @Default(.activityPriority) private var priority
+
+    private var entries: [ActivityCatalog.Entry] { ActivityCatalog.ordered(priority) }
+
+    var body: some View {
+        Form {
+            Section {
+                List {
+                    ForEach(entries) { entry in
+                        HStack {
+                            Label(entry.name, systemImage: entry.symbol)
+                            Spacer()
+                            if let key = entry.key {
+                                Defaults.Toggle(key: key) { Text("") }
+                                    .labelsHidden()
+                            } else {
+                                Text("Always on")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .onMove { source, destination in
+                        var ordered = entries
+                        ordered.move(fromOffsets: source, toOffset: destination)
+                        priority = ordered.map(\.id)
+                    }
+                }
+                .frame(height: 240)
+            } header: {
+                Text("Drag to choose which activity wins when two want the notch at once")
+            } footer: {
+                Text("Order only decides between activities that are equally close to what you just did: a drag, a volume change, or anything else you caused still comes first.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accentColor(.effectiveAccent)
     }
 }
 

@@ -6,6 +6,7 @@
 //  See INTERACTION.md.
 //
 
+import Defaults
 import Foundation
 
 @MainActor
@@ -29,6 +30,7 @@ final class ActivityStore: ObservableObject {
         DevicePanel.selfCheck()
         ProgressPanel.selfCheck()
         MeetingPanel.selfCheck()
+        ActivityCatalog.selfCheck()
         #endif
     }
 
@@ -36,7 +38,7 @@ final class ActivityStore: ObservableObject {
         expiry.values.forEach { $0.cancel() }
     }
 
-    var owner: Activity? { Activity.owner(of: activities) }
+    var owner: Activity? { Activity.owner(of: activities, priority: Defaults[.activityPriority]) }
 
     var chinState: ActivityState {
         guard let owner else { return .idle }
@@ -46,6 +48,7 @@ final class ActivityStore: ObservableObject {
     /// Starts an activity, or updates one already running. An update keeps the original
     /// start time — it is the same activity, not a new one — and restarts the dwell.
     func begin(_ activity: Activity) {
+        guard ActivityCatalog.isEnabled(activity.id) else { return end(activity.id) }
         var activity = activity
         if let index = activities.firstIndex(where: { $0.id == activity.id }) {
             activity.startedAt = activities[index].startedAt

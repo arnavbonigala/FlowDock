@@ -118,6 +118,7 @@
 		11FD2EC1000000000000000B /* ProgressActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000000C /* ProgressActivity.swift */; };
 		11FD2EC1000000000000000D /* CountdownCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000000E /* CountdownCenter.swift */; };
 		11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000010 /* CountdownActivity.swift */; };
+		11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000012 /* ActivityCatalog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -260,6 +261,7 @@
 		11FD2EC1000000000000000C /* ProgressActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressActivity.swift; sourceTree = "<group>"; };
 		11FD2EC1000000000000000E /* CountdownCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownCenter.swift; sourceTree = "<group>"; };
 		11FD2EC10000000000000010 /* CountdownActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownActivity.swift; sourceTree = "<group>"; };
+		11FD2EC10000000000000012 /* ActivityCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -555,6 +557,7 @@
 		14D570C72C5F38760011E668 /* models */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC10000000000000012 /* ActivityCatalog.swift */,
 				11FD2EC00000000000000001 /* Activity.swift */,
 				11FD2EC00000000000000003 /* ActivityStore.swift */,
 				11F748812ECB07A400F841DB /* MusicControlButton.swift */,
@@ -805,6 +808,7 @@
 				11FD2EC1000000000000000B /* ProgressActivity.swift in Sources */,
 				11FD2EC1000000000000000D /* CountdownCenter.swift in Sources */,
 				11FD2EC1000000000000000F /* CountdownActivity.swift in Sources */,
+				11FD2EC10000000000000011 /* ActivityCatalog.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,

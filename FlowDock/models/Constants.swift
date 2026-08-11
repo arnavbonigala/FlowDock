@@ -102,6 +102,10 @@ extension Defaults.Keys {
 
     // MARK: Devices
     static let showDeviceStatus = Key<Bool>("showDeviceStatus", default: true)
+
+    // MARK: Activities
+    static let showMusicActivity = Key<Bool>("musicLiveActivityEnabled", default: true)
+    static let activityPriority = Key<[String]>("activityPriority", default: [])
     
     // MARK: Downloads
     static let showDownloads = Key<Bool>("showDownloads", default: true)

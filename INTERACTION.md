@@ -146,7 +146,7 @@ Every activity declares three things. Anything that cannot is not an activity ye
 | 5 | Ongoing media | Persistent |
 | 6 | Ambient decoration | Persistent |
 
-Ties inside a band go to the activity that started most recently. New activities and extensions join an existing band; the ladder does not grow a band per feature.
+Ties inside a band go to whichever activity the user ranked higher in Settings, and then to the one that started most recently. Ranking never crosses a band: an activity the user cares about does not outrank the drag they are in the middle of. New activities and extensions join an existing band; the ladder does not grow a band per feature.
 
 ### Coexistence
 
@@ -173,7 +173,7 @@ Ties inside a band go to the activity that started most recently. New activities
 
 ### Current implementation
 
-- Priority is a band on `Activity`, so adding an activity declares a rank instead of editing a rendering branch, and `Activity.owner(of:)` resolves the chin from that alone.
+- Priority is a band on `Activity`, so adding an activity declares a rank instead of editing a rendering branch, and `Activity.owner(of:priority:)` resolves the chin from that and the user's order alone.
 - One expiration mechanism serves the whole contextual class: `ActivityStore.contextualDwell`.
 - Media completion is still inferred from `isPlayerIdle` rather than published by the activity, which is why a quit player can leave the chin populated.
 
