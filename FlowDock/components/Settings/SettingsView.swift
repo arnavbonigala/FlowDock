@@ -291,20 +291,28 @@ struct NotificationSettings: View {
     var body: some View {
         Form {
             Section {
-                Defaults.Toggle(key: .showNotifications) {
-                    Text("Show incoming notifications")
-                }
-                .disabled(!accessibilityAuthorized)
-
-                if !accessibilityAuthorized {
-                    LabeledContent("Accessibility access is required") {
+                if accessibilityAuthorized {
+                    Defaults.Toggle(key: .showNotifications) {
+                        Text("Show incoming notifications")
+                    }
+                } else {
+                    LabeledContent("Show incoming notifications") {
                         Button("Grant accessibility access") {
                             XPCHelperClient.shared.requestAccessibilityAuthorization()
                         }
                     }
+                    LabeledContent("Nothing happened when you granted it?") {
+                        Button("Open Accessibility settings") {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
                 }
             } footer: {
-                Text("Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility and shows nothing without that access.")
+                Text(accessibilityAuthorized
+                    ? "Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility."
+                    : "Notifications arriving on this Mac appear at the notch, grouped by app, with open and dismiss actions. macOS exposes no other route to another app's notifications, so this reads the banners through accessibility and shows nothing without that access. macOS drops that access when FlowDock is moved or updated, and it then ignores the request above because a stale entry already exists. Open Accessibility settings, remove FlowDock, and add it again.")
             }
         }
         .task {
