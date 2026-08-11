@@ -57,7 +57,7 @@ private struct WelcomeView: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 48)
+                .padding(.horizontal, 24)
             Spacer()
             Button("Get started", action: onContinue)
                 .buttonStyle(.borderedProminent)
@@ -216,7 +216,7 @@ private struct PermissionRow: View {
             }
         } label: {
             Label {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                     Text(detail)
                         .font(.caption)

@@ -104,7 +104,7 @@ something the system already draws and are the complete list:
 | Where | Value | Why |
 |---|---|---|
 | The system feedback pill | 10 pt gap, 14 pt inset, 11 and 15 pt text | It stands in for the macOS volume and brightness HUD and must be indistinguishable from it |
-| The battery glyph's bolt | 7 pt | An overlay inside a drawn glyph, sized to the glyph rather than to text |
+| The drawn battery glyph | 25 × 12 pt body, 3.5 pt radius, 1 pt gap to the tip, 2 pt fill inset, 7 pt bolt | It reproduces the menu bar's own battery, so its internal metrics come from that glyph rather than from this scale. Nothing else may borrow them |
 | Missing-artwork placeholder | 26 pt | A single glyph filling artwork's square, not text |
 
 Anything else off the 4 pt grid, and any other `Font.system(size:)`, is a bug rather than
