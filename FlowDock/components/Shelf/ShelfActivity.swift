@@ -311,9 +311,13 @@ private struct ShelfChipInput: NSViewRepresentable {
             let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
             let items = selected.count > 1 && selected.contains { $0.id == item.id } ? selected : [item!]
 
+            releaseDraggedURLs()
+
             let image = viewModel?.thumbnail ?? item.icon
+            var draggable: [ShelfItem] = []
             let dragging: [NSDraggingItem] = items.compactMap { item in
                 guard let pasteboardItem = pasteboardItem(for: item) else { return nil }
+                draggable.append(item)
                 let draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
                 draggingItem.setDraggingFrame(
                     NSRect(origin: .zero, size: image.size),
@@ -322,10 +326,18 @@ private struct ShelfChipInput: NSViewRepresentable {
                 return draggingItem
             }
 
-            guard !dragging.isEmpty else { return }
+            guard !dragging.isEmpty else {
+                releaseDraggedURLs()
+                return
+            }
 
-            draggedItems = items
+            draggedItems = draggable
             beginDraggingSession(with: dragging, event: event, source: self)
+        }
+
+        private func releaseDraggedURLs() {
+            draggedURLs.forEach { $0.stopAccessingSecurityScopedResource() }
+            draggedURLs.removeAll()
         }
 
         private func pasteboardItem(for item: ShelfItem) -> NSPasteboardItem? {
@@ -333,10 +345,7 @@ private struct ShelfChipInput: NSViewRepresentable {
 
             switch item.kind {
             case .file:
-                guard let url = ShelfStateViewModel.shared.resolveFileURL(for: item) else {
-                    pasteboardItem.setString(item.displayName, forType: .string)
-                    return pasteboardItem
-                }
+                guard let url = ShelfStateViewModel.shared.resolveFileURL(for: item) else { return nil }
                 if url.startAccessingSecurityScopedResource() {
                     draggedURLs.append(url)
                 }
@@ -369,11 +378,10 @@ private struct ShelfChipInput: NSViewRepresentable {
         func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
             ShelfSelectionModel.shared.endDrag()
 
-            draggedURLs.forEach { $0.stopAccessingSecurityScopedResource() }
-            draggedURLs.removeAll()
+            releaseDraggedURLs()
 
             if Defaults[.autoRemoveShelfItems] && !operation.isEmpty {
-                draggedItems.forEach { ShelfStateViewModel.shared.remove($0) }
+                draggedItems.forEach { ShelfStateViewModel.shared.remove($0, deletingStoredData: false) }
             }
             draggedItems.removeAll()
         }
@@ -391,6 +399,11 @@ extension ShelfPanel {
         assert(Activity.shelf(count: 2).band == .drag, "nothing outranks a drop in progress")
         assert(Activity.shelf(count: 2).activityClass == .persistent)
         assert(Activity.shelf(count: 2).expanded == nil, "the shelf is panel content, not an expanded activity")
+        assert(NSItemProvider.isFileContentType(UTType.png.identifier), "promised attachment content becomes a file")
+        assert(NSItemProvider.isFileContentType(UTType.pdf.identifier), "promised attachment content becomes a file")
+        assert(!NSItemProvider.isFileContentType(UTType.utf8PlainText.identifier), "dragged text stays text")
+        assert(!NSItemProvider.isFileContentType(UTType.fileURL.identifier), "file references resolve to the original file")
+        assert(!NSItemProvider.isFileContentType(UTType.url.identifier), "web links stay links")
     }
 }
 

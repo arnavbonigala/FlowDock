@@ -25,51 +25,34 @@ extension NSItemProvider {
         return nil
     }
     
-    /// Loads raw data for the given type identifier
-    func loadData() async -> Data? {
-        NSLog(String(describing: self.registeredTypeIdentifiers))
-        guard hasItemConformingToTypeIdentifier(UTType.data.identifier) else { return nil }
-        return await withCheckedContinuation { (cont: CheckedContinuation<Data?, Never>) in
-            loadItem(forTypeIdentifier: UTType.data.identifier, options: nil) { item, error in
-                if let error = error {
-                    print("Error loading data for type \(UTType.data.identifier): \(error.localizedDescription)")
+    static func isFileContentType(_ identifier: String) -> Bool {
+        guard let type = UTType(identifier) else { return false }
+        guard !type.conforms(to: .url), !type.conforms(to: .text) else { return false }
+        return type.conforms(to: .data)
+    }
+
+    func extractFileContents() async -> (data: Data, name: String)? {
+        for typeIdentifier in registeredTypeIdentifiers where Self.isFileContentType(typeIdentifier) {
+            if let contents = await loadFileContents(typeIdentifier: typeIdentifier) {
+                return contents
+            }
+        }
+        return nil
+    }
+
+    private func loadFileContents(typeIdentifier: String) async -> (data: Data, name: String)? {
+        await withCheckedContinuation { (cont: CheckedContinuation<(data: Data, name: String)?, Never>) in
+            _ = loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, error in
+                if let error {
+                    print("❌ Error loading file representation for type \(typeIdentifier): \(error.localizedDescription)")
                     cont.resume(returning: nil)
                     return
                 }
-                if let url = item as? URL, let data = try? Data(contentsOf: url) {
-                    if !url.absoluteString.contains("com.apple.SwiftUI.filePromises") {
-                        cont.resume(returning: nil)
-                        return
-                    }
-                    self.suggestedName = self.suggestedName ?? url.lastPathComponent
-                    
-                    let fileManager = FileManager.default
-                    let folderURL = url.deletingLastPathComponent()
-
-                    do {
-                        // Delete the file first
-                        try fileManager.removeItem(at: url)
-                        print("Deleted file: \(url.path)")
-
-                        // Check folder contents
-                        let contents = try fileManager.contentsOfDirectory(atPath: folderURL.path)
-                        if contents.isEmpty {
-                            try fileManager.removeItem(at: folderURL)
-                            print("Folder was empty, deleted folder: \(folderURL.path)")
-                        } else {
-                            print("Folder not deleted — it still contains \(contents.count) item(s).")
-                        }
-
-                    } catch {
-                        print("Error: \(error.localizedDescription)")
-                    }
-                    
-                    cont.resume(returning: data)
-                } else if let data = item as? Data {
-                    cont.resume(returning: data)
-                } else {
+                guard let url, let data = try? Data(contentsOf: url), !data.isEmpty else {
                     cont.resume(returning: nil)
+                    return
                 }
+                cont.resume(returning: (data, url.lastPathComponent))
             }
         }
     }

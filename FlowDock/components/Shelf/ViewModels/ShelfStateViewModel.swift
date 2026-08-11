@@ -39,8 +39,8 @@ final class ShelfStateViewModel: ObservableObject {
         items = merged
     }
 
-    func remove(_ item: ShelfItem) {
-        item.cleanupStoredData()
+    func remove(_ item: ShelfItem, deletingStoredData: Bool = true) {
+        if deletingStoredData { item.cleanupStoredData() }
         items.removeAll { $0.id == item.id }
     }
 
