@@ -21,7 +21,7 @@ Extends the minimum matrix in `build/research/boringnotch-product-research.md`. 
 | H5 | Notched MacBook **plus** external display | Preferred-display and all-display modes, lid open and closed, hot plug, display reorder, full screen on either display. |
 | H6 | Docked / **clamshell** MacBook | Dock disconnect and reconnect, shelf drag while docked, camera/audio/display re-enumeration. |
 | H7 | Display driven by **BetterDisplay** (or similar) | FlowDock does not swallow media keys, does not claim brightness control it does not have, and does not fight the tool for the menu bar. |
-| H8 | **Oldest supported OS** — macOS 14 | Everything in H1 plus onboarding, permission prompts, and update check. Nothing is gated on a symbol that only exists on 15/26. |
+| H8 | **Oldest supported OS** — macOS 14 | Everything in H1 plus onboarding, permission prompts, and update check. Nothing is gated on a symbol that only exists on 15/26. `MediaRemoteAdapter.framework` is built for 15.0, so confirm the app still launches and that music falls back to Music/Spotify control instead of the generic now-playing path. |
 | H9 | **Newest OS** — current release | Same as H8, plus the macOS 26 glass path in `SystemFeedback.glassBackground` and icon-appearance tinting. |
 
 Run H1 and H5 for every release candidate. Run the rest at least once per minor release and whenever the window, sizing, or display code changes.
