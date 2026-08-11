@@ -183,6 +183,7 @@ struct ExperienceView: View {
         .animation(.experience(reduceMotion: reduceMotion, collapsing: state != .expanded), value: state)
         .animation(.value(reduceMotion: reduceMotion), value: store.owner?.id)
         .preferredColorScheme(.dark)
+        .symbolRenderingMode(.hierarchical)
         .environment(\.shellNamespace, reduceMotion ? nil : shell)
         .musicActivity(in: store, suppressed: vm.hideOnClosed)
         .powerActivity(in: store, suppressed: isExpanded)

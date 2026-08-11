@@ -23,7 +23,6 @@ extension Activity {
             leading: {
                 Image(systemName: "tray.and.arrow.down.fill")
                     .font(.chinGlyph)
-                    .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.primary)
                     .frame(width: shelfChinSide, alignment: .leading)
             },
