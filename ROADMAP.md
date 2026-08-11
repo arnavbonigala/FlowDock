@@ -78,7 +78,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 ## 6. Turn the drop experience into a workflow tool
 
 - [x] Make drag-and-drop a fast, dependable top-of-screen interaction
-- [ ] Support selection, clearing, keyboard actions, and other essential shelf management
+- [x] Support selection, clearing, keyboard actions, and other essential shelf management
 - [ ] Make AirDrop, system sharing, and moving content between apps dependable
 - [ ] Provide a focused set of file actions, including preview, compression, image conversion, and background removal
 - [ ] Make available actions discoverable without crowding the primary experience

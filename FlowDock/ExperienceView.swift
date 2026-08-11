@@ -30,6 +30,9 @@ struct ExperienceView: View {
 
     static let contextColumn: CGFloat = 215
     static let droppedTypes: [UTType] = [.fileURL, .url, .utf8PlainText, .plainText, .data]
+    static let expandedShortcuts: [KeyboardShortcuts.Name] = [
+        .dismissExpanded, .shelfSelectAll, .shelfCopySelection, .shelfRemoveSelected, .shelfClear,
+    ]
 
     private var showsAgenda: Bool { showCalendar }
 
@@ -111,16 +114,20 @@ struct ExperienceView: View {
                 .contentShape(Rectangle())
                 .sensoryFeedback(.alignment, trigger: haptics)
                 .task {
-                    KeyboardShortcuts.disable(.dismissExpanded)
+                    Self.expandedShortcuts.forEach { KeyboardShortcuts.disable($0) }
                     KeyboardShortcuts.onKeyDown(for: .dismissExpanded) { collapse() }
+                    KeyboardShortcuts.onKeyDown(for: .shelfSelectAll) { ShelfActionService.selectAll() }
+                    KeyboardShortcuts.onKeyDown(for: .shelfCopySelection) { ShelfActionService.copySelection() }
+                    KeyboardShortcuts.onKeyDown(for: .shelfRemoveSelected) { ShelfActionService.removeSelected() }
+                    KeyboardShortcuts.onKeyDown(for: .shelfClear) { ShelfActionService.clearShelf() }
                 }
                 .onChange(of: isExpanded) { _, expanded in
                     // The panel cannot take key focus, so Escape is a hotkey that exists
                     // only while there is something to dismiss.
                     if expanded {
-                        KeyboardShortcuts.enable(.dismissExpanded)
+                        Self.expandedShortcuts.forEach { KeyboardShortcuts.enable($0) }
                     } else {
-                        KeyboardShortcuts.disable(.dismissExpanded)
+                        Self.expandedShortcuts.forEach { KeyboardShortcuts.disable($0) }
                     }
                 }
                 .onHover(perform: hover)

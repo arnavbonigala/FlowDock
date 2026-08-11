@@ -709,6 +709,19 @@ struct ShortcutsSettings: View {
             Section {
                 KeyboardShortcuts.Recorder("Open the notch:", name: .toggleNotchOpen)
             }
+            Section {
+                KeyboardShortcuts.Recorder("Close:", name: .dismissExpanded)
+                KeyboardShortcuts.Recorder("Select every item:", name: .shelfSelectAll)
+                KeyboardShortcuts.Recorder("Copy the selection:", name: .shelfCopySelection)
+                KeyboardShortcuts.Recorder("Remove the selection:", name: .shelfRemoveSelected)
+                KeyboardShortcuts.Recorder("Clear the shelf:", name: .shelfClear)
+            } header: {
+                Text("While the panel is open")
+            } footer: {
+                Text("The panel never takes keyboard focus, so these work as shortcuts and are live only while it is open.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .accentColor(.effectiveAccent)
     }

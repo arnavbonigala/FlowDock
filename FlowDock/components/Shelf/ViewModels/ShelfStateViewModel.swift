@@ -44,6 +44,12 @@ final class ShelfStateViewModel: ObservableObject {
         items.removeAll { $0.id == item.id }
     }
 
+    func removeAll() {
+        items.forEach { $0.cleanupStoredData() }
+        items = []
+        ShelfSelectionModel.shared.clear()
+    }
+
     func updateBookmark(for item: ShelfItem, bookmark: Data) {
         Task { @MainActor [weak self] in
             guard let self,

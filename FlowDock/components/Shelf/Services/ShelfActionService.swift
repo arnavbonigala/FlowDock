@@ -45,6 +45,50 @@ enum ShelfActionService {
         ShelfStateViewModel.shared.remove(item)
     }
 
+    static func selectAll() {
+        ShelfSelectionModel.shared.selectAll(in: ShelfStateViewModel.shared.items)
+    }
+
+    static func removeSelected() {
+        let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
+        selected.forEach { ShelfStateViewModel.shared.remove($0) }
+        ShelfSelectionModel.shared.clear()
+    }
+
+    static func clearShelf() {
+        ShelfStateViewModel.shared.removeAll()
+    }
+
+    static func copySelection() {
+        let selected = ShelfSelectionModel.shared.selectedItems(in: ShelfStateViewModel.shared.items)
+        guard !selected.isEmpty else { return }
+
+        copiedURLs.forEach { $0.stopAccessingSecurityScopedResource() }
+        copiedURLs = []
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+
+        let urls = ShelfStateViewModel.shared.resolveFileURLs(for: selected)
+        if !urls.isEmpty {
+            copiedURLs = urls.filter { $0.startAccessingSecurityScopedResource() }
+            pasteboard.writeObjects(urls as [NSURL])
+            return
+        }
+
+        pasteboard.setString(selected.map(text).joined(separator: "\n"), forType: .string)
+    }
+
+    private static var copiedURLs: [URL] = []
+
+    private static func text(_ item: ShelfItem) -> String {
+        switch item.kind {
+        case .text(let string): string
+        case .link(let url): url.absoluteString
+        case .file: item.displayName
+        }
+    }
+
     private static func handleBookmarkedFile(_ bookmarkData: Data, action: @escaping @Sendable (URL) -> Void) {
         Task {
             let bookmark = Bookmark(data: bookmarkData)

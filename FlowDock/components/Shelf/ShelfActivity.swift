@@ -4,6 +4,7 @@
 //
 
 import AppKit
+import KeyboardShortcuts
 import Defaults
 import SwiftUI
 import UniformTypeIdentifiers
@@ -94,6 +95,11 @@ struct ShelfPanel: View {
             QuickShareButton()
 
             strip
+
+            if !shelf.items.isEmpty {
+                HoverButton(icon: "xmark.bin", scale: .medium) { ShelfActionService.clearShelf() }
+                    .accessibilityLabel("Clear the shelf")
+            }
         }
         .frame(height: Self.rowHeight)
         .overlay {
@@ -415,6 +421,8 @@ private struct ShelfChipInput: NSViewRepresentable {
 extension ShelfPanel {
     static func selfCheck() {
         assert(Activity.shelfLabel(count: 0) == "Shelf, receiving")
+        assert(ExperienceView.expandedShortcuts.count == 5, "every shelf shortcut is live only while open")
+        assert(ExperienceView.expandedShortcuts.contains(.shelfClear))
         assert(Activity.shelfLabel(count: 1) == "Shelf, 1 item")
         assert(Activity.shelfLabel(count: 4) == "Shelf, 4 items")
         assert(Activity.shelf(count: 2).band == .drag, "nothing outranks a drop in progress")
