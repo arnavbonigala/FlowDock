@@ -214,7 +214,9 @@ struct TimerPanel: View {
                             .contentShape(Capsule())
                     }
                     .buttonStyle(PressableButtonStyle())
-                    .accessibilityLabel("Start a \(minutes) minute timer")
+                    .accessibilityLabel("\(minutes) minutes")
+                    .accessibilityHint("Starts a timer")
+                    .accessibilityInputLabels(["\(minutes)m", "\(minutes) minutes"])
                 }
 
                 Spacer(minLength: 0)
