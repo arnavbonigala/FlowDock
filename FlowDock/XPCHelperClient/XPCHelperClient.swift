@@ -12,6 +12,7 @@ final class XPCHelperClient: NSObject {
     fileprivate let relayReceiver = NotificationRelayReceiver()
     private var lastKnownAuthorization: Bool?
     private var monitoringTask: Task<Void, Never>?
+    private var authorizationObserver: NSObjectProtocol?
     
     deinit {
         connection?.invalidate()
@@ -74,9 +75,20 @@ final class XPCHelperClient: NSObject {
     }
 
     // MARK: - Monitoring
-    nonisolated func startMonitoringAccessibilityAuthorization(every interval: TimeInterval = 15.0) {
+
+    /// The system announces a change to the accessibility database, so granting or revoking
+    /// is noticed at once rather than on the next sweep. The sweep stays as a backstop
+    /// because that announcement is not contractual, but it no longer has to be quick.
+    nonisolated func startMonitoringAccessibilityAuthorization(every interval: TimeInterval = 60.0) {
         // Ensure only one monitor exists
         stopMonitoringAccessibilityAuthorization()
+        authorizationObserver = DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("com.apple.accessibility.api"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { _ = await self?.isAccessibilityAuthorized() }
+        }
         monitoringTask = Task.detached { [weak self] in
             guard let self = self else { return }
             while !Task.isCancelled {
@@ -92,6 +104,10 @@ final class XPCHelperClient: NSObject {
     nonisolated func stopMonitoringAccessibilityAuthorization() {
         monitoringTask?.cancel()
         monitoringTask = nil
+        if let authorizationObserver {
+            DistributedNotificationCenter.default().removeObserver(authorizationObserver)
+            self.authorizationObserver = nil
+        }
     }
 
     // Expose whether the client is actively monitoring (useful for tests/debug)

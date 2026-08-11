@@ -42,7 +42,10 @@ final class ExtensionHost: NSObject, ObservableObject {
     func start() {
         guard discovery == nil else { return }
         ranking = Defaults.publisher(.enabledExtensions).sink { _ in
-            Task { @MainActor [weak self] in self?.settle() }
+            Task { @MainActor [weak self] in
+                self?.settle()
+                self?.pollWhileHostingSomething()
+            }
         }
         discovery = Task { [weak self] in
             guard let identities = try? AppExtensionIdentity.matching(
@@ -54,6 +57,18 @@ final class ExtensionHost: NSObject, ObservableObject {
                 await self?.refresh(found)
             }
         }
+        pollWhileHostingSomething()
+    }
+
+    /// Nothing enabled means nothing to ask, and a timer that wakes to answer its own guard
+    /// is exactly the idle cost the shell is supposed to not have.
+    private func pollWhileHostingSomething() {
+        guard !Defaults[.enabledExtensions].isEmpty else {
+            poll?.cancel()
+            poll = nil
+            return
+        }
+        guard poll == nil else { return }
         poll = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: Self.pollInterval)
