@@ -123,6 +123,7 @@
 		11FD2EC10000000000000017 /* ExtensionHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC10000000000000018 /* ExtensionHost.swift */; };
 		11FD2EC10000000000000019 /* ExtensionActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000001A /* ExtensionActivity.swift */; };
 		11FD2EC1000000000000001B /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000001C /* Typography.swift */; };
+		11FD2EC1000000000000001D /* PanelRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FD2EC1000000000000001E /* PanelRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -271,6 +272,7 @@
 		11FD2EC10000000000000018 /* ExtensionHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionHost.swift; sourceTree = "<group>"; };
 		11FD2EC1000000000000001A /* ExtensionActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionActivity.swift; sourceTree = "<group>"; };
 		11FD2EC1000000000000001C /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		11FD2EC1000000000000001E /* PanelRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -614,6 +616,7 @@
 		B15063502C63D3F600EBB0E3 /* extensions */ = {
 			isa = PBXGroup;
 			children = (
+				11FD2EC1000000000000001E /* PanelRow.swift */,
 				11FD2EC1000000000000001C /* Typography.swift */,
 				111BEA602ED09B1B0079DD4E /* NSScreen+UUID.swift */,
 				1194E93F2EACC652009C82D6 /* Color+AccentColor.swift */,
@@ -835,6 +838,7 @@
 				11FD2EC10000000000000017 /* ExtensionHost.swift in Sources */,
 				11FD2EC10000000000000019 /* ExtensionActivity.swift in Sources */,
 				11FD2EC1000000000000001B /* Typography.swift in Sources */,
+				11FD2EC1000000000000001D /* PanelRow.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,
 				147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */,
 				11CC44A22CEE614100C7244B /* FlowDockViewCoordinator.swift in Sources */,

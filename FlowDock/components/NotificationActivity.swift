@@ -149,10 +149,7 @@ private struct NotificationRow: View {
         }
         .frame(height: 30)
         .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary)
-        )
+        .panelRowBackground()
         .onHover { hovering = $0 }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Activity.notificationLabel(notification, count: group.notifications.count))

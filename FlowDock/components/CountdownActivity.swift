@@ -165,10 +165,7 @@ struct MeetingPanel: View {
         }
         .frame(height: 30)
         .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary)
-        )
+        .panelRowBackground()
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Self.label(event, now: .now))
     }
@@ -215,10 +212,7 @@ struct TimerPanel: View {
         }
         .frame(height: 22)
         .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary)
-        )
+        .panelRowBackground()
         .animation(.value(reduceMotion: reduceMotion), value: timer.isRunning)
     }
 }

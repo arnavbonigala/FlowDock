@@ -240,7 +240,6 @@ private struct ShelfActionRow: View {
 private struct QuickShareButton: View {
     @ObservedObject private var quickShare = QuickShareService.shared
     @Default(.quickShareProvider) private var providerID
-    @Environment(\.colorSchemeContrast) private var contrast
 
     @State private var anchor: NSView?
 
@@ -256,14 +255,7 @@ private struct QuickShareButton: View {
             glyph
                 .frame(width: 18, height: 18)
                 .frame(width: ShelfPanel.rowHeight, height: ShelfPanel.rowHeight)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(.primary, lineWidth: contrast == .increased ? 1 : 0)
-                        )
-                )
+                .panelRowBackground()
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -312,7 +304,6 @@ private struct ShelfChip: View {
 
     @StateObject private var viewModel: ShelfItemViewModel
     @ObservedObject private var selection = ShelfSelectionModel.shared
-    @Environment(\.colorSchemeContrast) private var contrast
 
     init(item: ShelfItem, quickLook: QuickLookService) {
         self.item = item
@@ -338,14 +329,7 @@ private struct ShelfChip: View {
         .padding(.horizontal, 8)
         .frame(height: ShelfPanel.rowHeight)
         .frame(maxWidth: 140)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(contrast == .increased ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.quaternary))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(.primary, lineWidth: contrast == .increased ? 1 : 0)
-                )
-        )
+        .panelRowBackground()
         .overlay {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .strokeBorder(Color.accentColor, lineWidth: 2)

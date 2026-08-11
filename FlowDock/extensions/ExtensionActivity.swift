@@ -36,10 +36,7 @@ extension Activity {
                 RemoteScene(identity: identity, sceneID: ActivityExtension.Scene.panel)
                     .frame(height: 30)
                     .frame(maxWidth: .infinity)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.quaternary)
-                    )
+                    .panelRowBackground()
                     .accessibilityElement(children: .contain)
                     .accessibilityLabel(declaration.label)
             }

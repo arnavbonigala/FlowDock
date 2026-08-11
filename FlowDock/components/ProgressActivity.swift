@@ -169,10 +169,7 @@ struct ProgressPanel: View {
                     }
                     .frame(height: 30)
                     .padding(.horizontal, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.quaternary)
-                    )
+                    .panelRowBackground()
                     .accessibilityElement(children: .contain)
                     .accessibilityLabel(report.label)
                     .transition(.opacity)
