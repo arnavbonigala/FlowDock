@@ -6,6 +6,7 @@
 //
 
 import Defaults
+import SwiftUI
 
 enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.Serializable {
     case shuffle
@@ -94,8 +95,8 @@ enum MusicControlButton: String, CaseIterable, Identifiable, Codable, Defaults.S
         }
     }
 
-    var prefersLargeScale: Bool {
-        self == .playPause
+    var glyphScale: Image.Scale {
+        self == .playPause ? .large : .medium
     }
 
     var requires: MediaCapabilities {

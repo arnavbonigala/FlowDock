@@ -19,11 +19,6 @@ struct HoverButton: View {
 
     var body: some View {
         let size = CGFloat(scale == .large ? 40 : 30)
-        let glyph: Font = switch scale {
-        case .large: .largeTitle
-        case .small: .panelMeta
-        default: .panelControl
-        }
 
         Button(action: action) {
             Rectangle()
@@ -38,7 +33,7 @@ struct HoverButton: View {
                             Image(systemName: icon)
                                 .foregroundColor(iconColor)
                                 .contentTransition(reduceMotion ? .opacity : contentTransition)
-                                .font(glyph)
+                                .font(scale.glyphFont)
                         }
                 }
         }
@@ -47,6 +42,18 @@ struct HoverButton: View {
             withAnimation(.value) {
                 isHovering = hovering
             }
+        }
+    }
+}
+
+extension Image.Scale {
+    /// The panel draws a control at one of three sizes, and anything that previews a
+    /// control has to ask for the same one or the preview lies about the panel.
+    var glyphFont: Font {
+        switch self {
+        case .large: .largeTitle
+        case .small: .panelMeta
+        default: .panelControl
         }
     }
 }

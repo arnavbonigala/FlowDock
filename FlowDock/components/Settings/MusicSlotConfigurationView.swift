@@ -137,9 +137,9 @@ struct MusicSlotConfigurationView: View {
 
                                         if control != .none {
                                             Image(systemName: control.iconName)
-                                                .font(.system(size: control.prefersLargeScale ? 18 : 15, weight: .medium))
+                                                .font(control.glyphScale.glyphFont)
                                                 .foregroundStyle(control == .none ? Color.secondary : Color.primary)
-                                                .frame(width: 28, height: 28)
+                                                .frame(width: 32, height: 32)
                                         }
                                     }
                                     .cornerRadius(8)
@@ -217,9 +217,9 @@ struct MusicSlotConfigurationView: View {
 
             if slot != .none {
                 Image(systemName: slot.iconName)
-                    .font(.system(size: slot.prefersLargeScale ? 18 : 15, weight: .medium))
+                    .font(slot.glyphScale.glyphFont)
                     .foregroundStyle(previewIconColor(for: slot))
-                    .frame(width: 28, height: 28)
+                    .frame(width: 32, height: 32)
             } else {
                 RoundedRectangle(cornerRadius: 6)
                     .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
