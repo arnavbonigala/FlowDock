@@ -125,8 +125,8 @@ struct AgendaPanel: View {
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        if let location = event.location, !location.isEmpty {
-                            Text(location)
+                        if let context = Self.context(event) {
+                            Text(context)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
@@ -141,6 +141,11 @@ struct AgendaPanel: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Self.label(event))
+
+            if let meeting = event.meetingURL {
+                HoverButton(icon: "video.fill", scale: .small) { openURL(meeting) }
+                    .accessibilityLabel("Join \(event.title)")
+            }
         }
         .padding(.vertical, 3)
         .opacity(Self.isSpent(event, now: .now) ? 0.5 : 1)
@@ -198,6 +203,13 @@ struct AgendaPanel: View {
     static func isSpent(_ event: EventModel, now: Date) -> Bool {
         if case .reminder(let completed) = event.type { return completed }
         return !event.isAllDay && event.end <= now
+    }
+
+    static func context(_ event: EventModel) -> String? {
+        let location = (event.location?.isEmpty == false) ? event.location : nil
+        let people = event.participants.count > 1 ? "\(event.participants.count) people" : nil
+        let parts = [location, people].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     static func label(_ event: EventModel) -> String {
@@ -294,6 +306,8 @@ extension AgendaPanel {
         assert(next(in: [morning, allDay], now: noon)?.id == "all day", "nothing left today falls back to all-day")
         assert(next(in: [morning], now: noon)?.id == "morning", "then to the last thing that happened")
         assert(next(in: [], now: noon) == nil)
+
+        assert(context(EventModel.stub("bare")) == nil)
 
         assert(isSpent(morning, now: noon))
         assert(!isSpent(evening, now: noon))

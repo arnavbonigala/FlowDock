@@ -357,6 +357,9 @@ struct CalendarSettings: View {
                 Defaults.Toggle(key: .showCalendar) {
                     Text("Show the agenda")
                 }
+                Defaults.Toggle(key: .showMeetingCountdown) {
+                    Text("Count down to the next meeting")
+                }
                 Defaults.Toggle(key: .hideAllDayEvents) {
                     Text("Hide all-day events")
                 }

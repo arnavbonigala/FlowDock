@@ -72,7 +72,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Add a first-class notification experience with useful grouping and actions where macOS permits
 - [x] Add Bluetooth and headphone connection, battery, and device-status activities
 - [x] Add dependable download and progress activities
-- [ ] Add timers, meeting actions and countdowns, and richer calendar context
+- [x] Add timers, meeting actions and countdowns, and richer calendar context
 - [ ] Let users control which activities appear and how they are prioritized
 
 ## 6. Turn the drop experience into a workflow tool

@@ -168,6 +168,7 @@ struct ExperienceView: View {
         .notificationActivity(in: store)
         .deviceActivity(in: store)
         .progressActivity(in: store)
+        .countdownActivity(in: store)
     }
 
     // MARK: - Surfaces
@@ -229,6 +230,8 @@ struct ExperienceView: View {
                     }
 
                     NotificationPanel()
+
+                    TimerPanel()
 
                     if shelfEnabled {
                         ShelfPanel(targeted: isDropTargeted)
