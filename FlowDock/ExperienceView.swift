@@ -131,6 +131,7 @@ struct ExperienceView: View {
                     KeyboardShortcuts.onKeyDown(for: .shelfClear) { ShelfActionService.clearShelf() }
                 }
                 .onChange(of: isExpanded) { _, expanded in
+                    if Defaults[.enableHaptics] { haptics.toggle() }
                     // The panel cannot take key focus, so Escape is a hotkey that exists
                     // only while there is something to dismiss.
                     if expanded {
@@ -316,8 +317,6 @@ struct ExperienceView: View {
         }
 
         settleTask?.cancel()
-
-        if !isExpanded, Defaults[.enableHaptics] { haptics.toggle() }
 
         guard !isExpanded, store.chinState != .contextual, Defaults[.openNotchOnHover] else { return }
 

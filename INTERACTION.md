@@ -298,6 +298,5 @@ The shell implements the four-state ladder: `ActivityStore.chinState` derives id
 - Escape dismisses; the hotkey is registered only while there is something to dismiss.
 - Nothing in the panel is focusable and there is no tab order; the keyboard reaches FlowDock only through global shortcuts.
 - The context menu is attached to the shell surface, so it is unavailable wherever that surface is not hit-testable.
-- Haptics fire the moment the pointer enters the closed notch, before hover intent, so transit is rewarded like an action.
 - Contextual state is gated behind `hudReplacement` for non-media types; that is a permissions concern, not a state concern, and does not change the ladder.
 - Activities are still declared by the display's own view rather than routed from the managers, so an activity that should mirror across displays is created per display.
