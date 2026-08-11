@@ -14,6 +14,7 @@ class SettingsWindowController: NSWindowController {
     static let shared = SettingsWindowController()
     private var updaterController: SPUStandardUpdaterController?
     private let frameName = NSWindow.FrameAutosaveName("FlowDockSettingsWindow")
+    private var hasContent = false
 
     private init() {
         let window = NSWindow(
@@ -34,8 +35,14 @@ class SettingsWindowController: NSWindowController {
     
     func setUpdaterController(_ controller: SPUStandardUpdaterController) {
         self.updaterController = controller
-        // Recreate the content view with the proper updater controller
-        setupWindow()
+        if hasContent { installContent() }
+    }
+
+    /// Settings are a window this app may never open, so the pane tree is built the first
+    /// time it is shown rather than while the shell is starting.
+    private func installContent() {
+        window?.contentView = NSHostingView(rootView: SettingsView(updaterController: updaterController))
+        hasContent = true
     }
     
     private func setupWindow() {
@@ -60,17 +67,12 @@ class SettingsWindowController: NSWindowController {
         window.setFrameAutosaveName(frameName)
         window.contentMinSize = NSSize(width: 700, height: 480)
         
-        // Create the SwiftUI content
-        let settingsView = SettingsView(updaterController: updaterController)
-        let hostingView = NSHostingView(rootView: settingsView)
-        window.contentView = hostingView
-        
-        // Handle window closing
         window.delegate = self
     }
     
     func showWindow() {
-        // Set app to regular mode first
+        if !hasContent { installContent() }
+
         NSApp.setActivationPolicy(.regular)
         
         // If window is already visible, bring it to front properly
@@ -104,8 +106,9 @@ class SettingsWindowController: NSWindowController {
     
     private func relinquishFocus() {
         window?.orderOut(nil)
-        
-        // Set app back to accessory mode immediately
+
+        let othersOpen = NSApp.windows.contains { $0 !== window && $0.isVisible && $0.canBecomeKey }
+        guard !othersOpen else { return }
         NSApp.setActivationPolicy(.accessory)
     }
 }
