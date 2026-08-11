@@ -66,6 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var workspaceObservers: [Any] = []
     private var isScreenLocked: Bool = false
     private var recoveryTask: Task<Void, Never>?
+    private var deprecationWatch: AnyCancellable?
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
@@ -353,12 +354,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.showOnboardingWindow()
             }
             playWelcomeSound()
-        } else if MusicManager.shared.isNowPlayingDeprecated
-            && Defaults[.mediaController] == .nowPlaying
-        {
-            DispatchQueue.main.async {
-                self.showOnboardingWindow(step: .setup)
-            }
+        } else if Defaults[.mediaController] == .nowPlaying {
+            deprecationWatch = MusicManager.shared.$isNowPlayingDeprecated
+                .filter { $0 }
+                .prefix(1)
+                .sink { [weak self] _ in
+                    guard Defaults[.mediaController] == .nowPlaying else { return }
+                    self?.showOnboardingWindow(step: .setup)
+                }
         }
     }
 
