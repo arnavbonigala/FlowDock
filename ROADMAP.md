@@ -62,7 +62,7 @@ Section 2 work landed in `FlowDock/Experience/` behind a debug default while the
 - [x] Keep calendar dates, reminders, scrolling, and long content correct
 - [x] Make state changes and animations smooth, interruptible, and free of visible jumps, flashes, or stale content
 - [x] Minimize idle CPU use, memory, wakeups, and battery impact
-- [ ] Make installation, updates, permission recovery, and uninstallation dependable
+- [x] Make installation, updates, permission recovery, and uninstallation dependable
 - [x] Validate the experience across supported hardware, display arrangements, and accessibility settings
 - [ ] Run a focused preview program and resolve release-blocking feedback
 
