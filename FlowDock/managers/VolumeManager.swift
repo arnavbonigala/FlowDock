@@ -37,6 +37,33 @@ final class VolumeManager: NSObject, ObservableObject {
 
     var shouldShowOverlay: Bool { Date().timeIntervalSince(lastChangeAt) < visibleDuration }
 
+    var canControlSystemOutput: Bool {
+        let deviceID = systemOutputDeviceID()
+        guard deviceID != kAudioObjectUnknown else { return false }
+        for element in [kAudioObjectPropertyElementMain, 1, 2, 3, 4] {
+            if isSettable(deviceID: deviceID, selector: kAudioDevicePropertyVolumeScalar, element: element) {
+                return true
+            }
+        }
+        return isSettable(
+            deviceID: deviceID,
+            selector: kAudioDevicePropertyMute,
+            element: kAudioObjectPropertyElementMain
+        )
+    }
+
+    private func isSettable(deviceID: AudioObjectID, selector: AudioObjectPropertySelector, element: UInt32) -> Bool {
+        var address = AudioObjectPropertyAddress(
+            mSelector: selector,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: element
+        )
+        guard AudioObjectHasProperty(deviceID, &address) else { return false }
+        var settable: DarwinBoolean = false
+        guard AudioObjectIsPropertySettable(deviceID, &address, &settable) == noErr else { return false }
+        return settable.boolValue
+    }
+
     // MARK: - Public Control API
     @MainActor func increase(stepDivisor: Float = 1.0) {
         let divisor = max(stepDivisor, 0.25)

@@ -84,6 +84,8 @@ final class MediaKeyInterceptor {
                 CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
             }
             CGEvent.tapEnable(tap: eventTap, enable: true)
+            BrightnessManager.shared.refresh()
+            KeyboardBacklightManager.shared.refresh()
         }
     }
     
@@ -138,48 +140,47 @@ final class MediaKeyInterceptor {
         let option = flags.contains(.option)
         let shift = flags.contains(.shift)
         let command = flags.contains(.command)
-        
-        // Handle option key action (without shift)
+
+        guard !flags.contains(.control),
+              canControl(keyType, command: command) else {
+            return Unmanaged.passRetained(cgEvent)
+        }
+
         if option && !shift {
-            if handleOptionAction(for: keyType, command: command) {
+            switch Defaults[.optionKeyAction] {
+            case .openSettings:
+                openSystemSettings(for: keyType, command: command)
                 return nil
+            case .showHUD:
+                showHUD(for: keyType, command: command)
+                return nil
+            case .none:
+                return Unmanaged.passRetained(cgEvent)
             }
         }
-        
-        // Handle normal key press
+
         handleKeyPress(keyType: keyType, option: option, shift: shift, command: command)
         return nil
     }
-    
-    private func handleOptionAction(for keyType: NXKeyType, command: Bool) -> Bool {
-        let action = Defaults[.optionKeyAction]
-        
-        switch action {
-        case .openSettings:
-            openSystemSettings(for: keyType, command: command)
-            return true
-        case .showHUD:
-            showHUD(for: keyType, command: command)
-            return true
-        case .none:
-            return true
+
+    private func canControl(_ keyType: NXKeyType, command: Bool) -> Bool {
+        switch keyType {
+        case .soundUp, .soundDown, .mute:
+            return VolumeManager.shared.canControlSystemOutput
+        case .brightnessUp, .brightnessDown:
+            return command
+                ? KeyboardBacklightManager.shared.isAvailable
+                : BrightnessManager.shared.isAvailable
+        case .keyboardBrightnessUp, .keyboardBrightnessDown:
+            return KeyboardBacklightManager.shared.isAvailable
         }
     }
-    
+
     private func prepareAudioPlayerIfNeeded() {
         guard audioPlayer == nil else { return }
 
         let defaultPath = "/System/Library/LoginPlugins/BezelServices.loginPlugin/Contents/Resources/volume.aiff"
-        if FileManager.default.fileExists(atPath: defaultPath) {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: defaultPath))
-                print("🔊 [MediaKeyInterceptor] Loaded default Bezel audio from: \(defaultPath)")
-            } catch {
-                print("⚠️ [MediaKeyInterceptor] Failed to init AVAudioPlayer with default path \(defaultPath): \(error.localizedDescription)")
-            }
-        } else {
-            print("⚠️ [MediaKeyInterceptor] Default bezel audio not found at: \(defaultPath)")
-        }
+        audioPlayer = try? AVAudioPlayer(contentsOf: URL(fileURLWithPath: defaultPath))
 
         if let player = audioPlayer {
             player.volume = 1.0
@@ -193,15 +194,7 @@ final class MediaKeyInterceptor {
               feedback == 1 else { return }
 
         prepareAudioPlayerIfNeeded()
-        guard let player = audioPlayer else {
-            print("⚠️ [MediaKeyInterceptor] No audio player available to play feedback sound")
-            return
-        }
-        if let url = player.url {
-            print("🔊 [MediaKeyInterceptor] Playing feedback sound from: \(url.path)")
-        } else {
-            print("🔊 [MediaKeyInterceptor] Playing feedback sound (no url available for AVAudioPlayer)")
-        }
+        guard let player = audioPlayer else { return }
         if player.isPlaying {
             player.stop()
             player.currentTime = 0
@@ -215,12 +208,12 @@ final class MediaKeyInterceptor {
         switch keyType {
         case .soundUp:
             Task { @MainActor in
-                self.playFeedbackSound()
+                if !shift { self.playFeedbackSound() }
                 VolumeManager.shared.increase(stepDivisor: stepDivisor)
             }
         case .soundDown:
             Task { @MainActor in
-                self.playFeedbackSound()
+                if !shift { self.playFeedbackSound() }
                 VolumeManager.shared.decrease(stepDivisor: stepDivisor)
             }
         case .mute:
