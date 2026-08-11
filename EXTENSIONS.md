@@ -112,6 +112,10 @@ extension:
   not is released along with the rest of that extension: the chin shows the next activity
   down and the extension's activity ends. A scene that fails after it has drawn ends the
   same way.
+- **A declaration is checked before it is believed.** An activity with no id, or with a
+  label that is empty or only whitespace, is not an activity and is refused. A label
+  longer than 120 characters is clamped: the chin holds a few words and VoiceOver reads
+  the label whole, so the length is the extension's bug and not the user's problem.
 - **A runtime failure is not an uninstall.** Releasing an extension ends its activity and
   drops its process; it does not take the extension off the list. The next poll asks it
   again, so an extension the user turned on comes back within fifteen seconds of working

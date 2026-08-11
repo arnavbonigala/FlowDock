@@ -149,6 +149,21 @@ enum ExtensionContract {
         """
         assert(ActivityExtension.declaration(from: reserved) == nil, "the reserved bands cannot be asked for")
 
+        func declared(id: String, label: String) -> String {
+            """
+            {"id":"\(id)","presentation":"persistent","rank":"ambient","label":"\(label)",\
+            "showsPanel":false,"live":true}
+            """
+        }
+        assert(ActivityExtension.declaration(from: declared(id: "", label: "x")) == nil, "an activity needs an id")
+        assert(ActivityExtension.declaration(from: declared(id: "x", label: "   ")) == nil, "and something to say")
+        let shouted = String(repeating: "a", count: ActivityExtension.labelLimit + 40)
+        assert(
+            ActivityExtension.declaration(from: declared(id: "x", label: shouted))?.label.count
+                == ActivityExtension.labelLimit,
+            "a label VoiceOver would read for a minute is clamped, not rendered"
+        )
+
         let ambient = ActivityExtension.Declaration(
             id: "weather", presentation: .contextual, rank: .ambient, label: "Rain", showsPanel: false, live: true
         )

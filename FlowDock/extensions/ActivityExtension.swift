@@ -50,9 +50,19 @@ enum ActivityExtension {
         "\(bundleIdentifier).\(declaration.id)"
     }
 
+    /// The chin has room for a few words and VoiceOver reads the label whole, so a label
+    /// longer than this is a bug in the extension rather than something to render.
+    static let labelLimit = 120
+
     static func declaration(from json: String?) -> Declaration? {
-        guard let data = json?.data(using: .utf8) else { return nil }
-        return try? JSONDecoder().decode(Declaration.self, from: data)
+        guard let data = json?.data(using: .utf8),
+              var declaration = try? JSONDecoder().decode(Declaration.self, from: data),
+              !declaration.id.isEmpty,
+              !declaration.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return nil }
+
+        declaration.label = String(declaration.label.prefix(labelLimit))
+        return declaration
     }
 }
 
