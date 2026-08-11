@@ -36,11 +36,7 @@ jobs:
       head_ref: ${{ github.ref }}
       version: ${{ needs.prepare.outputs.version }}
       build_number: ${{ github.run_number }}
-      code_sign_identity: "Apple Development"
-    secrets:
-      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+    secrets: inherit
 
   publish:
     name: Publish GitHub release
@@ -49,11 +45,22 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Download DMG
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: FlowDock.dmg
           path: Release
+
+      - name: Report signing state
+        env:
+          SIGNING_MODE: ${{ needs.build.outputs.signing_mode }}
+        run: |
+          if [[ "$SIGNING_MODE" != "developer-id" ]]; then
+            echo "::warning::This release was built in '$SIGNING_MODE' mode. The DMG is neither Developer ID signed nor notarized, so macOS will quarantine it. Publish it only as an internal build."
+          fi
 
       - name: Create release
         env:
@@ -66,3 +73,47 @@ jobs:
             flags+=(--prerelease)
           fi
           gh release create "$TAG" Release/FlowDock.dmg "${flags[@]}"
+
+      # The app reads SUFeedURL https://arnavbonigala.github.io/FlowDock/appcast.xml,
+      # which GitHub Pages serves from the gh-pages branch. That branch has no source
+      # in this repository: this step is what creates and maintains it. updater/appcast.xml
+      # is the starting point used the first time, before the branch exists.
+      - name: Publish appcast
+        if: needs.build.outputs.ed_signature != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          BUILD_NUMBER: ${{ needs.build.outputs.build_number }}
+          ED_SIGNATURE: ${{ needs.build.outputs.ed_signature }}
+          DMG_LENGTH: ${{ needs.build.outputs.dmg_length }}
+        run: |
+          set -euo pipefail
+          remote="${APPCAST_REMOTE:-https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git}"
+          work="$(mktemp -d)"
+          if git clone --branch gh-pages --single-branch --depth 1 "$remote" "$work"; then
+            echo "Updating the existing gh-pages feed."
+          else
+            echo "Creating the gh-pages branch."
+            git clone --depth 1 "$remote" "$work"
+            git -C "$work" checkout --orphan gh-pages
+            git -C "$work" rm -rqf . || true
+            cp updater/appcast.xml "$work/appcast.xml"
+          fi
+          [[ -f "$work/appcast.xml" ]] || cp updater/appcast.xml "$work/appcast.xml"
+          python3 scripts/appcast.py "$work/appcast.xml" \
+            --version "$VERSION" \
+            --build "$BUILD_NUMBER" \
+            --url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/FlowDock.dmg" \
+            --length "$DMG_LENGTH" \
+            --signature "$ED_SIGNATURE"
+          git -C "$work" config user.name "github-actions[bot]"
+          git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$work" add appcast.xml
+          git -C "$work" commit -m "Publish FlowDock $VERSION to the update feed"
+          git -C "$work" push "$remote" gh-pages
+
+      - name: Report missing appcast
+        if: needs.build.outputs.ed_signature == ''
+        run: |
+          echo "::warning::No appcast entry was published because SPARKLE_ED_PRIVATE_KEY is not configured. Existing installations will not be offered this release; they must download it by hand."

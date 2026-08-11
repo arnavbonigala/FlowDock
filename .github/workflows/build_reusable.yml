@@ -11,30 +11,53 @@ on:
       build_number:
         required: false
         type: string
-      code_sign_identity:
-        required: false
-        type: string
-        default: "Apple Development"
     secrets:
+      # Developer ID Application certificate. Present: signed, hardened, notarizable.
+      DEVELOPER_ID_CERTIFICATE_BASE64:
+        required: false
+      DEVELOPER_ID_CERTIFICATE_PASSWORD:
+        required: false
+      # Apple Development certificate. The fallback: builds, but is not releasable.
       BUILD_CERTIFICATE_BASE64:
-        required: true
+        required: false
       P12_PASSWORD:
-        required: true
+        required: false
       KEYCHAIN_PASSWORD:
-        required: true
+        required: false
+      # Apple ID and app-specific password used by notarytool.
+      NOTARY_APPLE_ID:
+        required: false
+      NOTARY_PASSWORD:
+        required: false
+      # EdDSA private key whose public half is SUPublicEDKey in FlowDock/Info.plist.
+      SPARKLE_ED_PRIVATE_KEY:
+        required: false
+    outputs:
+      signing_mode:
+        value: ${{ jobs.build.outputs.signing_mode }}
+      build_number:
+        value: ${{ jobs.build.outputs.build_number }}
+      ed_signature:
+        value: ${{ jobs.build.outputs.ed_signature }}
+      dmg_length:
+        value: ${{ jobs.build.outputs.dmg_length }}
 
 jobs:
   build:
     runs-on: macos-26
     permissions:
       contents: read
+    outputs:
+      signing_mode: ${{ steps.signing.outputs.mode }}
+      build_number: ${{ steps.signing.outputs.build_number }}
+      ed_signature: ${{ steps.appcast.outputs.signature }}
+      dmg_length: ${{ steps.appcast.outputs.length }}
     env:
       PROJECT_NAME: FlowDock
-      EXPORT_METHOD: development
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
       DEVELOPMENT_TEAM: ${{ vars.DEVELOPMENT_TEAM_ID }}
-      CODE_SIGN_IDENTITY: ${{ inputs.code_sign_identity }}
+      SPM_DIR: ${{ github.workspace }}/SourcePackages
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -52,49 +75,100 @@ jobs:
       - name: Test release tools
         run: ./scripts/verify.sh --scripts-only
 
+      - name: Select signing mode
+        id: signing
+        env:
+          DEVELOPER_ID_CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        run: |
+          if [[ -n "$DEVELOPER_ID_CERTIFICATE_BASE64" ]]; then
+            mode=developer-id
+            echo "Developer ID signing."
+          elif [[ -n "$BUILD_CERTIFICATE_BASE64" ]]; then
+            mode=development
+            echo "::warning::DEVELOPER_ID_CERTIFICATE_BASE64 is not set, so this build is signed with an Apple Development certificate. It cannot be notarized, macOS will quarantine it after download, and its accessibility grant will not survive an update. This artifact is NOT releasable."
+          else
+            mode=adhoc
+            echo "::warning::No signing certificate secrets are set, so this build is ad-hoc signed. macOS will refuse to open it after download. This artifact is NOT releasable and exists only for local verification."
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION_INPUT:-0.1.0}" >> "$GITHUB_OUTPUT"
+          echo "build_number=${BUILD_NUMBER_INPUT:-$GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
       - name: Resolve Swift packages
-        run: xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT_NAME }}.xcodeproj
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$PROJECT_NAME.xcodeproj" \
+            -clonedSourcePackagesDirPath "$SPM_DIR"
 
       - name: Install Apple certificate
+        if: steps.signing.outputs.mode != 'adhoc'
         env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 || secrets.BUILD_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD || secrets.P12_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
+          if [[ -z "$KEYCHAIN_PASSWORD" ]]; then
+            echo "::error::KEYCHAIN_PASSWORD is required whenever a signing certificate is configured."
+            exit 1
+          fi
           CERT_PATH="$RUNNER_TEMP/build_certificate.p12"
           KC="$RUNNER_TEMP/app-signing.keychain-db"
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KC"
           security set-keychain-settings -lut 21600 "$KC"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KC"
-          security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
+          security import "$CERT_PATH" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
           security list-keychain -d user -s "$KC"
+          rm -f "$CERT_PATH"
 
       - name: Build and archive
+        if: steps.signing.outputs.mode != 'adhoc'
+        env:
+          SIGNING_MODE: ${{ steps.signing.outputs.mode }}
+          VERSION: ${{ steps.signing.outputs.version }}
+          BUILD_NUMBER: ${{ steps.signing.outputs.build_number }}
         run: |
-          VERSION="${VERSION_INPUT:-0.1.0}"
-          BUILD_NUMBER="${BUILD_NUMBER_INPUT:-$GITHUB_RUN_NUMBER}"
+          if [[ "$SIGNING_MODE" == "developer-id" ]]; then
+            identity="Developer ID Application"
+            # Notarization requires the hardened runtime and a secure timestamp on
+            # every binary, including the XPC helper.
+            extra_flags="--timestamp --options=runtime"
+          else
+            identity="Apple Development"
+            extra_flags=""
+          fi
           xcodebuild clean archive \
-            -project ${{ env.PROJECT_NAME }}.xcodeproj \
-            -scheme ${{ env.PROJECT_NAME }} \
-            -archivePath ${{ env.PROJECT_NAME }} \
+            -project "$PROJECT_NAME.xcodeproj" \
+            -scheme "$PROJECT_NAME" \
+            -archivePath "$PROJECT_NAME" \
             -destination "generic/platform=macOS" \
+            -clonedSourcePackagesDirPath "$SPM_DIR" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
+            CODE_SIGN_IDENTITY="$identity" \
+            OTHER_CODE_SIGN_FLAGS="$extra_flags" \
             MARKETING_VERSION="$VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             ONLY_ACTIVE_ARCH=NO \
             -allowProvisioningUpdates
 
       - name: Export app
+        if: steps.signing.outputs.mode != 'adhoc'
+        env:
+          SIGNING_MODE: ${{ steps.signing.outputs.mode }}
         run: |
+          if [[ "$SIGNING_MODE" == "developer-id" ]]; then
+            method="developer-id"
+          else
+            method="development"
+          fi
           cat > "$RUNNER_TEMP/export_options.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>${{ env.EXPORT_METHOD }}</string>
+            <string>${method}</string>
             <key>signingStyle</key>
             <string>automatic</string>
             <key>teamID</key>
@@ -103,11 +177,33 @@ jobs:
           </plist>
           PLIST
           xcodebuild -exportArchive \
-            -archivePath "${{ env.PROJECT_NAME }}.xcarchive" \
+            -archivePath "$PROJECT_NAME.xcarchive" \
             -exportPath Release \
             -exportOptionsPlist "$RUNNER_TEMP/export_options.plist"
 
+      - name: Build unsigned app
+        if: steps.signing.outputs.mode == 'adhoc'
+        env:
+          VERSION: ${{ steps.signing.outputs.version }}
+          BUILD_NUMBER: ${{ steps.signing.outputs.build_number }}
+        run: |
+          xcodebuild clean build \
+            -project "$PROJECT_NAME.xcodeproj" \
+            -scheme "$PROJECT_NAME" \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            -clonedSourcePackagesDirPath "$SPM_DIR" \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO
+          mkdir -p Release
+          cp -R "$RUNNER_TEMP/dd/Build/Products/Release/$PROJECT_NAME.app" Release/
+
       - name: Create DMG
+        env:
+          VERSION: ${{ steps.signing.outputs.version }}
         run: |
           VENV_DIR="$RUNNER_TEMP/venv"
           python3 -m venv "$VENV_DIR"
@@ -116,9 +212,57 @@ jobs:
           python3 -m pip install --require-hashes -r Configuration/dmg/requirements.txt
           chmod +x Configuration/dmg/create_dmg.sh
           ./Configuration/dmg/create_dmg.sh \
-            "Release/${{ env.PROJECT_NAME }}.app" \
-            "Release/${{ env.PROJECT_NAME }}.dmg" \
-            "${{ env.PROJECT_NAME }} ${{ env.VERSION_INPUT }}"
+            "Release/$PROJECT_NAME.app" \
+            "Release/$PROJECT_NAME.dmg" \
+            "$PROJECT_NAME $VERSION"
+
+      - name: Notarize and staple
+        if: steps.signing.outputs.mode == 'developer-id'
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          if [[ -z "$NOTARY_APPLE_ID" || -z "$NOTARY_PASSWORD" ]]; then
+            echo "::warning::NOTARY_APPLE_ID and NOTARY_PASSWORD are not set. The app is Developer ID signed but NOT notarized, so macOS will still block it after download. This artifact is not releasable."
+            exit 0
+          fi
+          codesign --force --sign "Developer ID Application" --timestamp "Release/$PROJECT_NAME.dmg"
+          xcrun notarytool submit "Release/$PROJECT_NAME.dmg" \
+            --apple-id "$NOTARY_APPLE_ID" \
+            --password "$NOTARY_PASSWORD" \
+            --team-id "$DEVELOPMENT_TEAM" \
+            --wait
+          xcrun stapler staple "Release/$PROJECT_NAME.dmg"
+          spctl --assess --type open --context context:primary-signature -v "Release/$PROJECT_NAME.dmg"
+          codesign --verify --deep --strict --verbose=2 "Release/$PROJECT_NAME.app"
+
+      - name: Sign the update for the appcast
+        id: appcast
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          if [[ -z "$SPARKLE_ED_PRIVATE_KEY" ]]; then
+            echo "::warning::SPARKLE_ED_PRIVATE_KEY is not set, so no appcast entry can be signed. Installed copies of FlowDock will never be offered this release."
+            exit 0
+          fi
+          sign_update="$(find "$SPM_DIR" -type f -name sign_update -perm -u+x | head -1)"
+          if [[ -z "$sign_update" ]]; then
+            echo "::error::sign_update was not found in the resolved Sparkle package."
+            exit 1
+          fi
+          key_file="$RUNNER_TEMP/sparkle_ed_private_key"
+          umask 077
+          printf '%s' "$SPARKLE_ED_PRIVATE_KEY" > "$key_file"
+          output="$("$sign_update" "Release/$PROJECT_NAME.dmg" -f "$key_file")"
+          rm -f "$key_file"
+          signature="$(sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p' <<< "$output")"
+          length="$(sed -n 's/.*length="\([^"]*\)".*/\1/p' <<< "$output")"
+          if [[ -z "$signature" || -z "$length" ]]; then
+            echo "::error::sign_update returned no signature: $output"
+            exit 1
+          fi
+          echo "signature=$signature" >> "$GITHUB_OUTPUT"
+          echo "length=$length" >> "$GITHUB_OUTPUT"
 
       - name: Upload DMG
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -8,14 +8,46 @@ FlowDock uses one verification command locally and in CI:
 
 It runs the release-tool tests and an unsigned debug build with the Xcode major version in `.xcode-version`.
 
+## Secrets and variables
+
+The release path degrades honestly: with no secrets it still builds, and every step that had to be skipped prints a warning saying the artifact is not releasable. Configure these to get a real release.
+
+| Name | Kind | Where it comes from |
+| --- | --- | --- |
+| `DEVELOPMENT_TEAM_ID` | variable | Apple Developer account → Membership → Team ID |
+| `DEVELOPER_ID_CERTIFICATE_BASE64` | secret | A `Developer ID Application` certificate exported from Keychain Access as `.p12`, then `base64 -i cert.p12 \| pbcopy` |
+| `DEVELOPER_ID_CERTIFICATE_PASSWORD` | secret | The password chosen during that `.p12` export |
+| `KEYCHAIN_PASSWORD` | secret | Any random string; it only unlocks the temporary keychain on the runner |
+| `NOTARY_APPLE_ID` | secret | The Apple ID of the account that owns the certificate |
+| `NOTARY_PASSWORD` | secret | An app-specific password from appleid.apple.com → Sign-In and Security → App-Specific Passwords (not the account password) |
+| `SPARKLE_ED_PRIVATE_KEY` | secret | See "Sparkle signing key" below |
+| `BUILD_CERTIFICATE_BASE64`, `P12_PASSWORD` | secret | Optional. An `Apple Development` certificate, used only when no Developer ID certificate is configured. Never releasable. |
+
+The Developer ID certificate requires a paid Apple Developer Program membership. Without it, and without notarization, macOS quarantines the downloaded DMG and refuses to open the app.
+
+### Sparkle signing key
+
+`FlowDock/Info.plist` already pins `SUPublicEDKey` to `B1Y47t8C/v8ImurYA+9arEsuCrpxwJSviekiflMElbI=`. Sparkle only accepts an update whose signature was made with the private half of **that** key. If you hold it, export it and store it as `SPARKLE_ED_PRIVATE_KEY`:
+
+```sh
+# Sparkle's tools live in the resolved package checkout
+find ~/Library/Developer/Xcode/DerivedData -name generate_keys -type f
+./generate_keys -x sparkle_private_key.txt   # writes the private key held in the login keychain
+```
+
+If that key is lost, generate a new pair and replace `SUPublicEDKey` in `FlowDock/Info.plist` in the same commit. Every copy of FlowDock already installed with the old public key will then stop accepting updates and has to be reinstalled by hand, so do this only once and keep the key safe.
+
 ## Build an artifact
 
-Run the **Manual Build** workflow with a branch, optional version, and optional build number. The workflow signs the app with the configured development certificate and uploads the `.app` and `.dmg` as workflow artifacts. Version values are passed to the build and do not modify the branch.
+Run the **Manual Build** workflow with a branch, optional version, and optional build number. It uploads the `.app` and `.dmg` as workflow artifacts. Version values are passed to the build and do not modify the branch.
 
-Required repository configuration:
+The workflow picks its signing mode from the secrets that exist:
 
-- `BUILD_CERTIFICATE_BASE64`, `P12_PASSWORD`, and `KEYCHAIN_PASSWORD` secrets
-- `DEVELOPMENT_TEAM_ID` variable
+| Mode | Condition | Result |
+| --- | --- | --- |
+| `developer-id` | `DEVELOPER_ID_CERTIFICATE_BASE64` is set | Hardened runtime, secure timestamp, notarized and stapled when the notary secrets are also set |
+| `development` | Only `BUILD_CERTIFICATE_BASE64` is set | Builds and exports, cannot be notarized, quarantined after download |
+| `adhoc` | Neither is set | Unsigned build, quarantined after download, for local verification only |
 
 ## Publish a release
 
@@ -26,22 +58,36 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Tags must use `v<major>.<minor>.<patch>`. A tag such as `v1.2.0-beta.1` creates a GitHub prerelease. The workflow checks out the immutable tag, builds its app and DMG, and attaches the DMG to a generated GitHub release. Ordinary branch commits only run verification and never create releases.
+Tags must use `v<major>.<minor>.<patch>`. A tag such as `v1.2.0-beta.1` creates a GitHub prerelease. The workflow checks out the immutable tag, builds and signs its app, notarizes and staples the DMG, attaches the DMG to a generated GitHub release, and publishes the appcast entry. Ordinary branch commits only run verification and never create releases.
 
-## Publish the update feed
+## The update feed
 
-The app reads `SUFeedURL` from `FlowDock/Info.plist`: `https://arnavbonigala.github.io/FlowDock/appcast.xml`. `updater/appcast.xml` is the checked-in skeleton of that feed and currently has no `<item>`, so a running copy of FlowDock will never see an update until the feed is generated and published. Nothing in CI does this yet; it is a manual step.
+The app reads `SUFeedURL` from `FlowDock/Info.plist`: `https://arnavbonigala.github.io/FlowDock/appcast.xml`. GitHub Pages serves that from a `gh-pages` branch which has no source in this repository — the release workflow creates and maintains it, seeding it from the checked-in `updater/appcast.xml` skeleton the first time. DMGs stay on GitHub releases; only `appcast.xml` lives on the branch.
 
-Sparkle ships the tool, so do not write one:
+Each release the build signs the DMG with `sign_update` from the resolved Sparkle package, and `scripts/appcast.py` writes the resulting `<item>` into the feed. Re-running the same version replaces its item rather than duplicating it, and items stay newest-first.
+
+GitHub Pages has to be enabled once, by hand: repository Settings → Pages → Source: "Deploy from a branch", branch `gh-pages`, folder `/`. Until that is done the feed is committed but not served.
+
+**Rollback.** Sparkle offers whatever is newest in the feed. To withdraw a bad release, delete its `<item>` from `appcast.xml` on `gh-pages` and push; installs that have not updated yet stop being offered it. Anyone already updated must be given a higher version, so follow a withdrawal with a fixed release rather than a re-tag.
+
+## Verify a release
+
+On a Mac that has never had this build:
 
 ```sh
-# Sparkle's binaries land in the resolved package checkout
-generate_appcast --ed-key-file <private-key-file> updater/
+# 1. The DMG is signed, notarized, and stapled
+spctl --assess --type open --context context:primary-signature -v FlowDock.dmg
+stapler validate FlowDock.dmg
+
+# 2. The app inside is signed with a Developer ID and hardened
+codesign --verify --deep --strict --verbose=2 /Volumes/FlowDock*/FlowDock.app
+codesign -dv --verbose=4 /Volumes/FlowDock*/FlowDock.app 2>&1 | grep -E 'Authority|flags'
+
+# 3. The feed is live and signed
+curl -fsSL https://arnavbonigala.github.io/FlowDock/appcast.xml
 ```
 
-Put every released DMG in `updater/` before running it. `generate_appcast` writes the `<item>`, the length, and the `sparkle:edSignature` for each archive it finds. The signature must be made with the private half of the `SUPublicEDKey` already in `FlowDock/Info.plist` (`B1Y47t8C/…`); Sparkle's `generate_keys` stores that key in the login keychain of whoever created it. **FlowDock has no published private key and no CI secret holding one.** Until one is available, the feed cannot be signed and the updater cannot ship an update, no matter how the app is built.
-
-Publish the resulting `appcast.xml` and the DMG at the `SUFeedURL` host (a `gh-pages` branch or `docs/` folder — neither exists in this repo yet).
+Then run a real update cycle, which is the only test that proves the release: install the **previous** version, launch it, grant Accessibility, quit, publish the new release, launch the old version again, and take the update from "Check for Updates…". Afterwards confirm that HUD replacement still works without re-granting anything. A stable Developer ID identity is what makes that grant survive; an `Apple Development` build will lose it every time.
 
 ## Uninstall and permission reset
 
@@ -55,9 +101,8 @@ macOS keys the Accessibility grant to the code signature and path of `FlowDockXP
 
 ## Current boundary
 
-Artifacts use Apple development signing and are not notarized. They are suitable for internal verification, not a polished public distribution path. The following need real credentials and a real install/update cycle, and cannot be closed in the repository alone:
+The plumbing is in place and unexercised. Nothing here has produced a signed, notarized release or a real in-place update yet, and these cannot be closed from inside the repository:
 
-- **Developer ID signing.** `CODE_SIGN_IDENTITY` is `Apple Development` in `project.pbxproj` and in both workflows. Development certificates are per-developer and expire, so every build has a different signing identity — which is exactly why the Accessibility grant does not survive an update today. A stable `Developer ID Application` certificate is the fix; it requires a paid Apple Developer account.
-- **Notarization and stapling.** No `notarytool` step exists. Without it, a downloaded DMG is quarantined and Gatekeeper refuses the app.
-- **Sparkle EdDSA private key.** See above.
-- **Feed hosting and rollback.** Nothing publishes to the `SUFeedURL` host, and there is no procedure for withdrawing a bad release from the feed.
+- No Developer ID certificate, notary credentials, or Sparkle private key exist, so every build so far has been `development` or `adhoc` — not releasable.
+- GitHub Pages has never been enabled, and the `gh-pages` branch does not exist yet.
+- The full update cycle above has never been run, so `SUEnableInstallerLauncherService` and the helper's TCC identity across an in-place update remain untested.
