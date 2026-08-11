@@ -73,6 +73,33 @@ class QuickShareService: ObservableObject {
 
     }
     
+    @MainActor
+    static func payload(for items: [ShelfItem]) -> [Any] {
+        var payload: [Any] = ShelfStateViewModel.shared.resolveFileURLs(for: items)
+        for item in items {
+            switch item.kind {
+            case .link(let url): payload.append(url)
+            case .text(let string): payload.append(string as NSString)
+            case .file: break
+            }
+        }
+        return payload
+    }
+
+    @MainActor
+    func share(_ items: [ShelfItem], using provider: QuickShareProvider, from view: NSView?) async {
+        let payload = Self.payload(for: items)
+        if payload.isEmpty {
+            await showFilePicker(for: provider, from: view)
+        } else {
+            await shareFilesOrText(payload, using: provider, from: view)
+        }
+    }
+
+    var airDrop: QuickShareProvider? {
+        availableProviders.first { $0.id == "AirDrop" }
+    }
+
     // MARK: - File Picker
     @MainActor
     func showFilePicker(for provider: QuickShareProvider, from view: NSView?) async {

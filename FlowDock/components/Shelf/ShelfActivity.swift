@@ -162,7 +162,7 @@ private struct QuickShareButton: View {
 
     var body: some View {
         Button {
-            Task { await quickShare.showFilePicker(for: provider, from: anchor) }
+            Task { await quickShare.share(Self.sharedItems(), using: provider, from: anchor) }
         } label: {
             glyph
                 .frame(width: 18, height: 18)
@@ -179,8 +179,14 @@ private struct QuickShareButton: View {
         }
         .buttonStyle(.plain)
         .disabled(quickShare.isPickerOpen)
-        .accessibilityLabel("Share files with \(provider.id)")
+        .accessibilityLabel("Share with \(provider.id)")
         .background(ShareAnchor(view: $anchor))
+    }
+
+    static func sharedItems() -> [ShelfItem] {
+        let items = ShelfStateViewModel.shared.items
+        let selected = ShelfSelectionModel.shared.selectedItems(in: items)
+        return selected.isEmpty ? items : selected
     }
 
     @ViewBuilder
