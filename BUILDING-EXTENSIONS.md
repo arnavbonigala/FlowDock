@@ -139,3 +139,7 @@ declaration, and your extension's own log will say why.
 Answer within two seconds. `activityDeclaration` is asked once at discovery, and a reply
 block that has not been called by then is treated as no declaration at all. Do the work
 that decides what to declare before the call arrives, not inside it.
+
+Your scenes get the same two seconds to draw once FlowDock asks for them. A scene that
+blocks on the network before it returns a view loses the chin for the whole extension, so
+declare `live: true` only when you already have something to show.

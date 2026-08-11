@@ -105,9 +105,10 @@ extension:
   shared: an extension that never replies must not cost every other extension its place.
 - **Update rate.** Activity updates are coalesced by the host at the display's refresh
   rate. An extension that publishes faster is not faster, only busier.
-- **Render deadline.** A remote view that does not produce content within the transition
-  budget is not waited for. The chin shows the next activity down and the extension's
-  activity ends.
+- **Render deadline.** A remote scene has two seconds to connect and draw. One that does
+  not is released along with the rest of that extension: the chin shows the next activity
+  down and the extension's activity ends. A scene that fails after it has drawn ends the
+  same way.
 - **Failure is silent to the user and loud to the developer.** A misbehaving extension
   loses the chin; the user is not shown a diagnostic they did not ask for and cannot act
   on. The reason is available in the extension's own log.

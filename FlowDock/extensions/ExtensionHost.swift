@@ -153,7 +153,7 @@ final class ExtensionHost: NSObject, ObservableObject {
         return connection
     }
 
-    private func release(_ bundleIdentifier: String) {
+    func release(_ bundleIdentifier: String) {
         connections.removeValue(forKey: bundleIdentifier)?.invalidate()
         processes.removeValue(forKey: bundleIdentifier)?.invalidate()
         available.removeAll { $0.identity.bundleIdentifier == bundleIdentifier }

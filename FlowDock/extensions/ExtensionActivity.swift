@@ -80,12 +80,18 @@ private struct ExtensionActivityBinder: ViewModifier {
 }
 
 struct RemoteScene: NSViewControllerRepresentable {
+    static let renderDeadline: Duration = .seconds(2)
+
     let identity: AppExtensionIdentity
     let sceneID: String
 
+    func makeCoordinator() -> RenderWatch { RenderWatch(identity: identity) }
+
     func makeNSViewController(context: Context) -> EXHostViewController {
         let controller = EXHostViewController()
+        controller.delegate = context.coordinator
         controller.configuration = .init(appExtension: identity, sceneID: sceneID)
+        context.coordinator.arm()
         return controller
     }
 
@@ -93,6 +99,38 @@ struct RemoteScene: NSViewControllerRepresentable {
         guard controller.configuration?.sceneID != sceneID
             || controller.configuration?.appExtension != identity else { return }
         controller.configuration = .init(appExtension: identity, sceneID: sceneID)
+        context.coordinator.arm()
+    }
+}
+
+@MainActor
+final class RenderWatch: NSObject, EXHostViewControllerDelegate {
+    private let identity: AppExtensionIdentity
+    private var deadline: Task<Void, Never>?
+
+    init(identity: AppExtensionIdentity) {
+        self.identity = identity
+    }
+
+    func arm() {
+        deadline?.cancel()
+        deadline = Task { [identity] in
+            try? await Task.sleep(for: RemoteScene.renderDeadline)
+            guard !Task.isCancelled else { return }
+            ExtensionHost.shared.release(identity.bundleIdentifier)
+        }
+    }
+
+    nonisolated func hostViewControllerDidActivate(_ viewController: EXHostViewController) {
+        MainActor.assumeIsolated { deadline?.cancel() }
+    }
+
+    nonisolated func hostViewControllerWillDeactivate(
+        _ viewController: EXHostViewController,
+        error: (any Error)?
+    ) {
+        guard error != nil else { return }
+        MainActor.assumeIsolated { ExtensionHost.shared.release(identity.bundleIdentifier) }
     }
 }
 
