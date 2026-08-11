@@ -471,9 +471,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 defer: false
             )
             window.center()
-            window.title = "Welcome to FlowDock"
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
+            window.isMovableByWindowBackground = true
             window.contentView = NSHostingView(
                 rootView: OnboardingView(
                     step: step,
@@ -491,6 +491,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             onboardingWindowController = NSWindowController(window: window)
         }
+
+        onboardingWindowController?.window?.title = step == .welcome
+            ? "Welcome to FlowDock"
+            : "Set Up FlowDock"
 
         NSApp.activate(ignoringOtherApps: true)
         onboardingWindowController?.window?.makeKeyAndOrderFront(nil)
