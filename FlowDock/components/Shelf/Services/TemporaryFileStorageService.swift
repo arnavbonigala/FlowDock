@@ -154,38 +154,29 @@ class TemporaryFileStorageService {
             }
         }
 
-        // Single-item optimization: do not copy contents into the working dir.
         if urls.count == 1, let src = urls.first {
+            let archiveURL = workingDir.appendingPathComponent("\(src.lastPathComponent).zip")
             let isDir = (try? src.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-            let baseName = src.lastPathComponent
-            let archiveName: String
+
             if isDir {
-                // Folder: name as FolderName.zip and include the folder itself in the archive
-                archiveName = "\(baseName).zip"
-                let archiveURL = workingDir.appendingPathComponent(archiveName)
-                // Run zip from the parent directory so the folder is stored as top-level entry
-                let parent = src.deletingLastPathComponent()
-                let args = ["-r", "-q", archiveURL.path, baseName]
-                let ok = runZip(arguments: args, currentDirectory: parent)
-                if ok {
-                    return archiveURL
-                } else {
-                    return nil
+                var coordinationError: NSError?
+                var archived = false
+                NSFileCoordinator().coordinate(
+                    readingItemAt: src, options: [.forUploading], error: &coordinationError
+                ) { zipped in
+                    archived = (try? FileManager.default.copyItem(at: zipped, to: archiveURL)) != nil
                 }
-            } else {
-                // File: include the file only (no parent folders). Name should include original extension.
-                archiveName = "\(baseName).zip"
-                let archiveURL = workingDir.appendingPathComponent(archiveName)
-                let parent = src.deletingLastPathComponent()
-                // -j to junk paths and store only the file
-                let args = ["-j", "-q", archiveURL.path, baseName]
-                let ok = runZip(arguments: args, currentDirectory: parent)
-                if ok {
-                    return archiveURL
-                } else {
-                    return nil
-                }
+                return archived ? archiveURL : nil
             }
+
+            let staged = workingDir.appendingPathComponent(src.lastPathComponent)
+            guard (try? FileManager.default.copyItem(at: src, to: staged)) != nil else { return nil }
+            let ok = runZip(
+                arguments: ["-j", "-q", archiveURL.path, staged.lastPathComponent],
+                currentDirectory: workingDir
+            )
+            try? FileManager.default.removeItem(at: staged)
+            return ok ? archiveURL : nil
         }
 
         // Multi-item: copy items into working dir (so their relative structure is preserved), zip, then remove copies.
