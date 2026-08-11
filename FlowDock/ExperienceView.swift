@@ -21,6 +21,7 @@ struct ExperienceView: View {
     @State private var settleTask: Task<Void, Never>?
     @State private var isDropTargeted = false
     @State private var isOverAgenda = false
+    @State private var isOverColumn = false
     @State private var haptics = false
 
     @ObservedObject private var calendar = CalendarManager.shared
@@ -139,7 +140,7 @@ struct ExperienceView: View {
                 }
                 .conditionalModifier(Defaults[.enableGestures] && Defaults[.closeGestureEnabled]) { view in
                     view.panGesture(direction: .up) { translation, _ in
-                        guard !isOverAgenda else { return }
+                        guard !isOverAgenda, !isOverColumn else { return }
                         if translation > Defaults[.gestureSensitivity] { collapse() }
                     }
                 }
@@ -249,21 +250,27 @@ struct ExperienceView: View {
             .frame(height: max(24, vm.effectiveClosedNotchHeight))
 
             HStack(alignment: .top, spacing: spacing) {
-                VStack(alignment: .leading, spacing: 8) {
-                    MusicPanel()
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        MusicPanel()
 
-                    ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
-                        activity.expanded?()
+                        ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
+                            activity.expanded?()
+                        }
+
+                        NotificationPanel()
+
+                        TimerPanel()
+
+                        if shelfEnabled {
+                            ShelfPanel(targeted: isDropTargeted)
+                        }
                     }
-
-                    NotificationPanel()
-
-                    TimerPanel()
-
-                    if shelfEnabled {
-                        ShelfPanel(targeted: isDropTargeted)
-                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .onHover { isOverColumn = $0 }
                 }
+                .scrollIndicators(.never)
+                .scrollBounceBehavior(.basedOnSize)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 if showsAgenda {
