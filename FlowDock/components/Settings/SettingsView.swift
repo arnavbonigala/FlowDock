@@ -598,7 +598,6 @@ struct GeneralSettings: View {
                 Defaults.Toggle(key: .enableGestures) {
                     Text("Enable gestures")
                 }
-                .disabled(!openNotchOnHover)
                 if enableGestures {
                     Defaults.Toggle(key: .closeGestureEnabled) {
                         Text("Swipe up to close")
@@ -625,9 +624,6 @@ struct GeneralSettings: View {
             } header: {
                 Text("Privacy")
             }
-        }
-        .onChange(of: openNotchOnHover) {
-            if !openNotchOnHover { enableGestures = true }
         }
     }
 
