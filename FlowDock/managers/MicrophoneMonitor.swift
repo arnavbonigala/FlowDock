@@ -13,6 +13,9 @@ final class MicrophoneMonitor: NSObject, ObservableObject {
 
     @Published private(set) var inUse = false
     @Published private(set) var isMuted = false
+    @Published private(set) var since: Date?
+    @Published private(set) var listener: String?
+    @Published private(set) var listenerBundleID: String?
 
     private let listenerQueue = DispatchQueue(label: "com.arnavbonigala.flowdock.microphone-listeners")
     private var listeners: [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
@@ -26,6 +29,7 @@ final class MicrophoneMonitor: NSObject, ObservableObject {
         guard !running else { return }
         running = true
         observe(AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyDefaultInputDevice, .global)
+        observe(AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyProcessObjectList, .global)
         attachDeviceListeners()
         refresh()
     }
@@ -90,17 +94,89 @@ final class MicrophoneMonitor: NSObject, ObservableObject {
     func refresh() {
         let device = inputDevice()
         guard device != kAudioObjectUnknown else {
-            publish(inUse: false, muted: false)
+            publish(inUse: false, muted: false, bundleID: nil)
             return
         }
-        publish(inUse: isRunningSomewhere(device), muted: readMuted(device))
+        let running = isRunningSomewhere(device)
+        publish(inUse: running, muted: readMuted(device), bundleID: running ? listeningApp() : nil)
     }
 
-    private func publish(inUse: Bool, muted: Bool) {
+    private func publish(inUse: Bool, muted: Bool, bundleID: String?) {
         DispatchQueue.main.async {
-            if self.inUse != inUse { self.inUse = inUse }
+            if self.inUse != inUse {
+                self.inUse = inUse
+                self.since = inUse ? Date() : nil
+            }
             if self.isMuted != muted { self.isMuted = muted }
+            if self.listenerBundleID != bundleID {
+                self.listenerBundleID = bundleID
+                self.listener = bundleID.flatMap(Self.displayName)
+            }
         }
+    }
+
+    private static func displayName(of bundleID: String) -> String? {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return nil }
+        return FileManager.default.displayName(atPath: url.path)
+    }
+
+    /// macOS reports every process that has audio running, so the one holding the
+    /// microphone can be named without asking for a permission. Before 14.4 there is no
+    /// such list and the activity simply says less.
+    private func listeningApp() -> String? {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyProcessObjectList,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let system = AudioObjectID(kAudioObjectSystemObject)
+        guard AudioObjectHasProperty(system, &address) else { return nil }
+
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(system, &address, 0, nil, &size) == noErr, size > 0
+        else { return nil }
+
+        var processes = [AudioObjectID](
+            repeating: kAudioObjectUnknown, count: Int(size) / MemoryLayout<AudioObjectID>.size)
+        guard AudioObjectGetPropertyData(system, &address, 0, nil, &size, &processes) == noErr
+        else { return nil }
+
+        let own = Bundle.main.bundleIdentifier
+        for process in processes where isRunningInput(process) {
+            guard let bundleID = bundleID(of: process), bundleID != own else { continue }
+            return bundleID
+        }
+        return nil
+    }
+
+    private func isRunningInput(_ process: AudioObjectID) -> Bool {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioProcessPropertyIsRunningInput,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        guard AudioObjectHasProperty(process, &address) else { return false }
+        var running: UInt32 = 0
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        guard AudioObjectGetPropertyData(process, &address, 0, nil, &size, &running) == noErr
+        else { return false }
+        return running != 0
+    }
+
+    private func bundleID(of process: AudioObjectID) -> String? {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioProcessPropertyBundleID,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        guard AudioObjectHasProperty(process, &address) else { return nil }
+        var value: Unmanaged<CFString>?
+        var size = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
+        guard AudioObjectGetPropertyData(process, &address, 0, nil, &size, &value) == noErr,
+              let bundleID = value?.takeRetainedValue() as String?,
+              !bundleID.isEmpty
+        else { return nil }
+        return bundleID
     }
 
     private func inputDevice() -> AudioObjectID {
@@ -228,24 +304,30 @@ final class MicrophoneMonitor: NSObject, ObservableObject {
 extension Activity {
     static let microphoneID = "microphone"
 
-    static func microphone(muted: Bool) -> Activity {
+    static func microphone(muted: Bool, since: Date?, app: String?) -> Activity {
         Activity(
             id: microphoneID,
             activityClass: .persistent,
             band: .media,
-            label: muted ? "Microphone in use, muted" : "Microphone in use",
-            chinSideWidth: Activity.chinSide,
+            label: MicrophonePanel.label(muted: muted, app: app),
+            chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: muted ? "mic.slash.fill" : "mic.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(muted ? Color.red : .primary)
-                    .frame(width: Activity.chinSide, alignment: .leading)
+                    .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
-                Text(muted ? "Muted" : "Live")
-                    .font(.chinValue)
-                    .foregroundStyle(.primary)
-                    .frame(width: Activity.chinSide, alignment: .trailing)
+                Group {
+                    if let since {
+                        ElapsedText(since: since)
+                    } else {
+                        Text(muted ? "Muted" : "Live")
+                            .font(.chinValue)
+                            .foregroundStyle(.primary)
+                    }
+                }
+                .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
         .withExpanded { MicrophonePanel() }
@@ -267,16 +349,20 @@ private struct MicrophoneActivityBinder: ViewModifier {
     private struct Trigger: Equatable {
         var inUse: Bool
         var muted: Bool
+        var since: Date?
+        var app: String?
     }
 
-    private var trigger: Trigger { Trigger(inUse: monitor.inUse, muted: monitor.isMuted) }
+    private var trigger: Trigger {
+        Trigger(inUse: monitor.inUse, muted: monitor.isMuted, since: monitor.since, app: monitor.listener)
+    }
 
     func body(content: Content) -> some View {
         content
             .onChange(of: trigger) { _, state in
                 guard enabled else { return }
                 if state.inUse {
-                    store.begin(.microphone(muted: state.muted))
+                    store.begin(.microphone(muted: state.muted, since: state.since, app: state.app))
                 } else {
                     store.end(Activity.microphoneID)
                 }
@@ -292,23 +378,58 @@ private struct MicrophoneActivityBinder: ViewModifier {
     }
 }
 
+/// SwiftUI drives a timer interval itself, so the elapsed time on the chin costs no
+/// timer of FlowDock's own. See QUALITY.md on work that runs when nothing is happening.
+struct ElapsedText: View {
+    let since: Date
+
+    var body: some View {
+        Text(timerInterval: since...Date.distantFuture, countsDown: false)
+            .font(.chinValue)
+            .monospacedDigit()
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+    }
+}
+
 struct MicrophonePanel: View {
     @ObservedObject private var monitor = MicrophoneMonitor.shared
 
+    static func label(muted: Bool, app: String?) -> String {
+        let who = app.map { "\($0) is using the microphone" } ?? "Microphone in use"
+        return muted ? "\(who), muted" : who
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: monitor.isMuted ? "mic.slash.fill" : "mic.fill")
-                .font(.panelPrimary)
-                .foregroundStyle(monitor.isMuted ? Color.red : .primary)
-                .accessibilityHidden(true)
+            if let bundleID = monitor.listenerBundleID {
+                AppIcon(for: bundleID)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 28, height: 28)
+                    .accessibilityHidden(true)
+            } else {
+                Image(systemName: monitor.isMuted ? "mic.slash.fill" : "mic.fill")
+                    .font(.panelPrimary)
+                    .foregroundStyle(monitor.isMuted ? Color.red : .primary)
+                    .accessibilityHidden(true)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(monitor.isMuted ? "Microphone muted" : "Microphone in use")
+                Text(monitor.listener ?? (monitor.isMuted ? "Microphone muted" : "Microphone in use"))
                     .font(.panelPrimary)
                     .foregroundStyle(.primary)
-                Text("Every app on this Mac")
-                    .font(.panelMeta)
-                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    if let since = monitor.since {
+                        Text(timerInterval: since...Date.distantFuture, countsDown: false)
+                            .monospacedDigit()
+                        Text("·")
+                    }
+                    Text(monitor.isMuted ? "Muted everywhere" : "Live in every app")
+                }
+                .font(.panelMeta)
+                .foregroundStyle(.secondary)
             }
 
             Spacer()
