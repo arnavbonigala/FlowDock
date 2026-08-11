@@ -666,6 +666,11 @@ class MusicManager: ObservableObject {
         }
     }
 
+    func recoverAfterWake() {
+        (activeController as? NowPlayingController)?.restartAdapter()
+        forceUpdate()
+    }
+
     func forceUpdate() {
         // Request immediate update from the active controller
         Task { [weak self] in

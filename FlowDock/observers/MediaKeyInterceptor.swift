@@ -89,6 +89,13 @@ final class MediaKeyInterceptor {
     
     var isRunning: Bool { eventTap != nil }
 
+    func restartIfNeeded() async {
+        guard Defaults[.hudReplacement] else { return }
+        if let eventTap, CGEvent.tapIsEnabled(tap: eventTap) { return }
+        stop()
+        await start(promptIfNeeded: false)
+    }
+
     func stop() {
         if let eventTap {
             CGEvent.tapEnable(tap: eventTap, enable: false)

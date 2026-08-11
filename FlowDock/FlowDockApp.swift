@@ -64,9 +64,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var closeNotchTask: Task<Void, Never>?
     private var previousScreens: [NSScreen]?
     private var onboardingWindowController: NSWindowController?
-    private var screenLockedObserver: Any?
-    private var screenUnlockedObserver: Any?
+    private var distributedObservers: [Any] = []
+    private var workspaceObservers: [Any] = []
     private var isScreenLocked: Bool = false
+    private var recoveryTask: Task<Void, Never>?
     private var windowScreenDidChangeObserver: Any?
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -75,17 +76,73 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         NotificationCenter.default.removeObserver(self)
-        if let observer = screenLockedObserver {
-            DistributedNotificationCenter.default().removeObserver(observer)
-            screenLockedObserver = nil
-        }
-        if let observer = screenUnlockedObserver {
-            DistributedNotificationCenter.default().removeObserver(observer)
-            screenUnlockedObserver = nil
-        }
+        distributedObservers.forEach { DistributedNotificationCenter.default().removeObserver($0) }
+        distributedObservers.removeAll()
+        workspaceObservers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
+        workspaceObservers.removeAll()
+        recoveryTask?.cancel()
         MusicManager.shared.destroy()
         cleanupWindows()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
+    }
+
+    private func observeLifecycle() {
+        let distributed = DistributedNotificationCenter.default()
+        distributedObservers.append(
+            distributed.addObserver(
+                forName: NSNotification.Name("com.apple.screenIsLocked"),
+                object: nil, queue: .main
+            ) { [weak self] notification in
+                Task { @MainActor in self?.onScreenLocked(notification) }
+            })
+        distributedObservers.append(
+            distributed.addObserver(
+                forName: NSNotification.Name("com.apple.screenIsUnlocked"),
+                object: nil, queue: .main
+            ) { [weak self] notification in
+                Task { @MainActor in self?.onScreenUnlocked(notification) }
+            })
+        distributedObservers.append(
+            distributed.addObserver(
+                forName: NSNotification.Name("com.apple.screensaver.didstop"),
+                object: nil, queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in self?.scheduleRecovery() }
+            })
+
+        let workspaceNames: [Notification.Name] = [
+            NSWorkspace.didWakeNotification,
+            NSWorkspace.screensDidWakeNotification,
+            NSWorkspace.sessionDidBecomeActiveNotification,
+        ]
+        for name in workspaceNames {
+            workspaceObservers.append(
+                NSWorkspace.shared.notificationCenter.addObserver(
+                    forName: name, object: nil, queue: .main
+                ) { [weak self] _ in
+                    Task { @MainActor in self?.scheduleRecovery() }
+                })
+        }
+    }
+
+    @MainActor
+    private func scheduleRecovery() {
+        recoveryTask?.cancel()
+        recoveryTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(750))
+            guard !Task.isCancelled, let self, !self.isScreenLocked else { return }
+
+            NotchSpaceManager.shared.notchSpace.revive()
+            self.adjustWindowPosition(changeAlpha: true)
+            self.allWindows.forEach { $0.orderFrontRegardless() }
+
+            await MediaKeyInterceptor.shared.restartIfNeeded()
+            MusicManager.shared.recoverAfterWake()
+        }
+    }
+
+    private var allWindows: [NSWindow] {
+        Defaults[.showOnAllDisplays] ? Array(windows.values) : [window].compactMap { $0 }
     }
 
     @MainActor
@@ -106,42 +163,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             disableSkyLightOnAllWindows()
         }
+        scheduleRecovery()
     }
-    
+
     @MainActor
     private func enableSkyLightOnAllWindows() {
-        if Defaults[.showOnAllDisplays] {
-            windows.values.forEach { window in
-                if let skyWindow = window as? FlowDockSkyLightWindow {
-                    skyWindow.enableSkyLight()
-                }
-            }
-        } else {
-            if let skyWindow = window as? FlowDockSkyLightWindow {
-                skyWindow.enableSkyLight()
-            }
-        }
+        setSkyLight(enabled: true)
     }
-    
+
     @MainActor
     private func disableSkyLightOnAllWindows() {
         // Delay disabling SkyLight to avoid flicker during unlock transition
-        Task {
+        Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(150))
-            await MainActor.run {
-                if Defaults[.showOnAllDisplays] {
-                    self.windows.values.forEach { window in
-                        if let skyWindow = window as? FlowDockSkyLightWindow {
-                            skyWindow.disableSkyLight()
-                        }
-                    }
-                } else {
-                    if let skyWindow = self.window as? FlowDockSkyLightWindow {
-                        skyWindow.disableSkyLight()
-                    }
-                }
-            }
+            self.setSkyLight(enabled: false)
         }
+    }
+
+    @MainActor
+    private func setSkyLight(enabled: Bool) {
+        allWindows.compactMap { $0 as? FlowDockSkyLightWindow }
+            .forEach { enabled ? $0.enableSkyLight() : $0.disableSkyLight() }
     }
 
     private func cleanupWindows(shouldInvert: Bool = false) {
@@ -254,22 +296,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        // Use closure-based observers for DistributedNotificationCenter and keep tokens for removal
-        screenLockedObserver = DistributedNotificationCenter.default().addObserver(
-            forName: NSNotification.Name(rawValue: "com.apple.screenIsLocked"),
-            object: nil, queue: .main) { [weak self] notification in
-                Task { @MainActor in
-                    self?.onScreenLocked(notification)
-                }
-        }
-
-        screenUnlockedObserver = DistributedNotificationCenter.default().addObserver(
-            forName: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"),
-            object: nil, queue: .main) { [weak self] notification in
-                Task { @MainActor in
-                    self?.onScreenUnlocked(notification)
-                }
-        }
+        observeLifecycle()
 
         KeyboardShortcuts.onKeyDown(for: .toggleNotchOpen) { [weak self] in
             Task { [weak self] in

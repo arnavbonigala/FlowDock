@@ -188,41 +188,54 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     
     // MARK: - Setup Methods
     private func setupNowPlayingObserver() async {
-        let process = Process()
+        streamTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self, await self.runAdapterUntilStreamEnds() else { return }
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
+    }
+
+    private func runAdapterUntilStreamEnds() async -> Bool {
         guard
             let scriptURL = Bundle.main.url(forResource: "mediaremote-adapter", withExtension: "pl"),
             let frameworkPath = Bundle.main.privateFrameworksPath?.appending("/MediaRemoteAdapter.framework")
         else {
             assertionFailure("Could not find mediaremote-adapter.pl script or framework path")
-            return
+            return false
         }
-        
+
+        let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
         process.arguments = [scriptURL.path, frameworkPath, "stream"]
-        
+
         let pipeHandler = JSONLinesPipeHandler()
         process.standardOutput = await pipeHandler.getPipe()
-        
+
         self.process = process
         self.pipeHandler = pipeHandler
 
         do {
             try process.run()
-            streamTask = Task { [weak self] in
-                await self?.processJSONStream()
-            }
         } catch {
-            assertionFailure("Failed to launch mediaremote-adapter.pl: \(error)")
+            print("Failed to launch mediaremote-adapter.pl: \(error)")
+            return true
         }
-    }
 
-    // MARK: - Async Stream Processing
-    private func processJSONStream() async {
-        guard let pipeHandler = self.pipeHandler else { return }
-        
         await pipeHandler.readJSONLines(as: NowPlayingUpdate.self) { [weak self] update in
             await self?.handleAdapterUpdate(update)
         }
+
+        await pipeHandler.close()
+        if process.isRunning {
+            process.terminate()
+        }
+        return true
+    }
+
+    func restartAdapter() {
+        guard let process, process.isRunning else { return }
+        process.terminate()
     }
 
     // MARK: - Update Methods

@@ -29,6 +29,13 @@ public final class CGSSpace {
         }
     }
 
+    public func revive() {
+        CGSShowSpaces(_CGSDefaultConnection(), [self.identifier])
+        let current = self.windows
+        self.windows = []
+        self.windows = current
+    }
+
     /// Initialized `CGSSpace`s *MUST* be de-initialized upon app exit!
     public init(level: Int = 0) {
         let flag = 0x1 // this value MUST be 1, otherwise, Finder decides to draw desktop icons
