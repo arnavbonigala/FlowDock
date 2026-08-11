@@ -449,6 +449,7 @@ private struct MusicControls: View {
 private struct MusicVolumeControl: View {
     @ObservedObject private var music = MusicManager.shared
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var level: Double = 0.5
     @State private var dragging = false
     @State private var expanded = false
@@ -470,7 +471,7 @@ private struct MusicVolumeControl: View {
                 expanded.toggle()
             } label: {
                 Image(systemName: icon)
-                    .contentTransition(.symbolEffect(.replace))
+                    .contentTransition(reduceMotion ? .opacity : .symbolEffect(.replace))
                     .frame(width: 28, height: 28)
                     .contentShape(Rectangle())
             }

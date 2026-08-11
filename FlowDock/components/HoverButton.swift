@@ -15,6 +15,7 @@ struct HoverButton: View {
     var contentTransition: ContentTransition = .symbolEffect;
     
     @State private var isHovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let size = CGFloat(scale == .large ? 40 : 30)
@@ -36,7 +37,7 @@ struct HoverButton: View {
                         .overlay {
                             Image(systemName: icon)
                                 .foregroundColor(iconColor)
-                                .contentTransition(contentTransition)
+                                .contentTransition(reduceMotion ? .opacity : contentTransition)
                                 .font(glyph)
                         }
                 }

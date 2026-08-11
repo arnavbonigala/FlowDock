@@ -146,7 +146,7 @@ struct SystemFeedbackView: View {
                 Image(systemName: reading.symbolName, variableValue: reading.symbolValue)
                     .font(.system(size: 15, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
-                    .contentTransition(.symbolEffect(.replace))
+                    .contentTransition(reduceMotion ? .opacity : .symbolEffect(.replace))
                     .frame(width: 18, alignment: .leading)
 
                 level(reading.value)
