@@ -28,6 +28,9 @@ struct ExperienceView: View {
     @ObservedObject private var drag = DragWatch.shared
     @Default(.showCalendar) private var showCalendar
     @Default(.shelfEnabled) private var shelfEnabled
+    @Default(.enableGestures) private var enableGestures
+    @Default(.closeGestureEnabled) private var closeGestureEnabled
+    @Default(.enableShadow) private var enableShadow
 
     static let contextColumn: CGFloat = 215
     static let droppedTypes: [UTType] = [.fileURL, .url, .utf8PlainText, .plainText, .data]
@@ -109,7 +112,7 @@ struct ExperienceView: View {
                     )
                 )
                 .shadow(
-                    color: Defaults[.enableShadow] && state != .idle ? .black.opacity(0.7) : .clear,
+                    color: enableShadow && state != .idle ? .black.opacity(0.7) : .clear,
                     radius: 6
                 )
                 .contentShape(Rectangle())
@@ -133,12 +136,12 @@ struct ExperienceView: View {
                 }
                 .onHover(perform: hover)
                 .onTapGesture { expand() }
-                .conditionalModifier(Defaults[.enableGestures]) { view in
+                .conditionalModifier(enableGestures) { view in
                     view.panGesture(direction: .down) { translation, _ in
                         if translation > Defaults[.gestureSensitivity] { expand() }
                     }
                 }
-                .conditionalModifier(Defaults[.enableGestures] && Defaults[.closeGestureEnabled]) { view in
+                .conditionalModifier(enableGestures && closeGestureEnabled) { view in
                     view.panGesture(direction: .up) { translation, _ in
                         guard !isOverAgenda, !isOverColumn else { return }
                         if translation > Defaults[.gestureSensitivity] { collapse() }
