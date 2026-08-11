@@ -18,7 +18,12 @@ struct HoverButton: View {
 
     var body: some View {
         let size = CGFloat(scale == .large ? 40 : 30)
-        
+        let glyph: Font = switch scale {
+        case .large: .largeTitle
+        case .small: .panelMeta
+        default: .panelControl
+        }
+
         Button(action: action) {
             Rectangle()
                 .fill(.clear)
@@ -32,7 +37,7 @@ struct HoverButton: View {
                             Image(systemName: icon)
                                 .foregroundColor(iconColor)
                                 .contentTransition(contentTransition)
-                                .font(scale == .large ? .largeTitle : .body)
+                                .font(glyph)
                         }
                 }
         }
