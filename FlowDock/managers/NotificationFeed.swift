@@ -20,11 +20,8 @@ struct FlowDockNotification: Identifiable, Equatable, Codable {
         body.isEmpty ? title : "\(title) — \(body)"
     }
 
-    var icon: NSImage? {
-        NSWorkspace.shared.runningApplications
-            .first { $0.localizedName == app }?
-            .icon
-    }
+    @MainActor
+    var icon: NSImage? { RunningAppIcons.icon(named: app) }
 }
 
 struct NotificationGroup: Identifiable {

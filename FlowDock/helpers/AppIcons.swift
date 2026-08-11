@@ -8,32 +8,22 @@
 import SwiftUI
 import AppKit
 
-struct AppIcons {
-    
-    func getIcon(file path: String) -> NSImage? {
-        guard FileManager.default.fileExists(atPath: path)
+@MainActor
+enum RunningAppIcons {
+    private static var resolved: [String: NSImage] = [:]
+
+    /// An application known only by its display name costs a linear scan of every running
+    /// process to find — once per row, per redraw. Remembering the answer also keeps the
+    /// icon on a notification whose application has since quit.
+    static func icon(named name: String) -> NSImage? {
+        if let cached = resolved[name] { return cached }
+        guard let icon = NSWorkspace.shared.runningApplications
+            .first(where: { $0.localizedName == name })?
+            .icon
         else { return nil }
-        
-        return NSWorkspace.shared.icon(forFile: path)
+        resolved[name] = icon
+        return icon
     }
-    
-    func getIcon(bundleID: String) -> NSImage? {
-        guard let path = NSWorkspace.shared.urlForApplication(
-            withBundleIdentifier: bundleID
-        )?.absoluteString
-        else { return nil }
-        
-        return getIcon(file: path)
-    }
-    
-        /// Easily read Info.plist as a Dictionary from any bundle by accessing .infoDictionary on Bundle
-    func bundle(forBundleID: String) -> Bundle? {
-        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: forBundleID)
-        else { return nil }
-        
-        return Bundle(url: url)
-    }
-    
 }
 
 func AppIcon(for bundleID: String) -> Image {
