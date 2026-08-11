@@ -40,12 +40,20 @@ struct ExperienceView: View {
         return max(vm.effectiveClosedNotchHeight, screen.frame.maxY - screen.visibleFrame.maxY)
     }
 
+    private var panelSize: CGSize {
+        guard let screen else { return openNotchSize }
+        return CGSize(
+            width: min(openNotchSize.width, screen.frame.width),
+            height: min(openNotchSize.height, screen.frame.height - surfaceTopInset(screen))
+        )
+    }
+
     private func width(for state: ActivityState) -> CGFloat {
         switch state {
-        case .expanded: openNotchSize.width
-        case .idle: anchor.width
+        case .expanded: panelSize.width
+        case .idle: min(anchor.width, panelSize.width)
         case .contextual, .persistent:
-            anchor.width + 2 * chinSide + 2 * chinInset
+            min(anchor.width + 2 * chinSide + 2 * chinInset, panelSize.width)
         }
     }
 
@@ -79,7 +87,7 @@ struct ExperienceView: View {
             }
                 .frame(
                     width: width(for: state),
-                    height: state == .expanded ? openNotchSize.height : closedHeight,
+                    height: state == .expanded ? panelSize.height : closedHeight,
                     alignment: .top
                 )
                 .clipShape(
@@ -285,12 +293,12 @@ struct ExperienceView: View {
     }
 
     private var panelHoldsPointer: Bool {
-        guard let frame = screen?.frame else { return false }
+        guard let screen else { return false }
         let panel = CGRect(
-            x: frame.midX - openNotchSize.width / 2,
-            y: frame.maxY - openNotchSize.height,
-            width: openNotchSize.width,
-            height: openNotchSize.height
+            x: screen.frame.midX - panelSize.width / 2,
+            y: screen.frame.maxY - surfaceTopInset(screen) - panelSize.height,
+            width: panelSize.width,
+            height: panelSize.height
         )
         return panel.contains(NSEvent.mouseLocation)
     }

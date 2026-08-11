@@ -251,11 +251,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let screenFrame = screen.frame
-        window.setFrameOrigin(
-            NSPoint(
-                x: screenFrame.origin.x + (screenFrame.width / 2) - window.frame.width / 2,
-                y: screenFrame.origin.y + screenFrame.height - window.frame.height
-            ))
+        let topInset = surfaceTopInset(screen)
+        let width = min(windowSize.width, screenFrame.width)
+        let height = min(windowSize.height, screenFrame.height - topInset)
+        window.setFrame(
+            NSRect(
+                x: screenFrame.midX - width / 2,
+                y: screenFrame.maxY - topInset - height,
+                width: width,
+                height: height
+            ),
+            display: false
+        )
         window.alphaValue = 1
     }
 

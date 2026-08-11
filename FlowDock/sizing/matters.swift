@@ -12,6 +12,7 @@ import SwiftUI
 let downloadSneakSize: CGSize = .init(width: 65, height: 1)
 
 let shadowPadding: CGFloat = 20
+let minimumClosedNotchHeight: CGFloat = 24
 let openNotchSize: CGSize = .init(width: 640, height: 190)
 let windowSize: CGSize = .init(width: openNotchSize.width, height: openNotchSize.height + shadowPadding)
 let cornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed: (top: CGFloat, bottom: CGFloat)) = (opened: (top: 19, bottom: 24), closed: (top: 6, bottom: 14))
@@ -58,9 +59,16 @@ enum MusicPlayerImageSizes {
         if screen.safeAreaInsets.top > 0 {
             notchHeight = screen.safeAreaInsets.top
         } else {
-            notchHeight = screen.frame.maxY - screen.visibleFrame.maxY
+            notchHeight = max(screen.frame.maxY - screen.visibleFrame.maxY, minimumClosedNotchHeight)
         }
+
+        notchWidth = min(notchWidth, screen.frame.width)
     }
 
     return .init(width: notchWidth, height: notchHeight)
+}
+
+@MainActor func surfaceTopInset(_ screen: NSScreen) -> CGFloat {
+    guard screen.safeAreaInsets.top <= 0 else { return 0 }
+    return screen.frame.maxY - screen.visibleFrame.maxY
 }
