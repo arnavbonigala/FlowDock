@@ -283,8 +283,8 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
             newPlaybackState.artwork = Data(
                 base64Encoded: artworkDataString.trimmingCharacters(in: .whitespacesAndNewlines)
             )
-        } else if !diff {
-            newPlaybackState.artwork = nil
+        } else if diff {
+            newPlaybackState.artwork = self.playbackState.artwork
         }
 
         if let dateString = payload.timestamp,
@@ -305,34 +305,43 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
         )
         
         newPlaybackState.volume = payload.volume ?? (diff ? self.playbackState.volume : 0.5)
-        
+        newPlaybackState.isFavorite = self.playbackState.isFavorite
+
+        let trackChanged = newPlaybackState.title != self.playbackState.title
+            || newPlaybackState.artist != self.playbackState.artist
+            || newPlaybackState.bundleIdentifier != self.playbackState.bundleIdentifier
+
         self.playbackState = newPlaybackState
-        
-        // Fetch favorite state for supported apps asynchronously
-        // await fetchFavoriteStateIfSupported()
+
+        if trackChanged {
+            await fetchFavoriteStateIfSupported()
+        }
     }
     
      private func fetchFavoriteStateIfSupported() async {
-         let bundleID = playbackState.bundleIdentifier
-        
-         if bundleID == "com.apple.Music" {
-             let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.Music")
-             guard !runningApps.isEmpty else { return }
-             
-             let script = """
-             tell application "Music"
-                 try
-                     return favorited of current track
-                 on error
-                     return false
-                 end try
-             end tell
-             """
-             if let result = try? await AppleScriptHelper.execute(script) {
-                 var updated = self.playbackState
-                 updated.isFavorite = result.booleanValue
-                 self.playbackState = updated
+         guard supportsFavorite else {
+             if playbackState.isFavorite {
+                 playbackState.isFavorite = false
              }
+             return
+         }
+
+         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.Music")
+         guard !runningApps.isEmpty else { return }
+
+         let script = """
+         tell application "Music"
+             try
+                 return favorited of current track
+             on error
+                 return false
+             end try
+         end tell
+         """
+         if let result = try? await AppleScriptHelper.execute(script) {
+             var updated = self.playbackState
+             updated.isFavorite = result.booleanValue
+             self.playbackState = updated
          }
      }
     

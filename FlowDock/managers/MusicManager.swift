@@ -76,6 +76,15 @@ class MusicManager: ObservableObject {
             }
             .store(in: &cancellables)
 
+        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didTerminateApplicationNotification)
+            .compactMap { $0.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] app in
+                guard let self, app.bundleIdentifier == self.bundleIdentifier else { return }
+                self.clearPlaybackState()
+            }
+            .store(in: &cancellables)
+
         // Initialize deprecation check asynchronously
         Task { @MainActor in
             do {
@@ -170,11 +179,42 @@ class MusicManager: ObservableObject {
 
         // Set new active controller
         activeController = controller
-        
+
         self.canFavoriteTrack = controller.supportsFavorite
+        self.volumeControlSupported = controller.supportsVolumeControl
+
+        if !controller.isActive() {
+            clearPlaybackState()
+        }
 
         // Get current state from active controller
         forceUpdate()
+    }
+
+    private func clearPlaybackState() {
+        flipWorkItem?.cancel()
+        debounceIdleTask?.cancel()
+
+        isPlaying = false
+        isPlayerIdle = true
+        songTitle = ""
+        artistName = ""
+        album = ""
+        songDuration = 0
+        elapsedTime = 0
+        timestampDate = Date()
+        playbackRate = 1
+        isFavoriteTrack = false
+        currentLyrics = ""
+        syncedLyrics = []
+        isFetchingLyrics = false
+        usingAppIconForArtwork = false
+        albumArt = defaultImage
+        artworkData = nil
+        lastArtworkTitle = ""
+        lastArtworkArtist = ""
+        lastArtworkAlbum = ""
+        lastArtworkBundleIdentifier = nil
     }
 
     // MARK: - Update Methods
@@ -199,25 +239,24 @@ class MusicManager: ObservableObject {
         let bundleChanged = state.bundleIdentifier != self.lastArtworkBundleIdentifier
 
         // Check for artwork changes
-        let artworkChanged = state.artwork != nil && state.artwork != self.artworkData
+        let artwork = (state.artwork?.isEmpty == false) ? state.artwork : nil
+        let artworkChanged = artwork != nil && artwork != self.artworkData
         let hasContentChange = titleChanged || artistChanged || albumChanged || artworkChanged || bundleChanged
 
         // Handle artwork and visual transitions for changed content
         if hasContentChange {
             self.triggerFlipAnimation()
 
-            if artworkChanged, let artwork = state.artwork {
+            if artworkChanged, let artwork {
                 self.updateArtwork(artwork)
-            } else if state.artwork == nil {
-                // Try to use app icon if no artwork but track changed
-                if let appIconImage = AppIconAsNSImage(for: state.bundleIdentifier) {
-                    self.usingAppIconForArtwork = true
-                    self.updateAlbumArt(newAlbumArt: appIconImage)
-                }
+            } else if artwork == nil {
+                let appIconImage = AppIconAsNSImage(for: state.bundleIdentifier)
+                self.usingAppIconForArtwork = appIconImage != nil
+                self.updateAlbumArt(newAlbumArt: appIconImage ?? defaultImage)
             }
-            self.artworkData = state.artwork
+            self.artworkData = artwork
 
-            if artworkChanged || state.artwork == nil {
+            if artworkChanged || artwork == nil {
                 // Update last artwork change values
                 self.lastArtworkTitle = state.title
                 self.lastArtworkArtist = state.artist
@@ -272,6 +311,7 @@ class MusicManager: ObservableObject {
             self.bundleIdentifier = state.bundleIdentifier
             // Update volume control support from active controller
             self.volumeControlSupported = activeController?.supportsVolumeControl ?? false
+            self.canFavoriteTrack = activeController?.supportsFavorite ?? false
         }
 
         if repeatModeChanged {
@@ -634,7 +674,7 @@ class MusicManager: ObservableObject {
         }
     }
     func skip(seconds: TimeInterval) {
-        let newPos = min(max(0, elapsedTime + seconds), songDuration)
+        let newPos = min(max(0, estimatedPlaybackPosition() + seconds), songDuration)
         seek(to: newPos)
     }
     
