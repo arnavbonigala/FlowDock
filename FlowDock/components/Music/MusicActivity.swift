@@ -592,7 +592,7 @@ private struct ScrollingText: View {
 struct CustomSlider: View {
     @Binding var value: Double
     var range: ClosedRange<Double>
-    var color: Color = .white
+    var color: Color = .effectiveAccent
     @Binding var dragging: Bool
     @Binding var lastDragged: Date
     var onValueChange: ((Double) -> Void)?
