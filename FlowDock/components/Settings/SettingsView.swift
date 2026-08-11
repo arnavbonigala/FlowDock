@@ -540,6 +540,7 @@ struct ShelfSettings: View {
 struct GeneralSettings: View {
     @ObservedObject private var coordinator = FlowDockViewCoordinator.shared
     @Default(.showOnAllDisplays) private var showOnAllDisplays
+    @Default(.automaticallySwitchDisplay) private var automaticallySwitchDisplay
     @Default(.openNotchOnHover) private var openNotchOnHover
     @Default(.enableGestures) private var enableGestures
     @Default(.minimumHoverDuration) private var minimumHoverDuration
@@ -564,21 +565,23 @@ struct GeneralSettings: View {
                 .onChange(of: showOnAllDisplays) {
                     NotificationCenter.default.post(name: .showOnAllDisplaysChanged, object: nil)
                 }
+                Defaults.Toggle(key: .automaticallySwitchDisplay) {
+                    Text("Follow the active display")
+                }
+                .onChange(of: automaticallySwitchDisplay) {
+                    NotificationCenter.default.post(name: .automaticallySwitchDisplayChanged, object: nil)
+                }
+                .disabled(showOnAllDisplays)
                 Picker("Preferred display", selection: $coordinator.preferredScreenUUID) {
                     ForEach(screens, id: \.uuid) { screen in
                         Text(screen.name).tag(screen.uuid as String?)
                     }
                 }
-                .disabled(showOnAllDisplays)
-                Defaults.Toggle(key: .automaticallySwitchDisplay) {
-                    Text("Follow the active display")
-                }
-                .onChange(of: Defaults[.automaticallySwitchDisplay]) {
-                    NotificationCenter.default.post(name: .automaticallySwitchDisplayChanged, object: nil)
-                }
-                .disabled(showOnAllDisplays)
+                .disabled(showOnAllDisplays || automaticallySwitchDisplay)
             } header: {
                 Text("Displays")
+            } footer: {
+                Text("A preferred display is used when FlowDock is neither on every display nor following the active one.")
             }
             .onChange(of: NSScreen.screens) {
                 screens = GeneralSettings.currentScreens()
