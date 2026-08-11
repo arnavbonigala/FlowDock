@@ -255,6 +255,8 @@ struct ExperienceView: View {
 
                 Spacer(minLength: 0)
 
+                KeepAwakeButton()
+
                 DevicePanel()
 
                 PowerPanelIndicator()
