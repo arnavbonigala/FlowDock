@@ -36,6 +36,9 @@ echo "Quitting FlowDock…"
 run osascript -e 'tell application "FlowDock" to quit'
 run pkill -x FlowDock
 run pkill -x FlowDockXPCHelper
+# The media adapter runs as perl, not as FlowDock, so -x never matches it. Left
+# alone it outlives the uninstall holding a framework path that no longer exists.
+run pkill -f mediaremote-adapter.pl
 
 echo "Resetting Accessibility access…"
 run tccutil reset Accessibility "$HELPER_ID"
