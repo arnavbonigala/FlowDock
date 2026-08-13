@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>FlowDock Updates</title>
+    <link>https://github.com/arnavbonigala/FlowDock/releases</link>
+    <description>FlowDock release updates</description>
+    <language>en</language>
+  </channel>
+</rss>
