@@ -181,7 +181,11 @@ jobs:
             -exportPath Release \
             -exportOptionsPlist "$RUNNER_TEMP/export_options.plist"
 
-      - name: Build unsigned app
+      # Ad-hoc signed, not unsigned. An unsigned build is linker-signed, and a linker-signed
+      # binary has no designated requirement for TCC to bind a grant to — so Accessibility is
+      # granted, dropped on the next launch, and asked for again forever. Ad-hoc signing gives
+      # the app a cdhash the grant can name.
+      - name: Build ad-hoc signed app
         if: steps.signing.outputs.mode == 'adhoc'
         env:
           VERSION: ${{ steps.signing.outputs.version }}
@@ -197,7 +201,11 @@ jobs:
             MARKETING_VERSION="$VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             ONLY_ACTIVE_ARCH=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM=""
           mkdir -p Release
           cp -R "$RUNNER_TEMP/dd/Build/Products/Release/$PROJECT_NAME.app" Release/
 
