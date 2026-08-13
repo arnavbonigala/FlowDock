@@ -1,9 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <title>FlowDock Updates</title>
     <link>https://github.com/arnavbonigala/FlowDock/releases</link>
     <description>FlowDock release updates</description>
     <language>en</language>
+    <item>
+      <title>0.1.0</title>
+      <pubDate>Thu, 13 Aug 2026 17:07:24 +0000</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/arnavbonigala/FlowDock/releases/download/v0.1.0/FlowDock.dmg" length="11123300" type="application/octet-stream" sparkle:edSignature="4A+aTXATZXwBPx1SuMyqrxdJg211xZb1h4JKvsU328ZprwYtQO2S+Ai3BlvdUdq4LMD8oKBx2hxTbPPtwfprBQ==" />
+    </item>
   </channel>
 </rss>
