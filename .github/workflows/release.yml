@@ -75,10 +75,11 @@ jobs:
           gh release create "$TAG" Release/FlowDock.dmg "${flags[@]}"
 
       # The app reads SUFeedURL https://arnavbonigala.github.io/FlowDock/appcast.xml,
-      # which GitHub Pages serves from the gh-pages branch. That branch has no source
-      # in this repository: this step is what creates and maintains it. updater/appcast.xml
-      # is the starting point used the first time, before the branch exists.
-      - name: Publish appcast
+      # which GitHub Pages serves from the gh-pages branch alongside the download page.
+      # That branch has no source in this repository: this step is what creates and
+      # maintains it, from updater/. appcast.xml is seeded only the first time, since
+      # after that the branch holds the release history; the page is copied every time.
+      - name: Publish appcast and download page
         if: needs.build.outputs.ed_signature != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,6 +103,9 @@ jobs:
             cp updater/appcast.xml "$work/appcast.xml"
           fi
           [[ -f "$work/appcast.xml" ]] || cp updater/appcast.xml "$work/appcast.xml"
+          # The landing page is redeployed every release, so editing updater/index.html
+          # on main is what changes the published page.
+          cp updater/index.html updater/flowdock.png "$work/"
           channel=()
           if [[ "$PRERELEASE" == "true" ]]; then
             channel=(--channel beta)
@@ -115,7 +119,7 @@ jobs:
             "${channel[@]}"
           git -C "$work" config user.name "github-actions[bot]"
           git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$work" add appcast.xml
+          git -C "$work" add appcast.xml index.html flowdock.png
           git -C "$work" commit -m "Publish FlowDock $VERSION to the update feed"
           git -C "$work" push "$remote" gh-pages
 
