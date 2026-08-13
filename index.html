@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowDock</title>
+<meta name="description" content="An open-source activity layer for macOS. Music, system feedback, calendar, and a file shelf, at the top of your screen.">
+<link rel="icon" href="flowdock.png">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #14161a;
+    --muted: #5c6470;
+    --line: #e3e6ea;
+    --accent: #0a84ff;
+    --accent-2: #32d0ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0c0e;
+      --panel: #141619;
+      --ink: #f2f4f7;
+      --muted: #969ea9;
+      --line: #23262b;
+      --accent: #409cff;
+      --accent-2: #4fe0ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+  header { text-align: center; }
+  header img { width: 112px; height: 112px; }
+  h1 {
+    margin: 1.25rem 0 0;
+    font-size: clamp(2.25rem, 7vw, 3rem);
+    letter-spacing: -0.03em;
+    background: linear-gradient(100deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .tagline { margin: 0.75rem auto 0; max-width: 32rem; font-size: 1.15rem; color: var(--muted); }
+  .cta { margin-top: 2.25rem; }
+  .download {
+    display: inline-block;
+    padding: 0.9rem 2.25rem;
+    border-radius: 999px;
+    background: linear-gradient(100deg, var(--accent-2), var(--accent));
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 24px -8px var(--accent);
+  }
+  .download:hover { filter: brightness(1.08); }
+  .meta { margin-top: 0.9rem; font-size: 0.9rem; color: var(--muted); }
+  .meta a { color: inherit; }
+  section { margin-top: 4rem; }
+  h2 { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 1.25rem; }
+  ul.activities { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+  ul.activities li { padding-left: 1.1rem; position: relative; }
+  ul.activities li::before {
+    content: ""; position: absolute; left: 0; top: 0.7em;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(var(--accent-2), var(--accent));
+  }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.5rem; }
+  .note ol { margin: 0.75rem 0 0; padding-left: 1.25rem; }
+  .note li { margin: 0.4rem 0; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.15em 0.45em;
+  }
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+  footer a { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img src="flowdock.png" alt="FlowDock icon" width="112" height="112">
+    <h1>FlowDock</h1>
+    <p class="tagline">An open-source activity layer for macOS. The notch becomes a calm home for music, system feedback, calendar context, and files.</p>
+    <div class="cta">
+      <a class="download" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download for macOS</a>
+      <p class="meta">
+        Requires macOS 14 Sonoma or later · Apple Silicon or Intel<br>
+        Free and open source ·
+        <a href="https://github.com/arnavbonigala/FlowDock/releases/latest">Release notes</a>
+      </p>
+    </div>
+  </header>
+
+  <section>
+    <h2>What appears</h2>
+    <ul class="activities">
+      <li><strong>Music</strong> — playback, source selection, queues, lyrics, and capability-aware controls</li>
+      <li><strong>System feedback</strong> — volume, brightness, keyboard backlight, and microphone, without displacing the native controls</li>
+      <li><strong>Battery and devices</strong> — charging, Bluetooth and headphone connection, and device status</li>
+      <li><strong>Calendar</strong> — events, reminders, meeting actions, countdowns, and timers</li>
+      <li><strong>Notifications</strong> — grouped, with actions where macOS permits</li>
+      <li><strong>Downloads</strong> — progress for transfers in flight</li>
+      <li><strong>File shelf</strong> — drag files to the top edge, then preview, compress, convert, remove backgrounds, AirDrop, or share them</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Opening it the first time</h2>
+    <div class="note">
+      <p style="margin:0">FlowDock ships without an Apple Developer ID, so macOS reports on first launch that it cannot check the app for malicious software. That is what an unnotarized build looks like — the release is built by a workflow anyone can read, from a tag anyone can rebuild.</p>
+      <ol>
+        <li>Try to open FlowDock. Dismiss the warning.</li>
+        <li>System Settings → Privacy &amp; Security, scroll to Security. A line names FlowDock. Click <strong>Open Anyway</strong>.</li>
+        <li>Confirm. Every later launch is normal.</li>
+      </ol>
+      <p style="margin:1rem 0 0">Or clear the flag yourself: <code>xattr -d com.apple.quarantine /Applications/FlowDock.app</code></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Updates</h2>
+    <p style="margin:0;color:var(--muted)">FlowDock updates itself. It reads a signed feed and installs what you approve; nothing else is downloaded, and there is no account and no analytics.</p>
+  </section>
+
+  <footer>
+    <a href="https://github.com/arnavbonigala/FlowDock">Source</a> ·
+    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/PRIVACY.md">Privacy</a> ·
+    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/BUILDING-EXTENSIONS.md">Build an extension</a> ·
+    <a href="https://github.com/arnavbonigala/FlowDock/issues">Report a bug</a>
+    <p>GPL-3.0. Derived from BoringNotch.</p>
+  </footer>
+
+</div>
+</body>
+</html>
