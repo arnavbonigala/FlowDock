@@ -36,8 +36,7 @@ body:
         Settings > About)
       options:
         - Select a version
-        - Development build
-        - v0.1.x
+        - v0.1.0
     validations:
       required: true
   - type: input
@@ -52,7 +51,8 @@ body:
     attributes:
       label: Music Source? (If relevant)
       description: >-
-         If this issue is related to music, what music source did you select in FlowDock settings?
+        If this issue is related to music, what music source did you select in
+        FlowDock settings?
       options:
         - Now Playing
         - Apple Music
