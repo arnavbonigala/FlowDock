@@ -4,6 +4,12 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<!-- Sparkle ships as a prebuilt xcframework with its own signature. Under ad-hoc
+	     signing neither it nor FlowDock carries a Team ID, and hardened-runtime library
+	     validation rejects the mismatch at launch. Building unsigned dodges the crash but
+	     leaves linker-signed binaries TCC will not persist Accessibility grants for. -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
 	<key>com.apple.security.automation.apple-events</key>
 	<true/>
 	<key>com.apple.security.device.bluetooth</key>
