@@ -19,16 +19,20 @@ struct HoverButton: View {
 
     var body: some View {
         let size = CGFloat(scale == .large ? 40 : 30)
+        // ponytail: every call site sits in a PanelRow, so a square box taller than the row
+        // spilled the glyph outside the row's background. Width still carries the hit area —
+        // the shape is a Capsule, not a Circle, because it was always meant to be row-tall.
+        let height = PanelRow.controls
 
         Button(action: action) {
             Rectangle()
                 .fill(.clear)
                 .contentShape(Rectangle())
-                .frame(width: size, height: size)
+                .frame(width: size, height: height)
                 .overlay {
                     Capsule()
                         .fill(isHovering ? AnyShapeStyle(.quaternary) : AnyShapeStyle(.clear))
-                        .frame(width: size, height: size)
+                        .frame(width: size, height: height)
                         .overlay {
                             Image(systemName: icon)
                                 .foregroundColor(iconColor)

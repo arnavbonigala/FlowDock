@@ -50,18 +50,23 @@ extension Activity {
             activityClass: .persistent,
             band: .ambient,
             label: "Display kept awake",
-            chinSideWidth: Activity.chinSide,
+            // ponytail: "Awake" is 12pt semibold — wider than the 34pt square, so it wrapped
+            // mid-word. chinClockSide is the other width DESIGN.md allows; lineLimit keeps a
+            // longer localisation truncating rather than growing a second line.
+            chinSideWidth: Activity.chinClockSide,
             leading: {
                 Image(systemName: "cup.and.saucer.fill")
                     .font(.chinGlyph)
                     .foregroundStyle(.primary)
-                    .frame(width: Activity.chinSide, alignment: .leading)
+                    .frame(width: Activity.chinClockSide, alignment: .leading)
             },
             trailing: {
                 Text("Awake")
                     .font(.chinValue)
                     .foregroundStyle(.primary)
-                    .frame(width: Activity.chinSide, alignment: .trailing)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(width: Activity.chinClockSide, alignment: .trailing)
             }
         )
     }

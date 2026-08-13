@@ -242,34 +242,40 @@ private struct MusicSourceMenu: View {
 private struct MusicDetails: View {
     @ObservedObject private var music = MusicManager.shared
 
+    /// ponytail: a GeometryReader reports the width but claims no height of its own, so this
+    /// column took the artwork's height and everything past it — the controls row — drew
+    /// outside MusicPanel and landed on the row below. `measuring` reads the same width from
+    /// a background, where it cannot drive the layout.
+    @State private var width: CGFloat = 0
+
     var body: some View {
-        GeometryReader { geo in
-            VStack(alignment: .leading, spacing: 4) {
-                ScrollingText(
-                    music.songTitle,
-                    style: .body,
-                    weight: .semibold,
-                    color: .primary,
-                    width: geo.size.width,
-                    scrolls: music.isPlaying
-                )
-                ScrollingText(
-                    music.artistName,
-                    style: .subheadline,
-                    color: .secondary,
-                    width: geo.size.width,
-                    scrolls: music.isPlaying
-                )
+        VStack(alignment: .leading, spacing: 2) {
+            ScrollingText(
+                music.songTitle,
+                style: .body,
+                weight: .semibold,
+                color: .primary,
+                width: width,
+                scrolls: music.isPlaying
+            )
+            ScrollingText(
+                music.artistName,
+                style: .subheadline,
+                color: .secondary,
+                width: width,
+                scrolls: music.isPlaying
+            )
 
-                MusicContextLine(width: geo.size.width)
+            MusicContextLine(width: width)
 
-                MusicScrubber()
+            MusicScrubber()
 
-                Spacer(minLength: 0)
+            Spacer(minLength: 0)
 
-                MusicControls()
-            }
+            MusicControls()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .measuring($width, along: .horizontal)
     }
 }
 
@@ -283,17 +289,26 @@ private struct MusicContextLine: View {
         enableLyrics && music.isPlaying && !music.syncedLyrics.isEmpty ? 0.25 : 10
     }
 
+    /// ponytail: whether this row exists is decided from the track, never from `isPlaying` —
+    /// a source with neither album nor lyrics costs nothing, but pausing must not remove a
+    /// row that playing puts back, or the column changes height and the panel jumps.
+    private var hasContext: Bool {
+        !music.album.isEmpty || (enableLyrics && !music.syncedLyrics.isEmpty)
+    }
+
     var body: some View {
-        TimelineView(.periodic(from: .now, by: tick)) { timeline in
-            ScrollingText(
-                line(at: timeline.date),
-                style: .subheadline,
-                color: .secondary,
-                width: width,
-                scrolls: music.isPlaying
-            )
+        if hasContext {
+            TimelineView(.periodic(from: .now, by: tick)) { timeline in
+                ScrollingText(
+                    line(at: timeline.date),
+                    style: .subheadline,
+                    color: .secondary,
+                    width: width,
+                    scrolls: music.isPlaying
+                )
+            }
+            .frame(height: 16)
         }
-        .frame(height: 16)
     }
 
     private func line(at date: Date) -> String {
@@ -438,6 +453,9 @@ private struct MusicControls: View {
                 control(slot)
             }
         }
+        // ponytail: the one control row that never adopted the row height every sibling
+        // row declares, so it sat on its own centreline instead of the panel's.
+        .frame(height: PanelRow.controls)
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
