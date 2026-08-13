@@ -20,6 +20,39 @@ enum CalendarSelectionState: Codable, Defaults.Serializable {
     case selected(Set<String>)
 }
 
+/// The one panel that sits under music in the open notch. There is exactly one because the
+/// notch does not scroll, and there is one *choice* because which one it should be depends
+/// entirely on what the reader keeps the notch open for.
+enum ColumnPanelKind: String, CaseIterable, Identifiable, Codable, Defaults.Serializable {
+    case timer
+    case shelf
+    case queue
+
+    var id: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .timer: "Timer"
+        case .shelf: "Shelf"
+        case .queue: "Up next"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .timer: "timer"
+        case .shelf: "tray.full"
+        case .queue: "text.line.first.and.arrowtriangle.forward"
+        }
+    }
+}
+
+/// A panel held past the closing of the notch, and when it stops being held.
+struct PanelPin {
+    var duration: TimeInterval
+    var until: Date
+}
+
 enum HideNotchOption: String, Defaults.Serializable {
     case always
     case nowPlayingOnly
@@ -120,6 +153,8 @@ extension Defaults.Keys {
     // MARK: Activities
     static let showMusicActivity = Key<Bool>("musicLiveActivityEnabled", default: true)
     static let activityPriority = Key<[String]>("activityPriority", default: [])
+    /// Which panel sits under music when nothing has overridden it.
+    static let defaultPanel = Key<ColumnPanelKind>("defaultPanel", default: .timer)
 
     // MARK: Extensions
     static let extensionsEnabled = Key<Bool>("extensionsEnabled", default: true)

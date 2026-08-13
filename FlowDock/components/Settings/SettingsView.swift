@@ -200,6 +200,26 @@ struct MusicSettings: View {
     }
 }
 
+/// The open notch never scrolls, so under music there is room for one panel and no more.
+/// This is which one, and the notch's own buttons are how it gets changed for a moment.
+struct PanelPrioritySettings: View {
+    @Default(.defaultPanel) private var defaultPanel
+
+    var body: some View {
+        Section {
+            Picker("Under the player", selection: $defaultPanel) {
+                ForEach(ColumnPanelKind.allCases) { panel in
+                    Label(panel.name, systemImage: panel.symbol).tag(panel)
+                }
+            }
+        } header: {
+            Text("Panel")
+        } footer: {
+            Text("The notch shows the player and one panel, and never scrolls. The buttons beside the notch swap that panel for as long as the notch stays open; pin one and it keeps its place for 5, 15, or 30 minutes.")
+        }
+    }
+}
+
 struct ActivitySettings: View {
     @Default(.activityPriority) private var priority
     @Default(.enabledExtensions) private var enabledExtensions
@@ -267,6 +287,8 @@ struct ActivitySettings: View {
                     Text("Extensions are apps you install yourself, and each one stays off until you turn it on. [Reviewed extensions](https://github.com/arnavbonigala/FlowDock/blob/main/DIRECTORY.md)")
                 }
             }
+
+            PanelPrioritySettings()
         }
     }
 }

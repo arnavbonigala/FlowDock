@@ -24,13 +24,20 @@ struct ExperienceView: View {
     @State private var isOverAgenda = false
     @State private var isOverColumn = false
     @State private var haptics = false
-    @State private var columnHeight: CGFloat = 0
     @Namespace private var shell
 
     @ObservedObject private var calendar = CalendarManager.shared
     @ObservedObject private var drag = DragWatch.shared
     @Default(.showCalendar) private var showCalendar
     @Default(.shelfEnabled) private var shelfEnabled
+    @Default(.defaultPanel) private var defaultPanel
+    /// The panel the reader picked instead of their default, and how long it is to last. An
+    /// override with no pin is for this opening only — press a button, look at the thing, leave.
+    /// Pinning it is what makes it survive the notch closing, on the chin hold's own clock.
+    @State private var overridePanel: ColumnPanelKind?
+    @State private var pin: PanelPin?
+    @State private var pinExpiry: Task<Void, Never>?
+    @State private var slotHasRoom = true
     @Default(.enableGestures) private var enableGestures
     @Default(.closeGestureEnabled) private var closeGestureEnabled
     @Default(.enableShadow) private var enableShadow
@@ -343,56 +350,196 @@ struct ExperienceView: View {
         .padding(.horizontal, chinInset)
     }
 
+    /// The left column in priority order: what is playing, then anything live enough to have
+    /// claimed an activity, then what is merely waiting to be read or used. Panels with nothing
+    /// to say already draw nothing, so the order only decides who loses the space when the
+    /// open notch runs out of it.
+    private struct ColumnPanel: Identifiable {
+        let id: String
+        let view: AnyView
+    }
+
+    /// What sits under music: the reader's default, or whatever they pressed instead.
+    private var activePanel: ColumnPanelKind { overridePanel ?? defaultPanel }
+
+    private func panel(for kind: ColumnPanelKind) -> ColumnPanel? {
+        switch kind {
+        case .timer: ColumnPanel(id: kind.id, view: AnyView(TimerPanel()))
+        case .queue: ColumnPanel(id: kind.id, view: AnyView(MusicQueuePanel()))
+        case .shelf: shelfEnabled
+            ? ColumnPanel(id: kind.id, view: AnyView(ShelfPanel(targeted: isDropTargeted)))
+            : nil
+        }
+    }
+
+    /// Music, because it is what the notch is for; then anything live, because it is only there
+    /// while it is happening; then the one chosen panel. Nothing else, because nothing else fits
+    /// and the notch does not scroll.
+    private var fixedPanels: [ColumnPanel] {
+        var panels = [ColumnPanel(id: "music", view: AnyView(MusicPanel()))]
+
+        panels += store.activities
+            .filter { $0.activityClass == .persistent }
+            .compactMap { activity in
+                activity.expanded.map { ColumnPanel(id: activity.id, view: AnyView($0())) }
+            }
+
+        return panels
+    }
+
+    private var optionalPanels: [ColumnPanel] {
+        panel(for: activePanel).map { [$0] } ?? []
+    }
+
+    private func column(_ count: Int) -> some View {
+        // ponytail: 12 so the first row under MusicPanel clears the artwork's
+        // source badge, which overhangs the artwork's bottom edge.
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(fixedPanels) { panel in
+                panel.view
+            }
+            ForEach(optionalPanels.prefix(count)) { panel in
+                panel.view
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        // ViewThatFits places only the candidate it picks, so this reports whether the column
+        // that is actually on screen is the one with room for the chosen panel.
+        .preference(key: SlotHasRoomKey.self, value: count > 0)
+    }
+
+    private func slotColor(for kind: ColumnPanelKind) -> Color {
+        guard slotHasRoom else { return .secondary.opacity(0.4) }
+        return kind == activePanel ? .effectiveAccent : .secondary
+    }
+
+    private func slotLabel(for kind: ColumnPanelKind) -> String {
+        guard slotHasRoom else { return "\(kind.name) has no room while this is on screen" }
+        return kind == activePanel ? "Showing \(kind.name)" : "Show \(kind.name)"
+    }
+
+    private var pinnableKinds: [ColumnPanelKind] {
+        ColumnPanelKind.allCases.filter { panel(for: $0) != nil }
+    }
+
+    /// Pressing the panel already showing puts the default back — the same button that took you
+    /// somewhere takes you home, so there is never a state you cannot press your way out of.
+    private func choose(_ kind: ColumnPanelKind) {
+        withAnimation(.content) {
+            overridePanel = kind == activePanel ? nil : kind
+            if overridePanel == nil { pin = nil }
+        }
+        scheduleExpiry()
+    }
+
+    /// The pin exists only while something is overridden — with nothing to hold, a hold button
+    /// is a control that does nothing, and one more thing in a row that has no room to spare.
+    private var canPin: Bool { overridePanel != nil }
+
+    private func togglePin() {
+        withAnimation(.content) {
+            pin = ActivityStore.nextHold(after: pin?.duration)
+                .map { PanelPin(duration: $0, until: .now + $0) }
+        }
+        scheduleExpiry()
+    }
+
+    private var pinLabel: String {
+        guard let next = ActivityStore.nextHold(after: pin?.duration) else {
+            return "Stop holding \(activePanel.name)"
+        }
+        return "Hold \(activePanel.name) for \(Int(next / 60)) minutes"
+    }
+
+    private func scheduleExpiry() {
+        pinExpiry?.cancel()
+        guard let until = pin?.until else { return }
+
+        pinExpiry = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(max(0, until.timeIntervalSinceNow)))
+            guard !Task.isCancelled else { return }
+            withAnimation(.content) {
+                pin = nil
+                overridePanel = nil
+            }
+        }
+    }
+
     private var expandedPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // ponytail: this row sits at the physical notch's own height, so its middle is
+            // behind the housing and anything drawn there cannot be seen or clicked. Equal-width
+            // sides put a clear block of exactly the notch's width at the centre, which is what
+            // opens the left of the notch — until now the only empty part of the whole panel.
             HStack(spacing: 8) {
-                if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
-                    HStack(spacing: 4) {
-                        contextual.leading()
-                        contextual.trailing()
+                HStack(spacing: 8) {
+                    if let contextual = store.activities.first(where: { $0.activityClass == .contextual }) {
+                        HStack(spacing: 4) {
+                            contextual.leading()
+                            contextual.trailing()
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(contextual.label)
                     }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(contextual.label)
+
+                    // ponytail: with a call in the column there is no room left to give, so these
+                    // dim rather than lie — a button that highlights and changes nothing reads
+                    // as broken, and the room comes back on its own when the call ends.
+                    ForEach(pinnableKinds) { kind in
+                        HoverButton(
+                            icon: kind.symbol,
+                            iconColor: slotColor(for: kind),
+                            scale: .small
+                        ) {
+                            choose(kind)
+                        }
+                        .iconLabel(slotLabel(for: kind))
+                        .disabled(!slotHasRoom)
+                    }
+
+                    if canPin {
+                        HoverButton(
+                            icon: pin == nil ? "pin" : "pin.fill",
+                            iconColor: pin == nil ? .secondary : .effectiveAccent,
+                            scale: .small
+                        ) {
+                            togglePin()
+                        }
+                        .iconLabel(pinLabel)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+
+                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer(minLength: 0)
+                Color.clear.frame(width: anchor.width)
 
-                HoldButton(store: store)
+                HStack(spacing: 8) {
+                    Spacer(minLength: 0)
 
-                KeepAwakeButton()
+                    KeepAwakeButton()
 
-                DevicePanel()
+                    DevicePanel()
 
-                PowerPanelIndicator()
+                    PowerPanelIndicator()
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .frame(height: max(24, vm.effectiveClosedNotchHeight))
 
             HStack(alignment: .top, spacing: spacing) {
-                ScrollView(.vertical) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        MusicPanel()
-
-                        MusicQueuePanel()
-
-                        ForEach(store.activities.filter { $0.activityClass == .persistent && $0.expanded != nil }) { activity in
-                            activity.expanded?()
-                        }
-
-                        NotificationPanel()
-
-                        TimerPanel()
-
-                        if shelfEnabled {
-                            ShelfPanel(targeted: isDropTargeted)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .onHover { isOverColumn = $0 }
-                    .measuring($columnHeight, along: .vertical)
+                // ponytail: the notch never scrolls, so something has to give when a call
+                // arrives on top of the player. What gives is the chosen panel — it is the one
+                // thing here the reader can get back with a button.
+                ViewThatFits(in: .vertical) {
+                    column(1)
+                    column(0)
                 }
-                .scrollIndicators(.never)
-                .scrollBounceBehavior(.basedOnSize)
-                .fadesPastEdge(.vertical, contentLength: columnHeight)
+                .onHover { isOverColumn = $0 }
+                .onPreferenceChange(SlotHasRoomKey.self) { hasRoom in
+                    withAnimation(.content) { slotHasRoom = hasRoom }
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 if showsAgenda {
@@ -441,6 +588,9 @@ struct ExperienceView: View {
         guard isExpanded, !SharingStateManager.shared.preventNotchClose else { return }
         settleTask?.cancel()
         isOverAgenda = false
+        // An override the reader did not pin was for the look they just took. Closing the notch
+        // is the end of that look, so the default comes back.
+        if pin == nil { overridePanel = nil }
         vm.close()
     }
 
@@ -463,6 +613,12 @@ struct ExperienceView: View {
         )
         return panel.contains(NSEvent.mouseLocation)
     }
+}
+
+/// Whether the column on screen is the one with room for the chosen panel.
+private struct SlotHasRoomKey: PreferenceKey {
+    static let defaultValue = true
+    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = nextValue() }
 }
 
 #if DEBUG

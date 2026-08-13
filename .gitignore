@@ -54,3 +54,7 @@ __pycache__/
 *.ipa
 *.xcarchive
 *.dSYM
+
+# Local build output
+DerivedData*/
+.claude/
