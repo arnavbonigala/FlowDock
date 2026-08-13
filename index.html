@@ -8,140 +8,419 @@
 <link rel="icon" href="flowdock.png">
 <style>
   :root {
-    --bg: #f6f7f9;
-    --panel: #ffffff;
-    --ink: #14161a;
-    --muted: #5c6470;
-    --line: #e3e6ea;
-    --accent: #0a84ff;
-    --accent-2: #32d0ee;
+    color-scheme: light dark;
+    --bg: #0a0b0d;
+    --panel: rgba(255,255,255,0.04);
+    --line: rgba(255,255,255,0.09);
+    --ink: #f4f6f8;
+    --muted: #98a1ad;
+    --cyan: #4fe0ff;
+    --blue: #2a7bff;
+    --shell: #000;
   }
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: light) {
     :root {
-      --bg: #0b0c0e;
-      --panel: #141619;
-      --ink: #f2f4f7;
-      --muted: #969ea9;
-      --line: #23262b;
-      --accent: #409cff;
-      --accent-2: #4fe0ff;
+      --bg: #f4f5f7;
+      --panel: rgba(255,255,255,0.72);
+      --line: rgba(0,0,0,0.08);
+      --ink: #14161a;
+      --muted: #5f6874;
+      --blue: #0a6cff;
     }
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font: 100%/1.5 system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 46rem; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
-  header { text-align: center; }
-  header img { width: 112px; height: 112px; }
+  /* One soft light source behind the hero, matching the icon's gradient. */
+  body::before {
+    content: "";
+    position: fixed; inset: -40vh 0 auto 0; height: 90vh;
+    background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--cyan) 22%, transparent), transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 54rem; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  /* ---- hero ---- */
+  header { text-align: center; padding: 5.5rem 0 0; }
+  /* The icon PNG has opaque corners, which read as a square against a dark page. */
+  header img { width: 6rem; height: 6rem; border-radius: 1.35rem; filter: drop-shadow(0 1rem 2rem rgba(0,0,0,.45)); }
   h1 {
-    margin: 1.25rem 0 0;
-    font-size: clamp(2.25rem, 7vw, 3rem);
-    letter-spacing: -0.03em;
-    background: linear-gradient(100deg, var(--accent-2), var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    margin: 1.5rem 0 0;
+    font-size: clamp(2.75rem, 9vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;   /* large type reads too loose without negative tracking */
+    font-weight: 700;
+    background: linear-gradient(100deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .tagline { margin: 0.75rem auto 0; max-width: 32rem; font-size: 1.15rem; color: var(--muted); }
-  .cta { margin-top: 2.25rem; }
-  .download {
-    display: inline-block;
-    padding: 0.9rem 2.25rem;
-    border-radius: 999px;
-    background: linear-gradient(100deg, var(--accent-2), var(--accent));
+  .tagline {
+    margin: 1.25rem auto 0; max-width: 34rem;
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+    line-height: 1.5; letter-spacing: -0.011em;
+    color: var(--muted);
+  }
+
+  /* ---- the demo ---- */
+  .stage { margin: 3.5rem 0 0; user-select: none; }
+  .screen {
+    position: relative;
+    border-radius: 1.4rem 1.4rem 0.4rem 0.4rem;
+    background: linear-gradient(180deg, #1d2128, #0e1114);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    padding: 0.5rem 0.5rem 0;
+    box-shadow: 0 2rem 4rem -1.5rem rgba(0,0,0,.6);
+  }
+  .menubar {
+    position: relative;
+    height: 2.4rem;
+    border-radius: 1rem 1rem 0 0;
+    background: linear-gradient(150deg, #2b3a52, #16202f 55%, #202b3d);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 0.9rem;
+    font-size: 0.72rem; color: rgba(255,255,255,.62);
+    overflow: hidden;
+  }
+  .desktop {
+    height: 8rem;
+    background: linear-gradient(170deg, #16202f, #0d1622);
+    border-radius: 0 0 0.25rem 0.25rem;
+  }
+  /* The notch hangs over the menu bar rather than inside it: the bar clips its own
+     rounded corners, and an expanded activity has to cross that edge. */
+  .notch {
+    position: absolute; top: 0.5rem; left: 50%;
+    transform: translateX(-50%);
+    width: 11rem; height: 2.4rem;
+    background: var(--shell);
+    border-radius: 0 0 1.1rem 1.1rem;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.55);
+  }
+  .notch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .panel {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0 0.9rem;
+    opacity: 0; visibility: hidden;
+    transition: opacity 140ms ease;
     color: #fff;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 6px 24px -8px var(--accent);
   }
-  .download:hover { filter: brightness(1.08); }
-  .meta { margin-top: 0.9rem; font-size: 0.9rem; color: var(--muted); }
+  .panel[data-on] { opacity: 1; visibility: visible; }
+  .art {
+    width: 2.6rem; height: 2.6rem; flex: none; border-radius: 0.5rem;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+  }
+  .lines { min-width: 0; flex: 1; }
+  .lines b { display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: -0.01em; }
+  .lines span { display: block; font-size: 0.7rem; color: rgba(255,255,255,.55); }
+  .bar { margin-top: 0.4rem; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 38%; border-radius: 2px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 1.5rem; flex: none; }
+  .eq i { width: 3px; border-radius: 2px; background: linear-gradient(var(--cyan), var(--blue)); animation: eq 900ms ease-in-out infinite alternate; }
+  .eq i:nth-child(2) { animation-delay: 150ms } .eq i:nth-child(3) { animation-delay: 300ms } .eq i:nth-child(4) { animation-delay: 450ms }
+  @keyframes eq { from { height: 20% } to { height: 100% } }
+  .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .chip { font-size: 0.68rem; padding: 0.3rem 0.55rem; border-radius: 0.45rem; background: rgba(255,255,255,.1); }
+  .glyph { width: 1.1rem; flex: none; opacity: .9 }
+  .idle { justify-content: center; }
+  .idle em {
+    font-style: normal; font-size: 0.66rem; letter-spacing: 0.02em;
+    color: rgba(255,255,255,.42);
+  }
+
+  .switch { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+  .switch button {
+    font: inherit; font-size: 0.85rem; color: var(--muted);
+    padding: 0.5rem 1rem; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--line);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    transition: transform 100ms ease-out, color 160ms ease, border-color 160ms ease;
+  }
+  .switch button:active { transform: scale(0.96); }   /* feedback on press, not on release */
+  .switch button[aria-pressed="true"] { color: var(--ink); border-color: color-mix(in oklab, var(--cyan) 45%, transparent); }
+  .hint { text-align: center; margin: 0.9rem 0 0; font-size: 0.8rem; color: var(--muted); }
+
+  /* ---- download ---- */
+  .cta { text-align: center; margin-top: 4rem; }
+  .download {
+    display: inline-block; padding: 0.95rem 2.4rem;
+    border-radius: 999px; text-decoration: none;
+    font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; color: #fff;
+    background: linear-gradient(100deg, var(--cyan), var(--blue));
+    box-shadow: 0 0.9rem 2rem -0.7rem var(--blue);
+    transition: transform 120ms ease-out, filter 160ms ease;
+  }
+  .download:hover { filter: brightness(1.07); }
+  .download:active { transform: scale(0.97); }
+  .meta { margin-top: 1rem; font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
   .meta a { color: inherit; }
-  section { margin-top: 4rem; }
-  h2 { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 1.25rem; }
-  ul.activities { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
-  ul.activities li { padding-left: 1.1rem; position: relative; }
-  ul.activities li::before {
-    content: ""; position: absolute; left: 0; top: 0.7em;
-    width: 6px; height: 6px; border-radius: 50%;
-    background: linear-gradient(var(--accent-2), var(--accent));
+
+  /* ---- sections ---- */
+  section { margin-top: 5rem; }
+  h2 {
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 1.5rem;
   }
-  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.5rem; }
-  .note ol { margin: 0.75rem 0 0; padding-left: 1.25rem; }
-  .note li { margin: 0.4rem 0; }
+  .grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .card {
+    padding: 1.1rem 1.2rem; border-radius: 0.9rem;
+    background: var(--panel); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  .card b { display: block; font-size: 0.95rem; letter-spacing: -0.01em; }
+  .card span { display: block; margin-top: 0.3rem; font-size: 0.87rem; color: var(--muted); }
+  .note {
+    padding: 1.5rem 1.6rem; border-radius: 1rem;
+    background: var(--panel); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  .note p { margin: 0; color: var(--muted); }
+  .note ol { margin: 1rem 0 0; padding-left: 1.3rem; }
+  .note li { margin: 0.45rem 0; }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.85em;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.15em 0.45em;
+    font-size: 0.85em; padding: 0.15em 0.45em;
+    border-radius: 0.4rem; background: rgba(127,127,127,.14);
   }
-  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+  footer {
+    margin-top: 5rem; padding-top: 1.75rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.87rem; color: var(--muted);
+  }
   footer a { color: var(--ink); }
+
+  /* Reveal on scroll: a short fade + small rise, cross-fade only when motion is reduced. */
+  .rise { opacity: 0; transform: translateY(1.25rem); transition: opacity 500ms ease, transform 600ms cubic-bezier(.2,.8,.2,1); }
+  .rise.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise { transition: opacity 220ms ease; transform: none; }
+    .eq i { animation: none; height: 60%; }
+    .download:active, .switch button:active { transform: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .card, .note, .switch button { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <img src="flowdock.png" alt="FlowDock icon" width="112" height="112">
+    <img src="flowdock.png" alt="" width="96" height="96">
     <h1>FlowDock</h1>
     <p class="tagline">An open-source activity layer for macOS. The notch becomes a calm home for music, system feedback, calendar context, and files.</p>
-    <div class="cta">
-      <a class="download" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download for macOS</a>
-      <p class="meta">
-        Requires macOS 14 Sonoma or later · Apple Silicon or Intel<br>
-        Free and open source ·
-        <a href="https://github.com/arnavbonigala/FlowDock/releases/latest">Release notes</a>
-      </p>
-    </div>
   </header>
 
-  <section>
-    <h2>What appears</h2>
-    <ul class="activities">
-      <li><strong>Music</strong> — playback, source selection, queues, lyrics, and capability-aware controls</li>
-      <li><strong>System feedback</strong> — volume, brightness, keyboard backlight, and microphone, without displacing the native controls</li>
-      <li><strong>Battery and devices</strong> — charging, Bluetooth and headphone connection, and device status</li>
-      <li><strong>Calendar</strong> — events, reminders, meeting actions, countdowns, and timers</li>
-      <li><strong>Notifications</strong> — grouped, with actions where macOS permits</li>
-      <li><strong>Downloads</strong> — progress for transfers in flight</li>
-      <li><strong>File shelf</strong> — drag files to the top edge, then preview, compress, convert, remove backgrounds, AirDrop, or share them</li>
-    </ul>
-  </section>
+  <div class="stage">
+    <div class="screen">
+      <div class="menubar">
+        <span>&#9679;&#9679;&#9679;</span>
+        <span>100%&nbsp; Thu 9:41</span>
+      </div>
+      <div class="desktop"></div>
 
-  <section>
-    <h2>Opening it the first time</h2>
-    <div class="note">
-      <p style="margin:0">FlowDock ships without an Apple Developer ID, so macOS reports on first launch that it cannot check the app for malicious software. That is what an unnotarized build looks like — the release is built by a workflow anyone can read, from a tag anyone can rebuild.</p>
-      <ol>
-        <li>Try to open FlowDock. Dismiss the warning.</li>
-        <li>System Settings → Privacy &amp; Security, scroll to Security. A line names FlowDock. Click <strong>Open Anyway</strong>.</li>
-        <li>Confirm. Every later launch is normal.</li>
-      </ol>
-      <p style="margin:1rem 0 0">Or clear the flag yourself: <code>xattr -d com.apple.quarantine /Applications/FlowDock.app</code></p>
+      <div class="notch" id="notch" role="button" tabindex="0" aria-label="Preview a FlowDock activity">
+          <div class="panel idle" data-state="idle" data-on><em>hover the notch</em></div>
+          <div class="panel" data-state="music">
+            <div class="art"></div>
+            <div class="lines">
+              <b>Weightless</b><span>Marconi Union</span>
+              <div class="bar"><i></i></div>
+            </div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="panel" data-state="volume">
+            <svg class="glyph" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg>
+            <div class="lines"><div class="bar" style="margin:0"><i style="width:64%"></i></div></div>
+          </div>
+          <div class="panel" data-state="shelf">
+            <div class="lines">
+              <b>3 files ready</b>
+              <div class="chips"><span class="chip">Compress</span><span class="chip">Convert</span><span class="chip">AirDrop</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="switch" id="switch">
+      <button aria-pressed="true" data-state="music">Music</button>
+      <button aria-pressed="false" data-state="volume">Volume</button>
+      <button aria-pressed="false" data-state="shelf">File shelf</button>
+    </div>
+    <p class="hint">Hover the notch, or tap it. Everything above is a live preview, not a video.</p>
+  </div>
+
+  <div class="cta">
+    <a class="download" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download for macOS</a>
+    <p class="meta">
+      Requires macOS 14 Sonoma or later &middot; Apple Silicon or Intel<br>
+      Free and open source &middot; <a href="https://github.com/arnavbonigala/FlowDock/releases/latest">Release notes</a>
+    </p>
+  </div>
+
+  <section class="rise">
+    <h2>What appears</h2>
+    <div class="grid">
+      <div class="card"><b>Music</b><span>Playback, source selection, queues, lyrics, and capability-aware controls.</span></div>
+      <div class="card"><b>System feedback</b><span>Volume, brightness, keyboard backlight, and microphone, without displacing the native controls.</span></div>
+      <div class="card"><b>Battery and devices</b><span>Charging, Bluetooth and headphone connection, and device status.</span></div>
+      <div class="card"><b>Calendar</b><span>Events, reminders, meeting actions, countdowns, and timers.</span></div>
+      <div class="card"><b>Notifications</b><span>Grouped, with actions where macOS permits.</span></div>
+      <div class="card"><b>File shelf</b><span>Drag files to the top edge, then preview, compress, convert, remove backgrounds, AirDrop, or share.</span></div>
     </div>
   </section>
 
-  <section>
+  <section class="rise">
+    <h2>Opening it the first time</h2>
+    <div class="note">
+      <p>FlowDock ships without an Apple Developer ID, so macOS reports on first launch that it cannot check the app for malicious software. That is what an unnotarized build looks like &mdash; the release is built by a workflow anyone can read, from a tag anyone can rebuild.</p>
+      <ol>
+        <li>Try to open FlowDock. Dismiss the warning.</li>
+        <li>System Settings &rarr; Privacy &amp; Security, scroll to Security. A line names FlowDock. Click <strong>Open Anyway</strong>.</li>
+        <li>Confirm. Every later launch is normal.</li>
+      </ol>
+      <p style="margin-top:1rem">Or clear the flag yourself: <code>xattr -d com.apple.quarantine /Applications/FlowDock.app</code></p>
+    </div>
+  </section>
+
+  <section class="rise">
     <h2>Updates</h2>
-    <p style="margin:0;color:var(--muted)">FlowDock updates itself. It reads a signed feed and installs what you approve; nothing else is downloaded, and there is no account and no analytics.</p>
+    <div class="note">
+      <p>FlowDock updates itself. It reads a signed feed and installs what you approve; nothing else is downloaded, and there is no account and no analytics.</p>
+    </div>
   </section>
 
   <footer>
-    <a href="https://github.com/arnavbonigala/FlowDock">Source</a> ·
-    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/PRIVACY.md">Privacy</a> ·
-    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/BUILDING-EXTENSIONS.md">Build an extension</a> ·
+    <a href="https://github.com/arnavbonigala/FlowDock">Source</a> &middot;
+    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/PRIVACY.md">Privacy</a> &middot;
+    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/BUILDING-EXTENSIONS.md">Build an extension</a> &middot;
     <a href="https://github.com/arnavbonigala/FlowDock/issues">Report a bug</a>
     <p>GPL-3.0. Derived from BoringNotch.</p>
   </footer>
 
 </div>
+
+<script>
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // A spring in Apple's terms: damping ratio (overshoot) and response (seconds to
+  // reach the target), not stiffness and mass. It animates from wherever the value
+  // currently is, which is what makes an interruption mid-flight look continuous.
+  class Spring {
+    constructor(value, { damping = 1, response = 0.4 } = {}) {
+      this.value = this.target = value; this.velocity = 0;
+      this.w = (2 * Math.PI) / response; this.z = damping;
+    }
+    step(dt) {
+      const a = -this.w * this.w * (this.value - this.target) - 2 * this.z * this.w * this.velocity;
+      this.velocity += a * dt;
+      this.value += this.velocity * dt;
+      return Math.abs(this.value - this.target) > 0.1 || Math.abs(this.velocity) > 0.1;
+    }
+  }
+
+  const notch = document.getElementById('notch');
+  const panels = [...notch.querySelectorAll('.panel')];
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+  // width, height, and corner radius per state, in px
+  const STATES = {
+    idle:   { w: 11,   h: 2.4, r: 1.1 },
+    music:  { w: 20,   h: 4.6, r: 1.5 },
+    volume: { w: 15,   h: 3.4, r: 1.3 },
+    shelf:  { w: 18.5, h: 4.8, r: 1.5 },
+  };
+
+  let activity = 'music';   // which activity the notch expands into
+  let open = false;
+
+  // Independent springs per dimension: one spring across both desyncs when width
+  // and height have different distances to travel.
+  const sw = new Spring(STATES.idle.w * rem);
+  const sh = new Spring(STATES.idle.h * rem);
+  const sr = new Spring(STATES.idle.r * rem);
+  let raf = null, last = 0;
+
+  function retarget() {
+    const s = STATES[open ? activity : 'idle'];
+    // Bounce only on the way out, where the motion reads as something arriving.
+    const damping = open ? 0.8 : 1.0;
+    for (const [spring, target] of [[sw, s.w], [sh, s.h], [sr, s.r]]) {
+      spring.target = target * rem;
+      spring.z = damping;
+      spring.w = (2 * Math.PI) / (open ? 0.35 : 0.3);
+    }
+    for (const p of panels) {
+      const on = p.dataset.state === (open ? activity : 'idle');
+      p.toggleAttribute('data-on', on);
+    }
+    if (reduced.matches) {                     // no spring: land on the value
+      for (const spring of [sw, sh, sr]) { spring.value = spring.target; spring.velocity = 0; }
+      paint();
+      return;
+    }
+    if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
+  }
+
+  function paint() {
+    notch.style.width = sw.value + 'px';
+    notch.style.height = sh.value + 'px';
+    notch.style.borderRadius = `0 0 ${sr.value}px ${sr.value}px`;
+  }
+
+  function tick(now) {
+    // Clamp dt so a backgrounded tab doesn't integrate one enormous step.
+    const dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    const moving = [sw, sh, sr].map(s => s.step(dt)).some(Boolean);
+    paint();
+    raf = moving ? requestAnimationFrame(tick) : null;
+  }
+
+  const set = v => { open = v; retarget(); };
+  notch.addEventListener('pointerenter', () => set(true));
+  notch.addEventListener('pointerleave', () => set(false));
+  notch.addEventListener('click', () => set(!open));
+  notch.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(!open); }
+  });
+
+  document.getElementById('switch').addEventListener('click', e => {
+    const button = e.target.closest('button');
+    if (!button) return;
+    activity = button.dataset.state;
+    for (const b of e.currentTarget.children) b.setAttribute('aria-pressed', String(b === button));
+    open = true;
+    retarget();   // mid-flight retarget: the notch resizes from wherever it is
+  });
+
+  paint();
+
+  // Reveal sections as they arrive.
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+    }
+  }, { rootMargin: '0px 0px -10% 0px' });
+  for (const el of document.querySelectorAll('.rise')) io.observe(el);
+})();
+</script>
 </body>
 </html>
