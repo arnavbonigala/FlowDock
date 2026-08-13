@@ -4,314 +4,525 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlowDock</title>
-<meta name="description" content="An open-source activity layer for macOS. Music, system feedback, calendar, and a file shelf, at the top of your screen.">
+<meta name="description" content="An open-source activity layer for macOS. Music, system feedback, your calendar and your files live in the notch.">
 <link rel="icon" href="flowdock.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* FlowDock's surface is opaque black in every appearance, because it is standing in
+     for the bezel. The page is light so that reading is immediate rather than explained. */
   :root {
-    color-scheme: light dark;
-    --bg: #0a0b0d;
-    --panel: rgba(255,255,255,0.04);
-    --line: rgba(255,255,255,0.09);
-    --ink: #f4f6f8;
-    --muted: #98a1ad;
+    color-scheme: light;
+    --paper: #fbfbfd;
+    --paper-2: #f2f2f5;
+    --ink: #16171a;
+    --dim: #6b7076;
+    --faint: #a2a6ad;
+    --rule: #e2e3e7;
+    --accent: #0a72d6;
     --cyan: #4fe0ff;
-    --blue: #2a7bff;
-    --shell: #000;
-  }
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #f4f5f7;
-      --panel: rgba(255,255,255,0.72);
-      --line: rgba(0,0,0,0.08);
-      --ink: #14161a;
-      --muted: #5f6874;
-      --blue: #0a6cff;
-    }
+    --sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --shadow: 0 2rem 4rem -1.5rem rgba(16,18,24,.28), 0 0 0 1px rgba(16,18,24,.06);
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 100%/1.5 system-ui, -apple-system, sans-serif;
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 400 1rem/1.6 var(--sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  /* One soft light source behind the hero, matching the icon's gradient. */
-  body::before {
-    content: "";
-    position: fixed; inset: -40vh 0 auto 0; height: 90vh;
-    background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--cyan) 22%, transparent), transparent 70%);
-    filter: blur(40px);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .wrap { position: relative; z-index: 1; max-width: 54rem; margin: 0 auto; padding: 0 1.5rem 5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding: 0 1.5rem; }
 
-  /* ---- hero ---- */
-  header { text-align: center; padding: 5.5rem 0 0; }
-  /* The icon PNG has opaque corners, which read as a square against a dark page. */
-  header img { width: 6rem; height: 6rem; border-radius: 1.35rem; filter: drop-shadow(0 1rem 2rem rgba(0,0,0,.45)); }
+  /* ---------- chrome ---------- */
+  /* Translucent, with content scrolling underneath — not an opaque strip that
+     consumes a fixed band of the page. */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251,251,253,.72);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 300ms ease;
+  }
+  .nav.stuck { border-bottom-color: var(--rule); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 3.25rem; }
+  .brand { display: flex; align-items: center; gap: .55rem; font-size: .9375rem; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+  .brand img { width: 1.5rem; height: 1.5rem; border-radius: .34rem; }
+  .nav .get { font-size: .8125rem; padding: .4rem 1rem; }
+
+  .get {
+    display: inline-block; font: inherit; font-weight: 500; letter-spacing: -.01em;
+    padding: .8rem 1.6rem; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    transition: transform 110ms ease-out, filter 200ms ease;
+  }
+  .get:hover { filter: brightness(1.08); }
+  .get:active { transform: scale(.97); }   /* on press, not on release */
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 5rem 0 0; }
+  .eyebrow { font-size: .8125rem; font-weight: 600; letter-spacing: .01em; color: var(--accent); }
   h1 {
-    margin: 1.5rem 0 0;
-    font-size: clamp(2.75rem, 9vw, 4.5rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;   /* large type reads too loose without negative tracking */
-    font-weight: 700;
-    background: linear-gradient(100deg, var(--cyan), var(--blue));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin: .75rem auto 0; max-width: 16ch;
+    font-size: clamp(2.75rem, 7.5vw, 5rem);
+    font-weight: 700; line-height: 1.04;
+    letter-spacing: -0.035em;              /* large type reads loose without negative tracking */
   }
-  .tagline {
-    margin: 1.25rem auto 0; max-width: 34rem;
-    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
-    line-height: 1.5; letter-spacing: -0.011em;
-    color: var(--muted);
+  .sub {
+    margin: 1.5rem auto 0; max-width: 34rem;
+    font-size: clamp(1.0625rem, 2.2vw, 1.3125rem);
+    line-height: 1.5; letter-spacing: -.014em; color: var(--dim);
+  }
+  .hero .actions { margin-top: 2.25rem; display: flex; flex-direction: column; align-items: center; gap: .9rem; }
+  .terms { font-size: .8125rem; color: var(--faint); }
+
+  /* ---------- the machine ---------- */
+  /* The screen is drawn at 1:1 with the app — 185pt anchor, 640pt panel — so the machine
+     has to be the size a machine actually is around them. It scales as one object rather
+     than reflowing, because a laptop with a rubber-band aspect ratio stops reading as one. */
+  .stage {
+    --screen: 1160px;
+    --chrome: 62px;                                       /* lid, bezel and base around the glass */
+    --k: min(1, calc((100vw - 2.5rem) / var(--screen)));
+    width: 100vw; margin-left: calc(50% - 50vw); margin-top: 3rem;
+    height: calc(var(--k) * (var(--screen) * 0.625 + var(--chrome)));
+  }
+  /* Scaled from the top-left and then centred by hand: the machine is wider than the
+     viewport on small screens, so `margin: auto` has nothing left to centre. */
+  .mac {
+    width: var(--screen); transform-origin: top left;
+    transform: translateX(calc((100vw - var(--screen) * var(--k)) / 2)) scale(var(--k));
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .lid {
+    width: 100%; padding: 2px; border-radius: 1.4rem;
+    background: linear-gradient(160deg, #f4f5f7, #c2c6cd 60%, #d9dce1);
+    box-shadow: 0 3rem 6rem -2.5rem rgba(16,18,24,.45), 0 0 0 1px rgba(16,18,24,.08);
+  }
+  .bezel { padding: .7rem .55rem; border-radius: 1.3rem; background: #0b0b0d; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .display {
+    position: relative; overflow: hidden; aspect-ratio: 16 / 10;
+    border-radius: .45rem;
+    background-image:
+      radial-gradient(90% 70% at 22% 8%, rgba(79,224,255,.30), transparent 55%),
+      radial-gradient(80% 65% at 88% 96%, rgba(10,63,184,.55), transparent 60%),
+      radial-gradient(120% 90% at 50% 50%, rgba(24,42,74,.9), transparent 70%),
+      linear-gradient(#0e1420, #05070b);
+  }
+  /* The light a real lid catches, raked across the glass. */
+  .display::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background: linear-gradient(104deg, rgba(255,255,255,.055) 0 16%, transparent 38%);
+  }
+  .base {
+    width: 106%; height: 14px; flex: none;
+    background: linear-gradient(#e0e2e7, #a9aeb6 70%, #8f949c);
+    clip-path: polygon(0 0, 100% 0, 98.6% 100%, 1.4% 100%);
+    border-radius: 0 0 .5rem .5rem; position: relative;
+  }
+  .base::after {   /* the groove you lift the lid by */
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 12%; height: 5px; border-radius: 0 0 .4rem .4rem; background: rgba(16,18,24,.18);
   }
 
-  /* ---- the demo ---- */
-  .stage { margin: 3.5rem 0 0; user-select: none; }
-  .screen {
-    position: relative;
-    border-radius: 1.4rem 1.4rem 0.4rem 0.4rem;
-    background: linear-gradient(180deg, #1d2128, #0e1114);
-    border: 1px solid var(--line);
-    border-bottom: none;
-    padding: 0.5rem 0.5rem 0;
-    box-shadow: 0 2rem 4rem -1.5rem rgba(0,0,0,.6);
+  .dock {
+    position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 4;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
   .menubar {
-    position: relative;
-    height: 2.4rem;
-    border-radius: 1rem 1rem 0 0;
-    background: linear-gradient(150deg, #2b3a52, #16202f 55%, #202b3d);
+    height: 32px; padding: 0 .85rem;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 0.9rem;
-    font-size: 0.72rem; color: rgba(255,255,255,.62);
-    overflow: hidden;
+    font: 500 .6875rem/1 var(--sans); color: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.05);
   }
-  .desktop {
-    height: 8rem;
-    background: linear-gradient(170deg, #16202f, #0d1622);
-    border-radius: 0 0 0.25rem 0.25rem;
-  }
-  /* The notch hangs over the menu bar rather than inside it: the bar clips its own
-     rounded corners, and an expanded activity has to cross that edge. */
-  .notch {
-    position: absolute; top: 0.5rem; left: 50%;
-    transform: translateX(-50%);
-    width: 11rem; height: 2.4rem;
-    background: var(--shell);
-    border-radius: 0 0 1.1rem 1.1rem;
-    overflow: hidden;
-    cursor: pointer;
-    z-index: 2;
-    box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.55);
-  }
-  .notch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
-  .panel {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; gap: 0.7rem;
-    padding: 0 0.9rem;
+  .menubar b { color: rgba(255,255,255,.78); }
+  .menubar span { display: flex; gap: .9rem; align-items: center; }
+
+  /* The surface, 1:1 with the app. Width, height and both radii spring; the top edge and
+     the horizontal centre never move (INTERACTION.md invariant 8). */
+  .surface { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 185px; height: 32px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .surface svg.shape { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .surface svg.shape path { fill: #000; }   /* opaque black — DESIGN.md §3, non-negotiable */
+  .surface:focus-visible { outline: 2px solid var(--cyan); outline-offset: 6px; }
+  .content { position: absolute; inset: 0; color: #fff; font-family: -apple-system, BlinkMacSystemFont, var(--sans); }
+  .layer { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 180ms ease-out; }
+  .layer[data-on] { opacity: 1; visibility: visible; }
+
+  .chin { display: flex; align-items: center; height: 32px; padding: 0 12px; }
+  .chin .gap { width: 185px; flex: none; }
+  /* Both sides are the same 34pt the app gives them, so the anchor stays centred. */
+  .chin .side { display: flex; align-items: center; gap: 4px; flex: none; width: 34px; }
+  .chin .side.end { justify-content: flex-end; }
+  .art-sm { width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, var(--cyan), #2a7bff); flex: none; }
+  .spectrum { display: flex; align-items: flex-end; gap: 2px; width: 16px; height: 14px; }
+  .spectrum i { width: 2px; background: currentColor; border-radius: .5px; animation: bars 820ms ease-in-out infinite alternate; }
+  .spectrum i:nth-child(2) { animation-delay: 140ms } .spectrum i:nth-child(3) { animation-delay: 280ms } .spectrum i:nth-child(4) { animation-delay: 420ms }
+  @keyframes bars { from { height: 22% } to { height: 100% } }
+  .value { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* System feedback is not part of the surface: it is its own 236 × 58 glass panel,
+     centred 8pt under the surface's bottom edge (SystemFeedback.swift). */
+  .hud {
+    position: absolute; left: 50%; z-index: 2;
+    width: 236px; height: 58px; padding: 0 14px; border-radius: 19px;
+    display: flex; flex-direction: column; justify-content: center; gap: 8px;
+    color: #fff; font-family: -apple-system, BlinkMacSystemFont, var(--sans);
+    background: rgba(255,255,255,.16);
+    -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: inset 0 .5px 0 rgba(255,255,255,.28), inset 0 -.5px 0 rgba(255,255,255,.06), 0 16px 32px -8px rgba(0,0,0,.32);
     opacity: 0; visibility: hidden;
-    transition: opacity 140ms ease;
-    color: #fff;
+    transform: translateX(-50%) scale(.92); filter: blur(8px);
+    transition: opacity 200ms ease-out, transform 420ms cubic-bezier(.16,1,.3,1), filter 300ms ease-out;
   }
-  .panel[data-on] { opacity: 1; visibility: visible; }
-  .art {
-    width: 2.6rem; height: 2.6rem; flex: none; border-radius: 0.5rem;
-    background: linear-gradient(135deg, var(--cyan), var(--blue));
-  }
-  .lines { min-width: 0; flex: 1; }
-  .lines b { display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: -0.01em; }
-  .lines span { display: block; font-size: 0.7rem; color: rgba(255,255,255,.55); }
-  .bar { margin-top: 0.4rem; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 38%; border-radius: 2px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
-  .eq { display: flex; align-items: flex-end; gap: 3px; height: 1.5rem; flex: none; }
-  .eq i { width: 3px; border-radius: 2px; background: linear-gradient(var(--cyan), var(--blue)); animation: eq 900ms ease-in-out infinite alternate; }
-  .eq i:nth-child(2) { animation-delay: 150ms } .eq i:nth-child(3) { animation-delay: 300ms } .eq i:nth-child(4) { animation-delay: 450ms }
-  @keyframes eq { from { height: 20% } to { height: 100% } }
-  .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  .chip { font-size: 0.68rem; padding: 0.3rem 0.55rem; border-radius: 0.45rem; background: rgba(255,255,255,.1); }
-  .glyph { width: 1.1rem; flex: none; opacity: .9 }
-  .idle { justify-content: center; }
-  .idle em {
-    font-style: normal; font-size: 0.66rem; letter-spacing: 0.02em;
-    color: rgba(255,255,255,.42);
-  }
+  .hud[data-on] { opacity: 1; visibility: visible; transform: translateX(-50%); filter: none; }
+  .hud b { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.62); }
+  .hud .row { display: flex; align-items: center; gap: 10px; }
+  .hud .row svg { width: 15px; height: 15px; flex: none; }
+  .track { flex: 1; height: 10px; border-radius: 999px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .track i { display: block; height: 100%; width: 62%; background: #fff; border-radius: 999px; }
 
-  .switch { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
-  .switch button {
-    font: inherit; font-size: 0.85rem; color: var(--muted);
-    padding: 0.5rem 1rem; border-radius: 999px;
-    background: var(--panel); border: 1px solid var(--line);
-    cursor: pointer;
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    transition: transform 100ms ease-out, color 160ms ease, border-color 160ms ease;
-  }
-  .switch button:active { transform: scale(0.96); }   /* feedback on press, not on release */
-  .switch button[aria-pressed="true"] { color: var(--ink); border-color: color-mix(in oklab, var(--cyan) 45%, transparent); }
-  .hint { text-align: center; margin: 0.9rem 0 0; font-size: 0.8rem; color: var(--muted); }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 0 43px 12px; height: 100%; }
+  .header { display: flex; align-items: center; gap: 8px; height: 32px; flex: none; }
+  .header .gap { width: 185px; flex: none; }
+  .header .row { display: flex; gap: 8px; flex: 1; color: rgba(255,255,255,.5); }
+  .header .row.end { justify-content: flex-end; }
+  .header svg { width: 15px; height: 15px; }
+  .header .on { color: var(--cyan); }
+  .columns { display: flex; align-items: flex-start; gap: 16px; flex: 1; min-height: 0; }
+  .primary { flex: 1; display: flex; gap: 16px; min-width: 0; }
+  .art-lg { width: 90px; height: 90px; border-radius: 13px; background: linear-gradient(135deg, var(--cyan), #2a7bff); flex: none; }
+  .details { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .title { font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+  .artist { font-size: 12px; color: rgba(255,255,255,.55); }
+  .scrub { margin-top: 6px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .scrub i { display: block; height: 100%; width: 41%; background: var(--cyan); }
+  .times { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.45); }
+  .transport { display: flex; gap: 16px; align-items: center; margin-top: auto; color: rgba(255,255,255,.9); }
+  .transport svg { width: 15px; height: 15px; }
+  .agenda { width: 215px; flex: none; display: flex; flex-direction: column; gap: 2px; }
+  .entry { display: flex; gap: 8px; align-items: stretch; height: 30px; }
+  .entry b { width: 3px; border-radius: 2px; flex: none; }
+  .entry .t { font-size: 12px; line-height: 1.15; }
+  .entry .m { font-size: 11px; color: rgba(255,255,255,.45); font-variant-numeric: tabular-nums; }
+  .shelf { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .file { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: 8px; background: rgba(255,255,255,.06); font-size: 12px; white-space: nowrap; }
+  .file svg { width: 15px; height: 15px; color: rgba(255,255,255,.55); }
+  .file .m { margin-left: auto; font-size: 11px; color: rgba(255,255,255,.45); }
+  .strip { display: flex; gap: 12px; height: 22px; align-items: center; color: rgba(255,255,255,.8); }
+  .strip svg { width: 15px; height: 15px; }
 
-  /* ---- download ---- */
-  .cta { text-align: center; margin-top: 4rem; }
-  .download {
-    display: inline-block; padding: 0.95rem 2.4rem;
-    border-radius: 999px; text-decoration: none;
-    font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; color: #fff;
-    background: linear-gradient(100deg, var(--cyan), var(--blue));
-    box-shadow: 0 0.9rem 2rem -0.7rem var(--blue);
-    transition: transform 120ms ease-out, filter 160ms ease;
+  /* A segmented control the way macOS draws one, on the material the dock is made of. */
+  .segmented {
+    display: inline-flex; padding: 5px; gap: 2px; border-radius: 999px;
+    background: rgba(255,255,255,.14);
+    -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.16), 0 1rem 2rem -.75rem rgba(0,0,0,.5);
   }
-  .download:hover { filter: brightness(1.07); }
-  .download:active { transform: scale(0.97); }
-  .meta { margin-top: 1rem; font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
-  .meta a { color: inherit; }
+  .segmented button {
+    font: 500 13px/1 -apple-system, BlinkMacSystemFont, var(--sans); letter-spacing: -.01em; white-space: nowrap;
+    padding: 8px 18px; border: 0; border-radius: 999px; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,.72);
+    transition: color 200ms ease, background 260ms cubic-bezier(.16,1,.3,1), transform 110ms ease-out;
+  }
+  .segmented button:hover { color: #fff; }
+  .segmented button:active { transform: scale(.96); }
+  .segmented button[aria-pressed="true"] { background: rgba(255,255,255,.92); color: #16171a; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  .stagecaption { text-align: center; margin: 0; font-size: 11px; color: rgba(255,255,255,.45); }
 
-  /* ---- sections ---- */
-  section { margin-top: 5rem; }
-  h2 {
-    font-size: 0.78rem; font-weight: 600;
-    letter-spacing: 0.09em; text-transform: uppercase;
-    color: var(--muted); margin: 0 0 1.5rem;
-  }
-  .grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
-  .card {
-    padding: 1.1rem 1.2rem; border-radius: 0.9rem;
-    background: var(--panel); border: 1px solid var(--line);
-    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-  }
-  .card b { display: block; font-size: 0.95rem; letter-spacing: -0.01em; }
-  .card span { display: block; margin-top: 0.3rem; font-size: 0.87rem; color: var(--muted); }
-  .note {
-    padding: 1.5rem 1.6rem; border-radius: 1rem;
-    background: var(--panel); border: 1px solid var(--line);
-    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-  }
-  .note p { margin: 0; color: var(--muted); }
-  .note ol { margin: 1rem 0 0; padding-left: 1.3rem; }
-  .note li { margin: 0.45rem 0; }
-  code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.85em; padding: 0.15em 0.45em;
-    border-radius: 0.4rem; background: rgba(127,127,127,.14);
-  }
-  footer {
-    margin-top: 5rem; padding-top: 1.75rem;
-    border-top: 1px solid var(--line);
-    font-size: 0.87rem; color: var(--muted);
-  }
-  footer a { color: var(--ink); }
+  /* ---------- features ---------- */
+  section { padding: 7rem 0 0; }
+  .lead { text-align: center; max-width: 40rem; margin: 0 auto; }
+  h2 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.08; margin: 0; }
+  .lead p { margin: 1rem 0 0; font-size: 1.0625rem; line-height: 1.6; letter-spacing: -.01em; color: var(--dim); }
 
-  /* Reveal on scroll: a short fade + small rise, cross-fade only when motion is reduced. */
-  .rise { opacity: 0; transform: translateY(1.25rem); transition: opacity 500ms ease, transform 600ms cubic-bezier(.2,.8,.2,1); }
-  .rise.in { opacity: 1; transform: none; }
+  .feature { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: center; margin-top: 4rem; }
+  .feature:nth-child(odd) .copy { order: 2; }   /* the lead is child 1, so features start even */
+  /* The panel is 640pt wide; a half-width card would crop it, and a cropped mockup is a
+     worse lie than no mockup. This one gets the whole measure. */
+  .feature.wide { grid-template-columns: 1fr; gap: 2.5rem; }
+  .feature.wide .copy { order: 0; text-align: center; max-width: 34rem; margin: 0 auto; }
+  .feature h3 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.022em; margin: 0; }
+  .feature p { margin: .85rem 0 0; color: var(--dim); letter-spacing: -.008em; }
+  .feature .kicker { font-size: .8125rem; font-weight: 600; color: var(--accent); margin-bottom: .4rem; }
+  .mock {
+    /* No padding at the top: the surface hangs from the top edge here exactly as it hangs
+       from the top of the display. */
+    position: relative; border-radius: 1rem; overflow: hidden; padding: 0 0 1.75rem;
+    background-image: radial-gradient(110% 120% at 50% -10%, rgba(79,224,255,.18), transparent 58%), linear-gradient(#151b26, #0a0d12);
+    box-shadow: var(--shadow);
+    display: flex; justify-content: center;
+  }
+  .mock .surface { position: relative; left: auto; transform: none; cursor: default; }
 
+  /* ---------- install ---------- */
+  .install { max-width: 40rem; margin: 3rem auto 0; }
+  .steps { counter-reset: s; list-style: none; margin: 2rem 0 0; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding: 0 0 1.5rem 3rem; color: var(--dim); }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -.1rem;
+    width: 1.75rem; height: 1.75rem; border-radius: 999px;
+    background: var(--paper-2); color: var(--ink);
+    font: 600 .8125rem/1.75rem var(--sans); text-align: center;
+  }
+  .steps b { color: var(--ink); font-weight: 600; }
+  code { font: 400 .875rem var(--mono); background: var(--paper-2); padding: .2em .5em; border-radius: .35rem; }
+  .aside { margin-top: 2rem; padding: 1.25rem 1.5rem; border-radius: .9rem; background: var(--paper-2); font-size: .9375rem; color: var(--dim); }
+
+  footer { margin-top: 7rem; padding: 2rem 0 3rem; border-top: 1px solid var(--rule); font-size: .8125rem; color: var(--faint); display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+  footer nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  footer a { color: var(--dim); }
+
+  /* Content materializes — it resolves into focus at its own position — rather than
+     sliding up from somewhere it never was. */
+  .rise { opacity: 0; transform: scale(.965); filter: blur(12px); transition: opacity 600ms ease-out, transform 900ms cubic-bezier(.16,1,.3,1), filter 700ms ease-out; }
+  .rise.in { opacity: 1; transform: none; filter: none; }
+
+  .hero > *, .stage { animation: arrive 900ms cubic-bezier(.16,1,.3,1) backwards; }
+  .hero .eyebrow { animation-delay: 60ms }
+  .hero h1 { animation-delay: 130ms }
+  .hero .sub { animation-delay: 210ms }
+  .hero .actions { animation-delay: 280ms }
+  .stage { animation-delay: 340ms; animation-duration: 1200ms }
+  @keyframes arrive { from { opacity: 0; transform: scale(.97); filter: blur(14px) } }
+
+  /* The mock lifts toward the pointer — small input, legible output. */
+  .mock { transition: transform 500ms cubic-bezier(.16,1,.3,1), box-shadow 500ms ease; }
+  .mock:hover { transform: translateY(-.35rem); box-shadow: 0 2.5rem 5rem -1.75rem rgba(16,18,24,.34), 0 0 0 1px rgba(16,18,24,.06); }
+
+  .terms a, footer a { transition: color 200ms ease; }
+  .terms a:hover, footer a:hover { color: var(--ink); }
+  .brand img { transition: transform 400ms cubic-bezier(.16,1,.3,1); }
+  .brand:hover img { transform: scale(1.08) rotate(-3deg); }
+
+  @media (max-width: 52rem) {
+    .feature { grid-template-columns: 1fr; gap: 2rem; }
+    .feature:nth-child(odd) .copy { order: 0; }
+    .stage, .mock { overflow-x: auto; }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .rise { transition: opacity 220ms ease; transform: none; }
-    .eq i { animation: none; height: 60%; }
-    .download:active, .switch button:active { transform: none; }
-  }
-  @media (prefers-reduced-transparency: reduce) {
-    .card, .note, .switch button { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
+    .rise { transition: opacity 250ms ease; transform: none; }
+    .hero > *, .stage { animation: none; }
+    .mock:hover { transform: none; }
+    .brand:hover img { transform: none; }
+    .spectrum i { animation: none; height: 60%; }
+    .get:active, .segmented button:active { transform: none; }
   }
 </style>
 </head>
 <body>
+
+<div class="nav" id="nav">
+  <div class="wrap">
+    <span class="brand"><img src="flowdock.png" alt=""> FlowDock</span>
+    <a class="get" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download</a>
+  </div>
+</div>
+
 <div class="wrap">
 
-  <header>
-    <img src="flowdock.png" alt="" width="96" height="96">
-    <h1>FlowDock</h1>
-    <p class="tagline">An open-source activity layer for macOS. The notch becomes a calm home for music, system feedback, calendar context, and files.</p>
+  <header class="hero">
+    <p class="eyebrow">Open source &middot; macOS 14 and later</p>
+    <h1>The notch, put to work.</h1>
+    <p class="sub">Music, volume, your next meeting, the file you're about to send. All of it lives in the notch, where it stays out of your work.</p>
+    <div class="actions">
+      <a class="get" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download for macOS</a>
+      <p class="terms">Free and open source &middot; Apple Silicon or Intel &middot; <a href="https://github.com/arnavbonigala/FlowDock/releases/latest">Release notes</a></p>
+    </div>
   </header>
 
   <div class="stage">
-    <div class="screen">
+   <div class="mac">
+    <div class="lid">
+    <div class="bezel">
+    <div class="display">
       <div class="menubar">
-        <span>&#9679;&#9679;&#9679;</span>
-        <span>100%&nbsp; Thu 9:41</span>
+        <span><b>FlowDock</b> File Edit View Window Help</span>
+        <span>100%&nbsp;&nbsp;Thu 9:41</span>
       </div>
-      <div class="desktop"></div>
 
-      <div class="notch" id="notch" role="button" tabindex="0" aria-label="Preview a FlowDock activity">
-          <div class="panel idle" data-state="idle" data-on><em>hover the notch</em></div>
-          <div class="panel" data-state="music">
-            <div class="art"></div>
-            <div class="lines">
-              <b>Weightless</b><span>Marconi Union</span>
-              <div class="bar"><i></i></div>
+      <div class="hud" data-hud>
+        <b>MacBook Pro Speakers</b>
+        <div class="row">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4zM16 3.2v2.1a6.8 6.8 0 010 13.4v2.1a8.9 8.9 0 000-17.6z"/></svg>
+          <div class="track"><i></i></div>
+        </div>
+      </div>
+
+      <div class="surface" id="surface" role="button" tabindex="0" aria-label="Step through FlowDock's states">
+        <svg class="shape" viewBox="0 0 185 32" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
+        <div class="content">
+          <!-- Idle draws nothing at all. Idle is not a small interface, it is the absence of one. -->
+          <div class="layer" data-state="idle"></div>
+
+          <div class="layer" data-state="contextual"></div>
+
+          <div class="layer" data-state="persistent">
+            <div class="chin">
+              <div class="side"><span class="art-sm"></span></div>
+              <div class="gap"></div>
+              <div class="side end"><span class="spectrum"><i></i><i></i><i></i><i></i></span></div>
             </div>
-            <div class="eq"><i></i><i></i><i></i><i></i></div>
           </div>
-          <div class="panel" data-state="volume">
-            <svg class="glyph" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg>
-            <div class="lines"><div class="bar" style="margin:0"><i style="width:64%"></i></div></div>
+
+          <div class="layer" data-state="expanded">
+            <div class="panel">
+              <div class="header">
+                <div class="row">
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="on"><path d="M12 2a5 5 0 015 5v3a5 5 0 01-10 0V7a5 5 0 015-5zm7 8a7 7 0 01-6 6.93V20h3v2H8v-2h3v-3.07A7 7 0 015 10z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v2H4zm0 6h16v2H4zm0 6h10v2H4z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H8v4H4v14h16V7zM6 19v-5h12v5z"/></svg>
+                </div>
+                <div class="gap"></div>
+                <div class="row end">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a8 8 0 108 8h-2a6 6 0 11-6-6z"/></svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h13v8H4zm14 2h2v4h-2z" opacity=".65"/><path d="M5 9h9v6H5z"/></svg>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="primary">
+                  <span class="art-lg"></span>
+                  <div class="details">
+                    <span class="title">Weightless</span>
+                    <span class="artist">Marconi Union</span>
+                    <div class="scrub"><i></i></div>
+                    <div class="times"><span>3:24</span><span>-4:47</span></div>
+                    <div class="transport">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3 6l9-6v12z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-1 6L6 18V6z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="agenda">
+                  <div class="entry"><b style="background:#ff6259"></b><div><div class="t">Design review</div><div class="m">10:00 – 10:30</div></div></div>
+                  <div class="entry"><b style="background:#4fe0ff"></b><div><div class="t">Ship v0.1.0</div><div class="m">13:00</div></div></div>
+                  <div class="entry"><b style="background:#ffcc00"></b><div><div class="t">Timer — tea</div><div class="m">2:41 left</div></div></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="panel" data-state="shelf">
-            <div class="lines">
-              <b>3 files ready</b>
-              <div class="chips"><span class="chip">Compress</span><span class="chip">Convert</span><span class="chip">AirDrop</span></div>
+
+          <div class="layer" data-state="shelf">
+            <div class="panel">
+              <div class="header">
+                <div class="row"><span style="font-size:12px;color:rgba(255,255,255,.55)">Shelf — 2 items</span></div>
+                <div class="gap"></div>
+                <div class="row end"><span style="font-size:12px;color:rgba(255,255,255,.55)">Drop to add</span></div>
+              </div>
+              <div class="columns">
+                <div class="primary">
+                  <div class="shelf">
+                    <div class="file"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h8l4 4v16H6z"/></svg> render-final.png <span class="m">2.4 MB</span></div>
+                    <div class="file"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h8l4 4v16H6z"/></svg> contract.pdf <span class="m">318 KB</span></div>
+                    <div class="strip">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l4 4h-3v8h-2V7H8zM5 17h14v4H5z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v6H4zm0 10h16v6H4z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v14H3zm2 2v10h14V7z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9l-7 7-7-7 1.4-1.4L12 13.2l5.6-5.6z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="agenda">
+                  <div class="entry"><div><div class="t">Compress to ZIP</div><div class="m">2.7 MB → 1.1 MB</div></div></div>
+                  <div class="entry"><div><div class="t">Share</div><div class="m">AirDrop, Mail, Messages</div></div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="switch" id="switch">
-      <button aria-pressed="true" data-state="music">Music</button>
-      <button aria-pressed="false" data-state="volume">Volume</button>
-      <button aria-pressed="false" data-state="shelf">File shelf</button>
+      <!-- The control takes the dock's place: it belongs to the Mac being demonstrated,
+           not to the web page around it. -->
+      <div class="dock">
+        <div class="segmented" id="ladder" role="group" aria-label="FlowDock's states">
+          <button aria-pressed="false" data-state="idle">Idle</button>
+          <button aria-pressed="false" data-state="contextual">Contextual</button>
+          <button aria-pressed="true" data-state="persistent">Persistent</button>
+          <button aria-pressed="false" data-state="expanded">Expanded</button>
+          <button aria-pressed="false" data-state="shelf">Shelf</button>
+        </div>
+        <p class="stagecaption">Live, at actual size. Or rest the pointer on the notch itself.</p>
+      </div>
     </div>
-    <p class="hint">Hover the notch, or tap it. Everything above is a live preview, not a video.</p>
-  </div>
-
-  <div class="cta">
-    <a class="download" href="https://github.com/arnavbonigala/FlowDock/releases/latest/download/FlowDock.dmg">Download for macOS</a>
-    <p class="meta">
-      Requires macOS 14 Sonoma or later &middot; Apple Silicon or Intel<br>
-      Free and open source &middot; <a href="https://github.com/arnavbonigala/FlowDock/releases/latest">Release notes</a>
-    </p>
+    </div>
+    </div>
+    <div class="base"></div>
+   </div>
   </div>
 
   <section class="rise">
-    <h2>What appears</h2>
-    <div class="grid">
-      <div class="card"><b>Music</b><span>Playback, source selection, queues, lyrics, and capability-aware controls.</span></div>
-      <div class="card"><b>System feedback</b><span>Volume, brightness, keyboard backlight, and microphone, without displacing the native controls.</span></div>
-      <div class="card"><b>Battery and devices</b><span>Charging, Bluetooth and headphone connection, and device status.</span></div>
-      <div class="card"><b>Calendar</b><span>Events, reminders, meeting actions, countdowns, and timers.</span></div>
-      <div class="card"><b>Notifications</b><span>Grouped, with actions where macOS permits.</span></div>
-      <div class="card"><b>File shelf</b><span>Drag files to the top edge, then preview, compress, convert, remove backgrounds, AirDrop, or share.</span></div>
+    <div class="lead">
+      <h2>Learn it once. Everything works this way.</h2>
+      <p>Music, a volume change, a download and a file all move through the same four states, so the next thing FlowDock shows you behaves like the last one.</p>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <p class="kicker">Idle</p>
+        <h3>Nothing to say, nothing to show.</h3>
+        <p>The surface matches the cutout to the pixel, so an idle Mac looks like a Mac with nothing running. No glyph, no dot, no badge waiting for you to notice it. On a display without a notch, FlowDock hides itself.</p>
+      </div>
+      <div class="mock" data-mock="idle"></div>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <p class="kicker">Contextual</p>
+        <h3>The value you just changed.</h3>
+        <p>Press the volume key and a pane of glass arrives under the notch, then clears a second and a half later. Brightness, keyboard backlight and the mic read the same way. The notch itself stays put.</p>
+      </div>
+      <div class="mock" data-mock="contextual"></div>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <p class="kicker">Persistent</p>
+        <h3>What's playing, while it plays.</h3>
+        <p>Album art on one side, a live spectrum on the other, and the title scrolling between them while it plays. Downloads and timers take the same shape, and each one leaves when it finishes.</p>
+      </div>
+      <div class="mock" data-mock="persistent"></div>
+    </div>
+
+    <div class="feature wide">
+      <div class="copy">
+        <p class="kicker">Expanded</p>
+        <h3>Drag a file up. It opens.</h3>
+        <p>Hold a file over the notch and the shelf opens under your cursor. Preview it, compress it, convert it, lift the background out, AirDrop it, then drag it on to wherever it was going. Your file stays where you left it on disk.</p>
+      </div>
+      <div class="mock" data-mock="shelf"></div>
     </div>
   </section>
 
   <section class="rise">
-    <h2>Opening it the first time</h2>
-    <div class="note">
-      <p>FlowDock ships without an Apple Developer ID, so macOS reports on first launch that it cannot check the app for malicious software. That is what an unnotarized build looks like &mdash; the release is built by a workflow anyone can read, from a tag anyone can rebuild.</p>
-      <ol>
-        <li>Try to open FlowDock. Dismiss the warning.</li>
-        <li>System Settings &rarr; Privacy &amp; Security, scroll to Security. A line names FlowDock. Click <strong>Open Anyway</strong>.</li>
+    <div class="lead">
+      <h2>Opening it the first time.</h2>
+      <p>FlowDock ships without an Apple Developer ID, so macOS checks with you once. You can read the workflow that built this release and rebuild it yourself from the tag.</p>
+    </div>
+    <div class="install">
+      <ol class="steps">
+        <li>Open the DMG and drag FlowDock to Applications. Try to open it, then dismiss the warning. macOS quarantines anything it cannot check with Apple.</li>
+        <li>Go to <b>System Settings → Privacy &amp; Security</b> and scroll to Security. A line names FlowDock. Click <b>Open Anyway</b>.</li>
         <li>Confirm. Every later launch is normal.</li>
       </ol>
-      <p style="margin-top:1rem">Or clear the flag yourself: <code>xattr -d com.apple.quarantine /Applications/FlowDock.app</code></p>
-    </div>
-  </section>
-
-  <section class="rise">
-    <h2>Updates</h2>
-    <div class="note">
-      <p>FlowDock updates itself. It reads a signed feed and installs what you approve; nothing else is downloaded, and there is no account and no analytics.</p>
+      <div class="aside">
+        Prefer the terminal? <code>xattr -d com.apple.quarantine /Applications/FlowDock.app</code><br><br>
+        FlowDock updates itself after that. It reads a signed feed and installs what you approve, downloads nothing else, asks for no account and sends no analytics.
+      </div>
     </div>
   </section>
 
   <footer>
-    <a href="https://github.com/arnavbonigala/FlowDock">Source</a> &middot;
-    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/PRIVACY.md">Privacy</a> &middot;
-    <a href="https://github.com/arnavbonigala/FlowDock/blob/main/BUILDING-EXTENSIONS.md">Build an extension</a> &middot;
-    <a href="https://github.com/arnavbonigala/FlowDock/issues">Report a bug</a>
-    <p>GPL-3.0. Derived from BoringNotch.</p>
+    <span>GPL-3.0 &middot; derived from BoringNotch</span>
+    <nav>
+      <a href="https://github.com/arnavbonigala/FlowDock">Source</a>
+      <a href="https://github.com/arnavbonigala/FlowDock/blob/main/PRIVACY.md">Privacy</a>
+      <a href="https://github.com/arnavbonigala/FlowDock/blob/main/BUILDING-EXTENSIONS.md">Extensions</a>
+      <a href="https://github.com/arnavbonigala/FlowDock/issues">Report a bug</a>
+    </nav>
   </footer>
 
 </div>
@@ -320,106 +531,171 @@
 (() => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
-  // A spring in Apple's terms: damping ratio (overshoot) and response (seconds to
-  // reach the target), not stiffness and mass. It animates from wherever the value
-  // currently is, which is what makes an interruption mid-flight look continuous.
+  // FlowDock's own geometry, from FlowDock/sizing/matters.swift.
+  const ANCHOR = { w: 185, h: 32, top: 6, bottom: 14 };       // getClosedNotchSize fallback
+  const PANEL  = { w: 640, h: 190, top: 19, bottom: 24 };     // openNotchSize + cornerRadiusInsets.opened
+  const CHIN   = { w: 185 + 2 * 34 + 2 * 12, h: 32, top: 6, bottom: 14 };  // anchor + two chin sides
+  const STATES = {
+    idle: ANCHOR,
+    contextual: ANCHOR,   // the surface does not move for a HUD; the glass panel below it does the talking
+    persistent: CHIN,
+    expanded: PANEL,
+    shelf: PANEL,
+  };
+
+  // SwiftUI springs in SwiftUI's own terms — response is the time to reach the target,
+  // dampingFraction is the overshoot. From FlowDock/animations/ExperienceMotion.swift.
+  const MOTION = {
+    expand:   { response: 0.42, damping: 0.86 },   // .experience()
+    collapse: { response: 0.40, damping: 1.00 },   // collapsing has nothing to settle into
+    value:    { response: 0.26, damping: 0.90 },   // .value() — the chin swapping owners
+  };
+
+  // NotchShape, ported from FlowDock/components/Notch/NotchShape.swift. The top corners
+  // curve outward: that flare is why the surface reads as part of the cutout instead of a
+  // rounded box parked under the menu bar.
+  const notchPath = (w, h, tr, br) =>
+    `M0,0 Q${tr},0 ${tr},${tr} L${tr},${h - br} Q${tr},${h} ${tr + br},${h}` +
+    ` L${w - tr - br},${h} Q${w - tr},${h} ${w - tr},${h - br}` +
+    ` L${w - tr},${tr} Q${w - tr},0 ${w},0 Z`;
+
   class Spring {
-    constructor(value, { damping = 1, response = 0.4 } = {}) {
-      this.value = this.target = value; this.velocity = 0;
-      this.w = (2 * Math.PI) / response; this.z = damping;
-    }
+    constructor(v) { this.value = this.target = v; this.velocity = 0; this.tune(MOTION.value); }
+    tune({ response, damping }) { this.w = (2 * Math.PI) / response; this.z = damping; }
     step(dt) {
+      // Integrating from the presentation value is what lets a transition reverse
+      // mid-flight without snapping — INTERACTION.md invariant 7.
       const a = -this.w * this.w * (this.value - this.target) - 2 * this.z * this.w * this.velocity;
       this.velocity += a * dt;
       this.value += this.velocity * dt;
-      return Math.abs(this.value - this.target) > 0.1 || Math.abs(this.velocity) > 0.1;
+      return Math.abs(this.value - this.target) > 0.05 || Math.abs(this.velocity) > 0.05;
     }
   }
 
-  const notch = document.getElementById('notch');
-  const panels = [...notch.querySelectorAll('.panel')];
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // One surface. The hero's is interactive; each feature mock is another instance held at
+  // one state, so both are driven by exactly the code the app's geometry describes.
+  class Surface {
+    constructor(el, state = 'idle') {
+      this.el = el;
+      this.svg = el.querySelector('svg.shape');
+      this.path = this.svg.querySelector('path');
+      this.layers = [...el.querySelectorAll('.layer')];
+      this.hud = el.parentElement.querySelector('[data-hud]');
+      this.state = state;
+      const size = STATES[state];
+      // One spring per dimension: a single spring across all four desyncs the moment they
+      // have different distances to travel.
+      this.springs = { w: new Spring(size.w), h: new Spring(size.h), top: new Spring(size.top), bottom: new Spring(size.bottom) };
+      this.raf = null;
+      this.show(state);
+      this.paint();
+    }
+    show(state) {
+      for (const l of this.layers) l.toggleAttribute('data-on', l.dataset.state === state);
+      this.hud?.toggleAttribute('data-on', state === 'contextual');
+    }
+    paint() {
+      const { w, h, top, bottom } = this.springs;
+      this.el.style.width = w.value + 'px';
+      this.el.style.height = h.value + 'px';
+      this.svg.setAttribute('viewBox', `0 0 ${w.value} ${h.value}`);
+      this.path.setAttribute('d', notchPath(w.value, h.value, top.value, bottom.value));
+      if (this.hud) this.hud.style.top = (h.value + 8) + 'px';   // it rides the surface's bottom edge
+    }
+    tick(now) {
+      const dt = Math.min((now - this.last) / 1000, 1 / 30);   // a backgrounded tab must not integrate one huge step
+      this.last = now;
+      const moving = Object.values(this.springs).map(s => s.step(dt)).some(Boolean);
+      this.paint();
+      this.raf = moving ? requestAnimationFrame(t => this.tick(t)) : null;
+    }
+    go(next) {
+      const wasPanel = this.state === 'expanded' || this.state === 'shelf';
+      const isPanel = next === 'expanded' || next === 'shelf';
+      const size = STATES[next];
+      this.state = next;
 
-  // width, height, and corner radius per state, in px
-  const STATES = {
-    idle:   { w: 11,   h: 2.4, r: 1.1 },
-    music:  { w: 20,   h: 4.6, r: 1.5 },
-    volume: { w: 15,   h: 3.4, r: 1.3 },
-    shelf:  { w: 18.5, h: 4.8, r: 1.5 },
+      const motion = isPanel && !wasPanel ? MOTION.expand : wasPanel && !isPanel ? MOTION.collapse : MOTION.value;
+      this.springs.w.target = size.w; this.springs.h.target = size.h;
+      this.springs.top.target = size.top; this.springs.bottom.target = size.bottom;
+      for (const s of Object.values(this.springs)) s.tune(motion);
+      this.show(next);
+
+      if (reduced.matches) {
+        for (const s of Object.values(this.springs)) { s.value = s.target; s.velocity = 0; }
+        return this.paint();
+      }
+      if (!this.raf) { this.last = performance.now(); this.raf = requestAnimationFrame(t => this.tick(t)); }
+    }
+  }
+
+  const surface = document.getElementById('surface');
+  const ladder = document.getElementById('ladder');
+  // Media is what the notch is doing most of the time, so that is where it rests.
+  const hero = new Surface(surface, 'persistent');
+  const state = () => hero.state;
+  const go = next => {
+    hero.go(next);
+    for (const b of ladder.children) b.setAttribute('aria-pressed', String(b.dataset.state === next));
   };
+  go('persistent');
 
-  let activity = 'music';   // which activity the notch expands into
-  let open = false;
-
-  // Independent springs per dimension: one spring across both desyncs when width
-  // and height have different distances to travel.
-  const sw = new Spring(STATES.idle.w * rem);
-  const sh = new Spring(STATES.idle.h * rem);
-  const sr = new Spring(STATES.idle.r * rem);
-  let raf = null, last = 0;
-
-  function retarget() {
-    const s = STATES[open ? activity : 'idle'];
-    // Bounce only on the way out, where the motion reads as something arriving.
-    const damping = open ? 0.8 : 1.0;
-    for (const [spring, target] of [[sw, s.w], [sh, s.h], [sr, s.r]]) {
-      spring.target = target * rem;
-      spring.z = damping;
-      spring.w = (2 * Math.PI) / (open ? 0.35 : 0.3);
-    }
-    for (const p of panels) {
-      const on = p.dataset.state === (open ? activity : 'idle');
-      p.toggleAttribute('data-on', on);
-    }
-    if (reduced.matches) {                     // no spring: land on the value
-      for (const spring of [sw, sh, sr]) { spring.value = spring.target; spring.velocity = 0; }
-      paint();
-      return;
-    }
-    if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
-  }
-
-  function paint() {
-    notch.style.width = sw.value + 'px';
-    notch.style.height = sh.value + 'px';
-    notch.style.borderRadius = `0 0 ${sr.value}px ${sr.value}px`;
-  }
-
-  function tick(now) {
-    // Clamp dt so a backgrounded tab doesn't integrate one enormous step.
-    const dt = Math.min((now - last) / 1000, 1 / 30);
-    last = now;
-    const moving = [sw, sh, sr].map(s => s.step(dt)).some(Boolean);
-    paint();
-    raf = moving ? requestAnimationFrame(tick) : null;
-  }
-
-  const set = v => { open = v; retarget(); };
-  notch.addEventListener('pointerenter', () => set(true));
-  notch.addEventListener('pointerleave', () => set(false));
-  notch.addEventListener('click', () => set(!open));
-  notch.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(!open); }
-  });
-
-  document.getElementById('switch').addEventListener('click', e => {
+  ladder.addEventListener('click', e => {
     const button = e.target.closest('button');
-    if (!button) return;
-    activity = button.dataset.state;
-    for (const b of e.currentTarget.children) b.setAttribute('aria-pressed', String(b === button));
-    open = true;
-    retarget();   // mid-flight retarget: the notch resizes from wherever it is
+    if (button) go(button.dataset.state);   // retargets mid-flight, from wherever the surface is
   });
 
-  paint();
+  // Hover intent, not hover: a pointer crossing the surface on its way somewhere else must
+  // never open it. minimumHoverDuration is 0.3s in the app.
+  let dwell = null;
+  surface.addEventListener('pointerenter', () => {
+    if (state() === 'expanded' || state() === 'shelf') return;
+    dwell = setTimeout(() => go('expanded'), 300);
+  });
+  surface.addEventListener('pointerleave', () => {
+    clearTimeout(dwell);
+    if (state() === 'expanded') go('persistent');   // collapse returns to the highest state still true
+  });
+  surface.addEventListener('click', () => go(state() === 'expanded' ? 'persistent' : 'expanded'));
+  surface.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(state() === 'expanded' ? 'persistent' : 'expanded'); }
+    if (e.key === 'Escape') go('persistent');
+  });
 
-  // Reveal sections as they arrive.
-  const io = new IntersectionObserver((entries) => {
+  // Each feature mockup is the same surface, parked at the anchor until it scrolls into
+  // view — then it opens on the app's own spring, so the section demonstrates the
+  // transition it is describing instead of asserting it.
+  const opening = new IntersectionObserver(entries => {
     for (const entry of entries) {
-      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+      if (!entry.isIntersecting) continue;
+      const mock = entry.target;
+      setTimeout(() => mock.surface.go(mock.dataset.mock), 220);
+      opening.unobserve(mock);
     }
-  }, { rootMargin: '0px 0px -10% 0px' });
+  }, { threshold: .55 });
+
+  const hud = document.querySelector('[data-hud]');
+  for (const mock of document.querySelectorAll('[data-mock]')) {
+    const copy = surface.cloneNode(true);
+    copy.id = ''; copy.removeAttribute('tabindex'); copy.removeAttribute('role');
+    mock.append(hud.cloneNode(true), copy);
+    mock.surface = new Surface(copy, 'idle');
+    // Reserve the opened height now, so opening later cannot reflow the page under the reader.
+    // Every card reserves the tallest state's height, so the four read as one set and
+    // nothing reflows when a card opens under the reader.
+    mock.style.minHeight = `calc(${PANEL.h}px + 1.75rem)`;
+    if (mock.dataset.mock === 'idle') continue;
+    opening.observe(mock);
+  }
+
+  const io = new IntersectionObserver(entries => {
+    for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+  }, { rootMargin: '0px 0px -8% 0px' });
   for (const el of document.querySelectorAll('.rise')) io.observe(el);
+
+  const nav = document.getElementById('nav');
+  const sentinel = new IntersectionObserver(([e]) => nav.classList.toggle('stuck', !e.isIntersecting), { threshold: 1 });
+  sentinel.observe(document.querySelector('.hero'));
 })();
 </script>
 </body>
