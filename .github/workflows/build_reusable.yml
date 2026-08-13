@@ -253,7 +253,9 @@ jobs:
             echo "::warning::SPARKLE_ED_PRIVATE_KEY is not set, so no appcast entry can be signed. Installed copies of FlowDock will never be offered this release."
             exit 0
           fi
-          sign_update="$(find "$SPM_DIR" -type f -name sign_update -perm -u+x | head -1)"
+          # The package also ships the legacy DSA sign_update, which takes different
+          # arguments and prints a different attribute. Never pick that one.
+          sign_update="$(find "$SPM_DIR" -type f -name sign_update -perm -u+x -not -path '*old_dsa_scripts*' | head -1)"
           if [[ -z "$sign_update" ]]; then
             echo "::error::sign_update was not found in the resolved Sparkle package."
             exit 1

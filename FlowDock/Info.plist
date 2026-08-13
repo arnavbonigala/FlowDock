@@ -14,7 +14,7 @@
 	<key>SUFeedURL</key>
 	<string>https://arnavbonigala.github.io/FlowDock/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>B1Y47t8C/v8ImurYA+9arEsuCrpxwJSviekiflMElbI=</string>
+	<string>9Lut10rvI6c29z3WXJlqQxxqPNjjfZ4P9/OxEFs7EK4=</string>
 	<key>EXAppExtensionPointDefinitions</key>
 	<dict>
 		<key>com.arnavbonigala.flowdock.activity</key>

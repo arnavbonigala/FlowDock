@@ -26,11 +26,11 @@ Without it the build still produces a DMG, but no appcast entry can be signed, s
 
 ### Sparkle signing key
 
-`FlowDock/Info.plist` pins `SUPublicEDKey` to `B1Y47t8C/v8ImurYA+9arEsuCrpxwJSviekiflMElbI=`. Sparkle only accepts an update whose signature was made with the private half of **that** key. If you hold it, export it and store it as `SPARKLE_ED_PRIVATE_KEY`:
+`FlowDock/Info.plist` pins `SUPublicEDKey` to `9Lut10rvI6c29z3WXJlqQxxqPNjjfZ4P9/OxEFs7EK4=`. Sparkle only accepts an update whose signature was made with the private half of **that** key, which lives in the login keychain of the machine that generated it and in `SPARKLE_ED_PRIVATE_KEY`. There is no third copy — export it before wiping that machine:
 
 ```sh
-# Sparkle's tools live in the resolved package checkout
-find ~/Library/Developer/Xcode/DerivedData -name generate_keys -type f
+# Sparkle ships the tools as a binary artifact of the resolved package
+find . ~/Library/Developer/Xcode/DerivedData -name generate_keys -type f
 ./generate_keys -x sparkle_private_key.txt   # writes the private key held in the login keychain
 ```
 
@@ -90,7 +90,7 @@ The app reads `SUFeedURL` from `FlowDock/Info.plist`: `https://arnavbonigala.git
 
 Each release the build signs the DMG with `sign_update` from the resolved Sparkle package, and `scripts/appcast.py` writes the resulting `<item>` into the feed. Re-running the same version replaces its item rather than duplicating it, and items stay newest-first.
 
-GitHub Pages has to be enabled once, by hand: repository Settings → Pages → Source: "Deploy from a branch", branch `gh-pages`, folder `/`. Until that is done the feed is committed but not served.
+GitHub Pages is enabled and serving from `gh-pages` at the URL above. If the branch is ever deleted, re-enable it the same way: repository Settings → Pages → Source: "Deploy from a branch", branch `gh-pages`, folder `/`. Until that is done the feed is committed but not served.
 
 **Rollback.** Sparkle offers whatever is newest in the feed. To withdraw a bad release, delete its `<item>` from `appcast.xml` on `gh-pages` and push; installs that have not updated yet stop being offered it. Anyone already updated must be given a higher version, so follow a withdrawal with a fixed release rather than a re-tag.
 
@@ -144,8 +144,7 @@ Settings are `Defaults` keys with defaults in `FlowDock/models/Constants.swift`.
 
 ## Current boundary
 
-The plumbing is in place and unexercised. These cannot be closed from inside the repository:
+The signing key exists, `SPARKLE_ED_PRIVATE_KEY` is set, and the `gh-pages` feed is live, so releases can now sign and publish. What remains unexercised:
 
-- No Sparkle private key exists yet, so no build has produced a signed appcast entry.
-- GitHub Pages has never been enabled, and the `gh-pages` branch does not exist yet.
-- The full update cycle above has never been run, so `SUEnableInstallerLauncherService` and the helper's TCC identity across an in-place update remain untested.
+- The full update cycle above has never been run, so `SUEnableInstallerLauncherService` and the helper's TCC identity across an in-place update remain untested. Until v0.1.0 has a successor there is nothing to update *from*.
+- Every appcast item's `sparkle:version` is the release workflow's run number, so it only stays monotonic as long as that workflow's history is not reset.
